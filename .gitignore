@@ -1,0 +1,68 @@
+# Maven build files
+**/target/
+**/build/
+*.jar
+*.war
+*.ear
+*.class
+
+# Maven wrapper
+**/.mvn/wrapper/maven-wrapper.jar
+
+# Node modules (for frontend)
+**/node_modules/
+**/dist/
+**/.next/
+**/.nuxt/
+**/out/
+
+# IDE files
+**/.idea/
+**/.vscode/
+**/.settings/
+**/.project
+**/.classpath
+**/.factorypath
+*.iml
+*.iws
+*.ipr
+**/.sts4-cache/
+**/.apt_generated/
+**/.springBeans
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+**/logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+**/*.env
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Package files
+*.zip
+*.tar.gz
+*.rar
+
+# Docker volumes
+**/volumes/
+**/data/

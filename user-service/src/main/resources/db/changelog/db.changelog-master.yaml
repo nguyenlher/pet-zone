@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001_create_users
+      author: Nguyen LH
+      changes:
+        - sqlFile:
+            path: changes/001_create_users.sql
+            relativeToChangelogFile: true

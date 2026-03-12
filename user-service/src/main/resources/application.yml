@@ -1,3 +1,37 @@
+server:
+  port: 8081
 spring:
   application:
     name: user-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user_service_db
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+
+  liquibase:
+    enabled: true
+    changelog: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+    drop-first: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8088/realms/3d-petmark/protocol/openid-connect/certs
+          issuer-uri: http://localhost:8088/realms/3d-petmark
+
+keycloak:
+  server-url: http://localhost:8088
+  realm: 3d-petmark 
+  client-id: spring-boot-api
+  client-secret: Ji9NSOcVjSUul7finhrE5dGuLZuVSagV

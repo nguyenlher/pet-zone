@@ -1,25 +1,5 @@
 package com.petstore.userservice.service.impl;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
-
 import com.petstore.userservice.dto.request.ForgotPasswordRequest;
 import com.petstore.userservice.dto.request.LoginRequest;
 import com.petstore.userservice.dto.request.RegisterRequest;
@@ -27,10 +7,24 @@ import com.petstore.userservice.dto.request.ResetPasswordRequest;
 import com.petstore.userservice.dto.response.AuthResponse;
 import com.petstore.userservice.dto.response.MessageResponse;
 import com.petstore.userservice.service.KeycloakAuthService;
-
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClient;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -38,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
     private final Keycloak keycloak;
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
 
     @Value("${keycloak.server-url}")
     private String serverUrl;
@@ -120,9 +114,6 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             String tokenUrl = serverUrl + "/realms/" + realm + "/protocol/openid-connect/token";
             log.info("Attempting login for email: {} at URL: {}", request.getEmail(), tokenUrl);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
             body.add("grant_type", "password");
             body.add("client_id", clientId);
@@ -132,10 +123,13 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
             log.info("Login request: grant_type=password, client_id={}, username={}", clientId, request.getEmail());
 
-            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, entity, Map.class);
+            Map responseBody = restClient.post()
+                    .uri(tokenUrl)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(body)
+                    .retrieve()
+                    .body(Map.class);
 
-            Map<String, Object> responseBody = response.getBody();
             if (responseBody != null) {
                 log.info("Login successful for user: {}", request.getEmail());
                 return AuthResponse.builder()
@@ -159,16 +153,18 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             String logoutUrl = serverUrl + "/realms/" + realm + "/protocol/openid-connect/logout";
             log.info("Attempting logout at URL: {}", logoutUrl);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
             body.add("client_id", clientId);
             body.add("client_secret", clientSecret);
             body.add("refresh_token", refreshToken);
 
-            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-            restTemplate.exchange(logoutUrl, HttpMethod.POST, entity, String.class);
+            restClient.post()
+                    .uri(logoutUrl)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(body)
+                    .retrieve()
+                    .toBodilessEntity();
 
             log.info("Logout successful");
             return MessageResponse.builder()
@@ -255,19 +251,19 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             String tokenUrl = serverUrl + "/realms/" + realm + "/protocol/openid-connect/token";
             log.info("Attempting to refresh token at URL: {}", tokenUrl);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
             body.add("grant_type", "refresh_token");
             body.add("client_id", clientId);
             body.add("client_secret", clientSecret);
             body.add("refresh_token", refreshToken);
 
-            HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.exchange(tokenUrl, HttpMethod.POST, entity, Map.class);
+            Map responseBody = restClient.post()
+                    .uri(tokenUrl)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .body(body)
+                    .retrieve()
+                    .body(Map.class);
 
-            Map<String, Object> responseBody = response.getBody();
             if (responseBody != null) {
                 log.info("Token refresh successful");
                 return AuthResponse.builder()

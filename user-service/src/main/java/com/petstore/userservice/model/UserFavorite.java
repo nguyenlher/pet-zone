@@ -1,11 +1,10 @@
 package com.petstore.userservice.model;
 
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import lombok.*;
-import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -13,14 +12,9 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class User {
+public class UserFavorite {
     UUID id;
-    String keycloakId;
-    String email;
-    String firstName;
-    String lastName;
-    String avatarUrl;
-    Boolean isActive;
+    UUID userId;
+    UUID petId;
     LocalDateTime createdAt;
-    LocalDateTime updatedAt;
 }

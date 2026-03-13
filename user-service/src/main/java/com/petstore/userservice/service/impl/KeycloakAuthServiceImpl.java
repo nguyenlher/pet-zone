@@ -7,6 +7,7 @@ import com.petstore.userservice.dto.request.ResetPasswordRequest;
 import com.petstore.userservice.dto.response.AuthResponse;
 import com.petstore.userservice.dto.response.MessageResponse;
 import com.petstore.userservice.service.KeycloakAuthService;
+import com.petstore.userservice.service.UserService;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
     private final Keycloak keycloak;
     private final RestClient restClient;
+    private final UserService userService;
 
     @Value("${keycloak.server-url}")
     private String serverUrl;
@@ -76,16 +78,18 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
             if (response.getStatus() == 201) {
                 String locationPath = response.getLocation().getPath();
-                String userId = locationPath.substring(locationPath.lastIndexOf('/') + 1);
-                log.info("User created with ID: {}", userId);
+                String keycloakId = locationPath.substring(locationPath.lastIndexOf('/') + 1);
+                log.info("User created with ID: {}", keycloakId);
 
                 CredentialRepresentation credential = new CredentialRepresentation();
                 credential.setType(CredentialRepresentation.PASSWORD);
                 credential.setValue(request.getPassword());
                 credential.setTemporary(false);
 
-                usersResource.get(userId).resetPassword(credential);
-                log.info("Password set for user: {}", userId);
+                usersResource.get(keycloakId).resetPassword(credential);
+                log.info("Password set for user: {}", keycloakId);
+
+                userService.createUser(keycloakId, request);
 
                 return MessageResponse.builder()
                         .message("User registered successfully")
@@ -198,7 +202,7 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
                         .build();
             }
 
-            UserRepresentation user = users.get(0);
+            UserRepresentation user = users.getFirst();
             log.info("Sending password reset email to user: {}", user.getEmail());
             
             usersResource.get(user.getId()).executeActionsEmail(Collections.singletonList("UPDATE_PASSWORD"));

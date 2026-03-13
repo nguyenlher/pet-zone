@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.petstore.userservice.model.User;
 
 public interface UserRepository {
-    User save(User user);
+    void save(User user);
     Optional<User> findById(UUID id);
     Optional<User> findByEmail(String email);
     List<User> findAll();

@@ -6,6 +6,5 @@ import com.petstore.userservice.model.User;
 import java.util.UUID;
 
 public interface UserService {
-    void createUser(String keycloakId, RegisterRequest request);
-    void addToFavorite(UUID userId, UUID petId);
+    User createUser(String keycloakId, RegisterRequest request);
 }

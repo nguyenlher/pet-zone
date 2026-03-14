@@ -22,14 +22,17 @@ public class UserShippingInfoEntity {
     @Column(name = "phone_number")
     String phoneNumber;
 
-    @Column(name = "address_line")
-    String addressLine;
+    @Column(name = "address")
+    String address;
 
     @Column(name = "district")
     String district;
 
     @Column(name = "city")
     String city;
+
+    @Column(name = "note")
+    String note;
 
     @Column(name = "is_default")
     boolean isDefault;

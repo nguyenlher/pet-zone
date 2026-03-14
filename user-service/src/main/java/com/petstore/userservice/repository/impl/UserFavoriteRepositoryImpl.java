@@ -8,6 +8,9 @@ import com.petstore.userservice.repository.jpa.JpaUserFavoriteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Repository
 @RequiredArgsConstructor
 public class UserFavoriteRepositoryImpl implements UserFavoriteRepository {
@@ -15,9 +18,20 @@ public class UserFavoriteRepositoryImpl implements UserFavoriteRepository {
     private final UserFavoriteMapper mapper;
 
     @Override
-    public void save(UserFavorite userFavorite) {
+    public UserFavorite save(UserFavorite userFavorite) {
         UserFavoriteEnity entity = mapper.toEntity(userFavorite);
         UserFavoriteEnity savedEntity = jpaUserFavoriteRepository.save(entity);
-        mapper.toDomain(savedEntity);
+        return mapper.toDomain(savedEntity);
+    }
+
+    @Override
+    public Optional<UserFavorite> findByUserIdAndPetId(UUID userId, UUID petId) {
+        return jpaUserFavoriteRepository.findByUserIdAndPetId(userId, petId)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public void deleteByUserIdAndPetId(UUID userId, UUID petId) {
+        jpaUserFavoriteRepository.deleteByUserIdAndPetId(userId, petId);
     }
 }

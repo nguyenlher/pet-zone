@@ -10,6 +10,7 @@ export const pets = [
   {
     id: 1, name: 'Buddy', breed: 'Golden Retriever', category: 'dogs', age: '2 years',
     price: 850, originalPrice: 950, gender: 'Male', weight: '30 kg', color: 'Golden',
+    modelUrl: '/models/dog.glb',
     description: 'Buddy is a friendly and energetic Golden Retriever who loves to play fetch and swim. He is great with children and other pets. Fully vaccinated and trained.',
     images: [
       'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?w=600&h=500&fit=crop',
@@ -20,6 +21,7 @@ export const pets = [
   {
     id: 2, name: 'Luna', breed: 'Siberian Husky', category: 'dogs', age: '1 year',
     price: 1200, gender: 'Female', weight: '22 kg', color: 'Black & White',
+    modelUrl: '/models/dog.glb',
     description: 'Luna is a beautiful Siberian Husky with striking blue eyes. She is playful, loyal, and loves outdoor activities.',
     images: [
       'https://images.unsplash.com/photo-1605568427561-40dd23c2acea?w=600&h=500&fit=crop',
@@ -30,6 +32,7 @@ export const pets = [
   {
     id: 3, name: 'Whiskers', breed: 'Persian Cat', category: 'cats', age: '3 years',
     price: 600, originalPrice: 700, gender: 'Male', weight: '5 kg', color: 'White',
+    modelUrl: '/models/cat.glb',
     description: 'Whiskers is a calm and affectionate Persian cat with luxurious white fur. Perfect for a loving indoor home.',
     images: [
       'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=600&h=500&fit=crop',
@@ -110,6 +113,7 @@ export const pets = [
   {
     id: 11, name: 'Thumper', breed: 'Holland Lop', category: 'small-pets', age: '6 months',
     price: 120, gender: 'Male', weight: '1.8 kg', color: 'Brown & White',
+    modelUrl: '/models/fox.glb',
     description: 'Thumper is an adorable Holland Lop rabbit with floppy ears and a gentle temperament. Perfect for families.',
     images: [
       'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?w=600&h=500&fit=crop',

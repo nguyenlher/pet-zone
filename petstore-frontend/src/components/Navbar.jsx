@@ -36,6 +36,7 @@ export default function Navbar() {
     { to: '/', label: 'Home' },
     { label: 'Pets', dropdown: true },
     { to: '/contact', label: 'Contact' },
+    { to: '/faq', label: 'FAQ' },
   ];
 
   return (

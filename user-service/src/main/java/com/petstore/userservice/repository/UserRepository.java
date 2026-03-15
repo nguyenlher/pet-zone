@@ -1,14 +1,15 @@
 package com.petstore.userservice.repository;
 
+import com.petstore.userservice.model.User;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.petstore.userservice.model.User;
-
 public interface UserRepository {
-    void save(User user);
+    User save(User user);
     Optional<User> findById(UUID id);
     Optional<User> findByEmail(String email);
+    Optional<User> findByKeycloakId(String keycloakId);
     List<User> findAll();
 }

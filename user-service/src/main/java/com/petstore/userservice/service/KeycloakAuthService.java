@@ -12,6 +12,6 @@ public interface KeycloakAuthService {
     AuthResponse login(LoginRequest request);
     MessageResponse logout(String refreshToken);
     MessageResponse forgotPassword(ForgotPasswordRequest request);
-    MessageResponse resetPassword(String userId, ResetPasswordRequest request);
+    MessageResponse resetPassword(String keycloakId, ResetPasswordRequest request);
     AuthResponse refreshToken(String refreshToken);
 }

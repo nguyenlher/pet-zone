@@ -10,6 +10,7 @@ import com.petstore.userservice.repository.jpa.JpaUserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,10 +22,10 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserMapper mapper;
 
     @Override
-    public void save(User user) {
+    public User save(User user) {
         UserEntity entity = mapper.toEntity(user);
         UserEntity savedEntity = jpaUserRepository.save(entity);
-        mapper.toDomain(savedEntity);
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
@@ -36,6 +37,12 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findByEmail(String email) {
         Optional<UserEntity> entityOpt = jpaUserRepository.findByEmail(email);
+        return entityOpt.map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<User> findByKeycloakId(String keycloakId) {
+        Optional<UserEntity> entityOpt = jpaUserRepository.findByKeycloakId(keycloakId);
         return entityOpt.map(mapper::toDomain);
     }
 

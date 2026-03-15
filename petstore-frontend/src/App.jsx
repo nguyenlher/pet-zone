@@ -12,6 +12,10 @@ import Checkout from './pages/Checkout';
 import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import OrderHistory from './pages/OrderHistory';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
+import FAQ from './pages/FAQ';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -34,6 +38,10 @@ function AppLayout() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/orders" element={<OrderHistory />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/faq" element={<FAQ />} />
         </Routes>
       </main>
       <Footer />

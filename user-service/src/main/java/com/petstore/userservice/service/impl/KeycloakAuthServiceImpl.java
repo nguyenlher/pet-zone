@@ -6,6 +6,7 @@ import com.petstore.userservice.dto.request.RegisterRequest;
 import com.petstore.userservice.dto.request.ResetPasswordRequest;
 import com.petstore.userservice.dto.response.AuthResponse;
 import com.petstore.userservice.dto.response.MessageResponse;
+import com.petstore.userservice.model.User;
 import com.petstore.userservice.service.KeycloakAuthService;
 import com.petstore.userservice.service.UserService;
 import jakarta.ws.rs.core.Response;
@@ -221,9 +222,9 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     }
 
     @Override
-    public MessageResponse resetPassword(String userId, ResetPasswordRequest request) {
+    public MessageResponse resetPassword(String keycloakId, ResetPasswordRequest request) {
         try {
-            log.info("Resetting password for user ID: {}", userId);
+            log.info("Resetting password for user ID: {}", keycloakId);
             
             RealmResource realmResource = keycloak.realm(realm);
             UsersResource usersResource = realmResource.users();
@@ -233,15 +234,15 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             credential.setValue(request.getNewPassword());
             credential.setTemporary(false);
 
-            usersResource.get(userId).resetPassword(credential);
-            log.info("Password reset successful for user ID: {}", userId);
+            usersResource.get(keycloakId).resetPassword(credential);
+            log.info("Password reset successful for user ID: {}", keycloakId);
 
             return MessageResponse.builder()
                     .message("Password reset successfully")
                     .success(true)
                     .build();
         } catch (Exception e) {
-            log.error("Error during password reset for user ID: {}", userId, e);
+            log.error("Error during password reset for user ID: {}", keycloakId, e);
             return MessageResponse.builder()
                     .message("Password reset failed: " + e.getMessage())
                     .success(false)

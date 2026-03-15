@@ -12,15 +12,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class UserShippingInfo {
+public class UserFavorite {
     UUID id;
     UUID userId;
-    String phoneNumber;
-    String address;
-    String district;
-    String city;
-    String note;
-    boolean isDefault;
+    UUID petId;
     LocalDateTime createdAt;
-    LocalDateTime updatedAt;
 }

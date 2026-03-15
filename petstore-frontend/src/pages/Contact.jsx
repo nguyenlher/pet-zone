@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, ChevronDown, MessageSquare } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import '../styles/pages/Contact.css';
 
@@ -8,17 +8,12 @@ const fadeInUp = {
   visible: (i = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.4 } }),
 };
 
-const faqs = [
-  { q: 'What is your return policy?', a: 'We offer a 7-day health guarantee for all pets. If your pet develops any health issues within 7 days of purchase, we will provide a full refund or replacement.' },
-  { q: 'Do you offer delivery?', a: 'Yes! We offer safe and comfortable pet delivery to your doorstep. Delivery is free for orders over $500.' },
-  { q: 'Are all pets vaccinated?', a: 'Yes, all our dogs and cats come fully vaccinated with complete health certificates. Fish and birds also receive appropriate health checks.' },
-  { q: 'Can I visit the pets before purchasing?', a: 'Absolutely! We encourage all customers to visit our store and interact with the pets before making a decision. Our staff will be happy to assist you.' },
-];
+
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [sent, setSent] = useState(false);
-  const [openFaq, setOpenFaq] = useState(null);
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -98,26 +93,6 @@ export default function Contact() {
             </motion.div>
           </div>
         </div>
-
-        {/* FAQ */}
-        <motion.section className="faq-section" initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp}>
-          <h2 className="section-title">Frequently Asked Questions</h2>
-          <div className="faq-list">
-            {faqs.map((faq, i) => (
-              <div key={i} className={`faq-item ${openFaq === i ? 'open' : ''}`}>
-                <button className="faq-question" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <span>{faq.q}</span>
-                  <ChevronDown size={18} className={`faq-chevron ${openFaq === i ? 'rotated' : ''}`} />
-                </button>
-                {openFaq === i && (
-                  <div className="faq-answer animate-slide-down">
-                    <p>{faq.a}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </motion.section>
       </div>
     </div>
   );

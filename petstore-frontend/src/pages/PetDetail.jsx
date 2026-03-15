@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ShoppingCart, Heart, Star, ArrowLeft, Shield, Truck, CheckCircle, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Heart, Star, ArrowLeft, Shield, Truck, CheckCircle, ChevronRight, Image, Box } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { pets } from '../data/mockData';
 import { useCart } from '../context/CartContext';
 import PetCard from '../components/PetCard';
 import '../styles/pages/PetDetail.css';
+import '../styles/components/Pet3DViewer.css';
+
+const Pet3DViewer = lazy(() => import('../components/Pet3DViewer'));
 
 export default function PetDetail() {
   const { id } = useParams();
@@ -14,6 +17,7 @@ export default function PetDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [viewMode, setViewMode] = useState(pet?.modelUrl ? '3d' : 'photos');
 
   if (!pet) {
     return (
@@ -52,22 +56,60 @@ export default function PetDetail() {
         </nav>
 
         <div className="detail-grid">
-          {/* Images */}
+          {/* Images / 3D Viewer */}
           <motion.div className="detail-images" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            <div className="main-image-wrap">
-              <img src={pet.images[selectedImage]} alt={pet.name} className="main-image" />
-            </div>
-            <div className="thumb-list">
-              {pet.images.map((img, i) => (
+            {/* View mode tabs */}
+            {pet.modelUrl && (
+              <div className="detail-view-tabs">
                 <button
-                  key={i}
-                  className={`thumb ${i === selectedImage ? 'active' : ''}`}
-                  onClick={() => setSelectedImage(i)}
+                  className={`detail-view-tab ${viewMode === '3d' ? 'active' : ''}`}
+                  onClick={() => setViewMode('3d')}
                 >
-                  <img src={img} alt={`${pet.name} ${i + 1}`} />
+                  <Box size={16} /> 3D View
                 </button>
-              ))}
-            </div>
+                <button
+                  className={`detail-view-tab ${viewMode === 'photos' ? 'active' : ''}`}
+                  onClick={() => setViewMode('photos')}
+                >
+                  <Image size={16} /> Photos
+                </button>
+              </div>
+            )}
+
+            {/* 3D Viewer */}
+            {viewMode === '3d' && pet.modelUrl && (
+              <Suspense fallback={
+                <div className="viewer-3d-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
+                    <div style={{ width: 40, height: 40, border: '3px solid #e7e5e4', borderTopColor: '#f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
+                    Loading 3D Viewer...
+                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                  </div>
+                </div>
+              }>
+                <Pet3DViewer modelUrl={pet.modelUrl} petName={pet.name} />
+              </Suspense>
+            )}
+
+            {/* Photo gallery */}
+            {viewMode === 'photos' && (
+              <>
+                <div className="main-image-wrap">
+                  <img src={pet.images[selectedImage]} alt={pet.name} className="main-image" />
+                </div>
+                <div className="thumb-list">
+                  {pet.images.map((img, i) => (
+                    <button
+                      key={i}
+                      className={`thumb ${i === selectedImage ? 'active' : ''}`}
+                      onClick={() => setSelectedImage(i)}
+                    >
+                      <img src={img} alt={`${pet.name} ${i + 1}`} />
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </motion.div>
 
           {/* Info */}

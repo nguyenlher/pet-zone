@@ -18,12 +18,19 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(false);
   }, []);
 
+  const register = useCallback((data) => {
+    // Mock register
+    const newUser = { ...currentUser, name: `${data.firstName} ${data.lastName}`, email: data.email, phone: data.phone };
+    setUser(newUser);
+    setIsAuthenticated(true);
+  }, []);
+
   const updateProfile = useCallback((updates) => {
     setUser(prev => ({ ...prev, ...updates }));
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

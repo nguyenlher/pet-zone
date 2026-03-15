@@ -7,19 +7,20 @@ import com.petstore.userservice.dto.request.ResetPasswordRequest;
 import com.petstore.userservice.dto.response.AuthResponse;
 import com.petstore.userservice.dto.response.MessageResponse;
 import com.petstore.userservice.service.KeycloakAuthService;
+import com.petstore.userservice.utils.UserApiPath;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(UserApiPath.AUTH_BASE)
 @RequiredArgsConstructor
 public class AuthController {
 
     private final KeycloakAuthService keycloakAuthService;
 
-    @PostMapping("/register")
+    @PostMapping(UserApiPath.AUTH_REGISTER)
     public ResponseEntity<MessageResponse> register(@Valid @RequestBody RegisterRequest request) {
         MessageResponse response = keycloakAuthService.register(request);
         return response.isSuccess() 
@@ -27,19 +28,19 @@ public class AuthController {
             : ResponseEntity.badRequest().body(response);
     }
 
-    @PostMapping("/login")
+    @PostMapping(UserApiPath.AUTH_LOGIN)
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = keycloakAuthService.login(request);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/logout")
+    @PostMapping(UserApiPath.AUTH_LOGOUT)
     public ResponseEntity<MessageResponse> logout(@RequestParam String refreshToken) {
         MessageResponse response = keycloakAuthService.logout(refreshToken);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/forgot-password")
+    @PostMapping(UserApiPath.AUTH_FORGOT_PASSWORD)
     public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         MessageResponse response = keycloakAuthService.forgotPassword(request);
         return response.isSuccess() 
@@ -47,17 +48,17 @@ public class AuthController {
             : ResponseEntity.badRequest().body(response);
     }
 
-    @PostMapping("/reset-password/{userId}")
+    @PostMapping(UserApiPath.AUTH_RESET_PASSWORD)
     public ResponseEntity<MessageResponse> resetPassword(
-            @PathVariable String userId,
+            @PathVariable String keycloakId,
             @Valid @RequestBody ResetPasswordRequest request) {
-        MessageResponse response = keycloakAuthService.resetPassword(userId, request);
+        MessageResponse response = keycloakAuthService.resetPassword(keycloakId, request);
         return response.isSuccess() 
             ? ResponseEntity.ok(response) 
             : ResponseEntity.badRequest().body(response);
     }
 
-    @PostMapping("/refresh")
+    @PostMapping(UserApiPath.AUTH_REFRESH)
     public ResponseEntity<AuthResponse> refreshToken(@RequestParam String refreshToken) {
         AuthResponse response = keycloakAuthService.refreshToken(refreshToken);
         return ResponseEntity.ok(response);

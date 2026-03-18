@@ -1,3 +1,10 @@
 spring:
   application:
     name: order-service
+
+rest:
+    api:
+        user-service:
+            baseUrl: http://localhost:8081/
+        pet-service:
+            baseUrl: http://localhost:8082/

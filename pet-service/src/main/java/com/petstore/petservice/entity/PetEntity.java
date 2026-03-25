@@ -2,22 +2,27 @@ package com.petstore.petservice.entity;
 
 import com.petstore.petservice.enums.*;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
 @Table(name = "pets", indexes = {
-        @Index(name = "idx_pet_type", columnList = "pet_type"),
         @Index(name = "idx_pet_status", columnList = "status"),
         @Index(name = "idx_pet_breed", columnList = "breed_id")
 })
-@Data
+@Getter
+@Setter
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class PetEntity {
 
@@ -29,12 +34,12 @@ public class PetEntity {
     @Column(nullable = false)
     String name;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "pet_type", nullable = false)
-    PetType petType;
-
     @Column(name = "breed_id", nullable = false)
     UUID breedId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "breed_id", insertable = false, updatable = false)
+    BreedEntity breed;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -50,11 +55,7 @@ public class PetEntity {
     
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    String[] colors; // Giữ JSON array ["vàng", "trắng", "đen"]
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "color_pattern")
-    ColorPattern colorPattern; // solid, spotted, striped, v.v.
+    List<String> colors; // JSON array ["vàng", "trắng", "đen"]
 
     @Enumerated(EnumType.STRING)
     @Column(name = "fur_type")
@@ -69,8 +70,8 @@ public class PetEntity {
     Boolean vaccinated;
 
     // ========== BUSINESS ==========
-    @Column(nullable = false)
-    Double price; // giá
+    @Column(nullable = false, precision = 19, scale = 2)
+    BigDecimal price; // giá
 
     @Column(length = 2000)
     String description; // Mô tả chi tiết
@@ -80,20 +81,14 @@ public class PetEntity {
     PetStatus status; // AVAILABLE, SOLD, RESERVED, DRAFT
 
     // ========== MEDIA ==========
-    @Column(name = "thumbnail_url")
-    String thumbnailUrl; // Ảnh đại diện
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    String[] imageUrls; // Mảng ảnh thường
+    // Đã tách ảnh sang bảng pet_images riêng
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sortOrder ASC")
+    List<PetImageEntity> images = new ArrayList<>();
 
     // ========== METRICS ==========
     @Column(name = "view_count")
     Integer viewCount = 0;
-
-    // ========== AI GENERATED ==========
-    @Column(name = "ai_description", length = 2000)
-    String aiDescription; // Mô tả AI sinh
 
     // ========== AUDIT ==========
     @Column(name = "created_at")
@@ -107,10 +102,39 @@ public class PetEntity {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (viewCount == null) viewCount = 0;
+        if (colors == null) colors = new ArrayList<>();
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+    
+    // Helper methods để quản lý ảnh
+    public void addImage(String imageUrl, Boolean isThumbnail) {
+        PetImageEntity image = new PetImageEntity();
+        image.setImageUrl(imageUrl);
+        image.setIsThumbnail(isThumbnail);
+        image.setSortOrder(this.images.size());
+        image.setPet(this);
+        this.images.add(image);
+    }
+    
+    public void removeImage(PetImageEntity image) {
+        this.images.remove(image);
+        image.setPet(null);
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof PetEntity)) return false;
+        PetEntity petEntity = (PetEntity) o;
+        return id != null && Objects.equals(id, petEntity.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

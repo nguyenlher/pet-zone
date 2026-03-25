@@ -1,39 +1,64 @@
+server:
+  port: 8081
+
 spring:
   application:
     name: pet-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/petstore
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    url: jdbc:postgresql://localhost:5432/pet_service_db
     driver-class-name: org.postgresql.Driver
-  
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none 
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-    show-sql: true
-  
+    show-sql: false
+
+  liquibase:
+    enabled: true
+    changelog: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+    drop-first: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8088/realms/3d-petmark/protocol/openid-connect/certs
+          issuer-uri: http://localhost:8088/realms/3d-petmark
+
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-  
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${ISSUER_URI:http://localhost:8080/realms/petstore}
-          jwk-set-uri: ${JWK_SET_URI:http://localhost:8080/realms/petstore/protocol/openid-connect/certs}
+    consumer:
+      group-id: pet-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
 
-server:
-  port: ${PORT:8081}
+keycloak:
+  server-url: http://localhost:8088
+  realm: 3d-petmark
+  client-id: spring-boot-api
+  client-secret: Ji9NSOcVjSUul7finhrE5dGuLZuVSagV
 
 logging:
   level:
     com.petstore.petservice: DEBUG
     org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    liquibase: INFO

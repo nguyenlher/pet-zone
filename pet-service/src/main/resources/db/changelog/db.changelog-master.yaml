@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 001_create_breeds
-      author: PetService
+      author: Nhan
       changes:
         - sqlFile:
             path: changes/001_create_breeds.sql
@@ -9,8 +9,40 @@ databaseChangeLog:
   
   - changeSet:
       id: 002_create_pets
-      author: PetService
+      author: Nhan
       changes:
         - sqlFile:
             path: changes/002_create_pets.sql
+            relativeToChangelogFile: true
+  
+  - changeSet:
+      id: 003_create_pet_3d_models
+      author: Nhan
+      changes:
+        - sqlFile:
+            path: changes/003_create_pet_3d_models.sql
+            relativeToChangelogFile: true
+  
+  - changeSet:
+      id: 004_create_breed_reviews
+      author: Nhan
+      changes:
+        - sqlFile:
+            path: changes/004_create_breed_reviews.sql
+            relativeToChangelogFile: true
+  
+  - changeSet:
+      id: 005_create_pet_images
+      author: Nhan
+      changes:
+        - sqlFile:
+            path: changes/005_create_pet_images.sql
+            relativeToChangelogFile: true
+  
+  - changeSet:
+      id: 006_insert_test_data
+      author: Nhan
+      changes:
+        - sqlFile:
+            path: changes/006_insert_test_data.sql
             relativeToChangelogFile: true

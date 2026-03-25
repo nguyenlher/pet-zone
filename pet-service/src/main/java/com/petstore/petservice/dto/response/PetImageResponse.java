@@ -1,6 +1,5 @@
 package com.petstore.petservice.dto.response;
 
-import com.petstore.petservice.enums.PetType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,15 +12,10 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BreedResponse {
+public class PetImageResponse {
     private UUID id;
-    private String name;
-    private PetType petType;
-    private String description;
-    private Double avgRating;
-    private Integer totalReviews;
     private String imageUrl;
-    private Boolean isActive;
+    private Boolean isThumbnail;
+    private Integer sortOrder;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -16,16 +18,14 @@ import java.util.UUID;
 public class PetUpdateRequest {
     private String name;
     private UUID breedId;
+    private LocalDate birthDate;
     private Double weight;
     private Double height;
-    private String[] colors;
-    private ColorPattern colorPattern;
+    private List<String> colors;
     private FurType furType;
     private HealthStatus healthStatus;
     private Boolean vaccinated;
-    private Double price;
+    private BigDecimal price;
     private String description;
     private PetStatus status;
-    private String thumbnailUrl;
-    private String[] imageUrls;
 }

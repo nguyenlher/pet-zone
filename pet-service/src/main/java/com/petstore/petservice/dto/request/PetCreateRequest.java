@@ -7,7 +7,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -18,9 +20,6 @@ public class PetCreateRequest {
     @NotBlank(message = "Pet name is required")
     @Size(min = 2, max = 100, message = "Pet name must be between 2 and 100 characters")
     private String name;
-    
-    @NotNull(message = "Pet type is required")
-    private PetType petType;
     
     @NotNull(message = "Breed is required")
     private UUID breedId;
@@ -38,8 +37,7 @@ public class PetCreateRequest {
     @DecimalMax(value = "150", message = "Height must not exceed 150 cm")
     private Double height;
     
-    private String[] colors;
-    private ColorPattern colorPattern;
+    private List<String> colors;
     private FurType furType;
     
     private HealthStatus healthStatus;
@@ -47,15 +45,12 @@ public class PetCreateRequest {
     
     @NotNull(message = "Price is required")
     @Positive(message = "Price must be positive")
-    private Double price;
+    private BigDecimal price;
     
     @Size(max = 2000, message = "Description must not exceed 2000 characters")
     private String description;
     
     private PetStatus status;
-    
-    private String thumbnailUrl;
-    private String[] imageUrls;
     
     // For AI 3D Model
     private String sourceImageFor3D;

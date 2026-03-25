@@ -16,16 +16,13 @@ public class PetSpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Mặc định chỉ lấy pet AVAILABLE
-            predicates.add(cb.equal(root.get("status"), PetStatus.AVAILABLE));
+            if (request.getStatus() != null) {
+                predicates.add(cb.equal(root.get("status"), request.getStatus()));
+            }
 
             if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), 
                         "%" + request.getKeyword().toLowerCase() + "%"));
-            }
-
-            if (request.getPetType() != null) {
-                predicates.add(cb.equal(root.get("petType"), request.getPetType()));
             }
 
             if (request.getBreedId() != null) {
@@ -52,17 +49,19 @@ public class PetSpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("price"), request.getMaxPrice()));
             }
 
-            if (request.getMinAge() != null) {
+            if (request.getMinAge() != null && request.getMaxAge() != null) {
+                LocalDate minBirthDate = LocalDate.now().minusMonths(request.getMaxAge());
+                LocalDate maxBirthDate = LocalDate.now().minusMonths(request.getMinAge());
+                predicates.add(cb.between(root.get("birthDate"), minBirthDate, maxBirthDate));
+            } else if (request.getMinAge() != null) {
+                LocalDate maxBirthDate = LocalDate.now().minusMonths(request.getMinAge());
+                predicates.add(cb.greaterThanOrEqualTo(root.get("birthDate"), maxBirthDate));
+            } else if (request.getMaxAge() != null) {
                 LocalDate minBirthDate = LocalDate.now().minusMonths(request.getMaxAge());
                 predicates.add(cb.lessThanOrEqualTo(root.get("birthDate"), minBirthDate));
             }
 
-            if (request.getMaxAge() != null) {
-                LocalDate maxBirthDate = LocalDate.now().minusMonths(request.getMinAge());
-                predicates.add(cb.greaterThanOrEqualTo(root.get("birthDate"), maxBirthDate));
-            }
-
-            if (request.getColors() != null && request.getColors().length > 0) {
+            if (request.getColors() != null && !request.getColors().isEmpty()) {
                 for (String color : request.getColors()) {
                     predicates.add(cb.isMember(color, root.get("colors")));
                 }

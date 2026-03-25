@@ -1,60 +1,116 @@
 package com.petstore.petservice.entity;
 
-import com.petstore.petservice.model.enums.PetStatus;
+import com.petstore.petservice.enums.*;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
+@Table(name = "pets", indexes = {
+        @Index(name = "idx_pet_type", columnList = "pet_type"),
+        @Index(name = "idx_pet_status", columnList = "status"),
+        @Index(name = "idx_pet_breed", columnList = "breed_id")
+})
+@Data
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class PetEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    @Column(name = "name")
+    // ========== BASIC INFO ==========
+    @Column(nullable = false)
     String name;
 
-    @Column(name = "breed")
-    String breed;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "pet_type", nullable = false)
+    PetType petType;
 
-    @Column(name = "age")
-    int age;
+    @Column(name = "breed_id", nullable = false)
+    UUID breedId;
 
-    @Column(name = "color")
-    String color;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    Gender gender;
 
-    @Column(name = "gender")
-    String gender;
+    @Column(name = "birth_date")
+    LocalDate birthDate;
 
+    // ========== PHYSICAL ATTRIBUTES ==========
+    Double weight; // kg
+    
+    Double height; // cm
+    
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    String[] colors; // Giữ JSON array ["vàng", "trắng", "đen"]
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "color_pattern")
+    ColorPattern colorPattern; // solid, spotted, striped, v.v.
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fur_type")
+    FurType furType; // short, medium, long, hairless
+
+    // ========== HEALTH ==========
+    @Enumerated(EnumType.STRING)
     @Column(name = "health_status")
-    String healthStatus;
+    HealthStatus healthStatus;
 
-    @Column(name = "price")
-    double price;
+    @Column(name = "vaccinated")
+    Boolean vaccinated;
 
-    @Column(name = "description")
-    String description;
+    // ========== BUSINESS ==========
+    @Column(nullable = false)
+    Double price; // giá
 
-    @Column(name = "stock")
-    int stock;
+    @Column(length = 2000)
+    String description; // Mô tả chi tiết
 
-    @Column(name = "status")
-    PetStatus status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    PetStatus status; // AVAILABLE, SOLD, RESERVED, DRAFT
 
-    @Column(name = "views")
-    int views;
+    // ========== MEDIA ==========
+    @Column(name = "thumbnail_url")
+    String thumbnailUrl; // Ảnh đại diện
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    String[] imageUrls; // Mảng ảnh thường
+
+    // ========== METRICS ==========
+    @Column(name = "view_count")
+    Integer viewCount = 0;
+
+    // ========== AI GENERATED ==========
+    @Column(name = "ai_description", length = 2000)
+    String aiDescription; // Mô tả AI sinh
+
+    // ========== AUDIT ==========
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (viewCount == null) viewCount = 0;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }

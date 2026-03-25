@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001_create_breeds
+      author: PetService
+      changes:
+        - sqlFile:
+            path: changes/001_create_breeds.sql
+            relativeToChangelogFile: true
+  
+  - changeSet:
+      id: 002_create_pets
+      author: PetService
+      changes:
+        - sqlFile:
+            path: changes/002_create_pets.sql
+            relativeToChangelogFile: true

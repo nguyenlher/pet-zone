@@ -2,6 +2,7 @@ package com.petstore.petservice.specification;
 
 import com.petstore.petservice.dto.request.PetSearchRequest;
 import com.petstore.petservice.entity.PetEntity;
+import com.petstore.petservice.enums.PetStatus;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -15,8 +16,8 @@ public class PetSpecification {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Luôn chỉ lấy pet đang available
-            predicates.add(cb.equal(root.get("status"), "available"));
+            // Mặc định chỉ lấy pet AVAILABLE
+            predicates.add(cb.equal(root.get("status"), PetStatus.AVAILABLE));
 
             if (request.getKeyword() != null && !request.getKeyword().isEmpty()) {
                 predicates.add(cb.like(cb.lower(root.get("name")), 
@@ -28,10 +29,7 @@ public class PetSpecification {
             }
 
             if (request.getBreedId() != null) {
-                predicates.add(cb.or(
-                        cb.equal(root.get("breedPrimaryId"), request.getBreedId()),
-                        cb.equal(root.get("breedSecondaryId"), request.getBreedId())
-                ));
+                predicates.add(cb.equal(root.get("breedId"), request.getBreedId()));
             }
 
             if (request.getGender() != null) {
@@ -54,10 +52,6 @@ public class PetSpecification {
                 predicates.add(cb.lessThanOrEqualTo(root.get("price"), request.getMaxPrice()));
             }
 
-            if (request.getCity() != null) {
-                predicates.add(cb.equal(root.get("city"), request.getCity()));
-            }
-
             if (request.getMinAge() != null) {
                 LocalDate minBirthDate = LocalDate.now().minusMonths(request.getMaxAge());
                 predicates.add(cb.lessThanOrEqualTo(root.get("birthDate"), minBirthDate));
@@ -69,18 +63,9 @@ public class PetSpecification {
             }
 
             if (request.getColors() != null && request.getColors().length > 0) {
-                // Tìm pet có ít nhất một trong các màu được chọn
                 for (String color : request.getColors()) {
                     predicates.add(cb.isMember(color, root.get("colors")));
                 }
-            }
-
-            if (request.getIsFeatured() != null && request.getIsFeatured()) {
-                predicates.add(cb.isTrue(root.get("isFeatured")));
-                predicates.add(cb.or(
-                        cb.isNull(root.get("featuredUntil")),
-                        cb.greaterThanOrEqualTo(root.get("featuredUntil"), LocalDate.now())
-                ));
             }
 
             // Sorting
@@ -98,8 +83,6 @@ public class PetSpecification {
                             ? cb.asc(root.get("viewCount")) 
                             : cb.desc(root.get("viewCount")));
                 }
-            } else {
-                query.orderBy(cb.desc(root.get("createdAt")));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

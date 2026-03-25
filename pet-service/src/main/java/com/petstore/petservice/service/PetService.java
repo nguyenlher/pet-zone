@@ -5,6 +5,7 @@ import com.petstore.petservice.dto.request.PetSearchRequest;
 import com.petstore.petservice.dto.request.PetUpdateRequest;
 import com.petstore.petservice.dto.response.PetDetailResponse;
 import com.petstore.petservice.dto.response.PetResponse;
+import com.petstore.petservice.enums.PetType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -20,11 +21,9 @@ public interface PetService {
     Page<PetResponse> getAllAvailablePets(Pageable pageable);
     PetDetailResponse getPetById(UUID id);
     Page<PetResponse> searchPets(PetSearchRequest request, Pageable pageable);
-    Page<PetResponse> getFeaturedPets(Pageable pageable);
-    Page<PetResponse> getPetsByType(String petType, Pageable pageable);
+    Page<PetResponse> getPetsByType(PetType petType, Pageable pageable);
     
     // Utility methods
     void incrementViewCount(UUID id);
     void incrementInquiryCount(UUID id);
-    void toggleFavorite(UUID id, boolean increment);
 }

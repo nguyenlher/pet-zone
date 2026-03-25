@@ -6,6 +6,7 @@ import com.petstore.petservice.dto.request.PetUpdateRequest;
 import com.petstore.petservice.dto.response.MessageResponse;
 import com.petstore.petservice.dto.response.PetDetailResponse;
 import com.petstore.petservice.dto.response.PetResponse;
+import com.petstore.petservice.enums.PetType;
 import com.petstore.petservice.service.PetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class PetController {
 
     private final PetService petService;
 
-    // ========== PUBLIC ENDPOINTS (Không cần đăng nhập) ==========
+    // ========== PUBLIC ENDPOINTS ==========
     
     @GetMapping("/public")
     public ResponseEntity<Page<PetResponse>> getAllAvailablePets(
@@ -39,21 +40,15 @@ public class PetController {
     @GetMapping("/public/{id}")
     public ResponseEntity<PetDetailResponse> getPetById(@PathVariable UUID id) {
         PetDetailResponse pet = petService.getPetById(id);
-        petService.incrementViewCount(id); // Tăng lượt xem
+        petService.incrementViewCount(id);
         return ResponseEntity.ok(pet);
     }
 
     @GetMapping("/public/type/{petType}")
     public ResponseEntity<Page<PetResponse>> getPetsByType(
-            @PathVariable String petType,
+            @PathVariable PetType petType,
             @PageableDefault(size = 20) Pageable pageable) {
         return ResponseEntity.ok(petService.getPetsByType(petType, pageable));
-    }
-
-    @GetMapping("/public/featured")
-    public ResponseEntity<Page<PetResponse>> getFeaturedPets(
-            @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(petService.getFeaturedPets(pageable));
     }
 
     @PostMapping("/public/search")
@@ -63,7 +58,7 @@ public class PetController {
         return ResponseEntity.ok(petService.searchPets(searchRequest, pageable));
     }
 
-    // ========== ADMIN ENDPOINTS (Chỉ admin mới có quyền) ==========
+    // ========== ADMIN ENDPOINTS ==========
     
     @PostMapping("/admin")
     @PreAuthorize("hasRole('admin')")
@@ -71,8 +66,7 @@ public class PetController {
             @Valid @RequestBody PetCreateRequest request,
             @AuthenticationPrincipal Jwt jwt) {
         String username = jwt.getClaimAsString("preferred_username");
-        PetDetailResponse response = petService.createPet(request, username);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(petService.createPet(request, username));
     }
 
     @PutMapping("/admin/{id}")
@@ -82,8 +76,7 @@ public class PetController {
             @Valid @RequestBody PetUpdateRequest request,
             @AuthenticationPrincipal Jwt jwt) {
         String username = jwt.getClaimAsString("preferred_username");
-        PetDetailResponse response = petService.updatePet(id, request, username);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(petService.updatePet(id, request, username));
     }
 
     @DeleteMapping("/admin/{id}")
@@ -96,7 +89,7 @@ public class PetController {
                 .build());
     }
 
-    // ========== USER INTERACTION ENDPOINTS (Cần đăng nhập) ==========
+    // ========== USER INTERACTION ENDPOINTS ==========
     
     @PostMapping("/{id}/inquiry")
     @PreAuthorize("isAuthenticated()")
@@ -104,26 +97,6 @@ public class PetController {
         petService.incrementInquiryCount(id);
         return ResponseEntity.ok(MessageResponse.builder()
                 .message("Inquiry recorded")
-                .success(true)
-                .build());
-    }
-
-    @PostMapping("/{id}/favorite")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<MessageResponse> addFavorite(@PathVariable UUID id) {
-        petService.toggleFavorite(id, true);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Added to favorites")
-                .success(true)
-                .build());
-    }
-
-    @DeleteMapping("/{id}/favorite")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<MessageResponse> removeFavorite(@PathVariable UUID id) {
-        petService.toggleFavorite(id, false);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Removed from favorites")
                 .success(true)
                 .build());
     }

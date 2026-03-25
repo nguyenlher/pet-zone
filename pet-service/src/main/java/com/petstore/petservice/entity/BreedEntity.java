@@ -1,10 +1,9 @@
 package com.petstore.petservice.entity;
 
+import com.petstore.petservice.enums.*;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -23,89 +22,55 @@ public class BreedEntity {
     UUID id;
 
     @Column(nullable = false)
-    String name; // "Chó Phốc", "Mèo Ba Tư", "Chó Corgi", "Mèo Anh lông ngắn"
+    String name; // "Chó Phốc", "Mèo Ba Tư"
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "pet_type", nullable = false)
-    String petType; // "dog", "cat"
-
-    @Column(name = "group_name")
-    String groupName; // "Chó săn", "Chó cảnh", "Mèo lông dài", "Mèo lông ngắn"
+    PetType petType;
 
     @Column(length = 2000)
     String description; // Mô tả về giống
 
     @Column(name = "origin_country")
-    String originCountry; // "Việt Nam", "Mỹ", "Anh", "Nhật Bản"
+    String originCountry; // "Việt Nam", "Mỹ"
 
     // === PHYSICAL CHARACTERISTICS ===
-    @Column(name = "size_category")
-    String sizeCategory; // "small", "medium", "large"
-
     @Column(name = "avg_weight_min")
-    Double avgWeightMin; // kg: 2.0, 5.0
+    Double avgWeightMin; // kg
 
     @Column(name = "avg_weight_max")
-    Double avgWeightMax; // kg: 4.5, 8.0
+    Double avgWeightMax; // kg
 
     @Column(name = "avg_height_min")
-    Double avgHeightMin; // cm: 20, 40
+    Double avgHeightMin; // cm
 
     @Column(name = "avg_height_max")
-    Double avgHeightMax; // cm: 30, 60
+    Double avgHeightMax; // cm
 
     @Column(name = "common_colors")
-    String commonColors; // "Vàng, đen, trắng", "Xám, trắng"
+    String commonColors; // "Vàng, đen, trắng"
 
-    @Column(name = "coat_type")
-    String coatType; // "short", "medium", "long", "curly", "wire"
+    @Column(name = "life_expectancy")
+    String lifeExpectancy; // "10-15 năm"
 
-    @Column(name = "shedding_level")
-    Integer sheddingLevel; // 1-5 (1: rụng ít, 5: rụng nhiều)
+    // === REVIEW STATS (TỔNG HỢP TỪ BẢNG REVIEW) ===
+    @Column(name = "avg_rating")
+    Double avgRating = 0.0;
 
-    // === PERSONALITY TRAITS ===
-    @Column(name = "typical_energy")
-    Integer typicalEnergy; // 1-5 (1: ít năng động, 5: rất năng động)
-
-    @Column(name = "typical_trainability")
-    Integer typicalTrainability; // 1-5 (1: khó huấn luyện, 5: dễ huấn luyện)
-
-    @Column(name = "good_with_children")
-    Integer goodWithChildren; // 1-5 (1: không tốt, 5: rất tốt với trẻ)
-
-    @Column(name = "good_with_pets")
-    Integer goodWithPets; // 1-5 (1: không tốt, 5: rất tốt với thú khác)
-
-    @Column(name = "barking_level")
-    Integer barkingLevel; // 1-5 (1: ít sủa, 5: sủa nhiều)
-
-    // === CARE REQUIREMENTS ===
-    @Column(name = "grooming_needs")
-    String groomingNeeds; // "low", "medium", "high"
-
-    @Column(name = "exercise_needs")
-    String exerciseNeeds; // "low", "medium", "high"
-
-    // === AI METADATA ===
-    @Column(name = "model_3d_template_url")
-    String model3dTemplateUrl; // URL file 3D template cho giống này
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    String[] aiPromptKeywords; // Keywords cho AI: ["năng động", "thân thiện", "lông xù"]
-
-    // === STATUS ===
-    @Column(name = "is_active")
-    Boolean isActive = true; // true, false
-
-    @Column(name = "display_order")
-    Integer displayOrder = 0; // Thứ tự hiển thị
+    @Column(name = "total_reviews")
+    Integer totalReviews = 0;
 
     // === MEDIA ===
     @Column(name = "image_url")
     String imageUrl; // Ảnh đại diện giống
 
-    @Column(name = "icon_url")
-    String iconUrl; // Icon nhỏ
+    // === AI METADATA ===
+    @Column(name = "model_3d_template_url")
+    String model3dTemplateUrl; // Template 3D cho giống (nếu có)
+
+    // === STATUS ===
+    @Column(name = "is_active")
+    Boolean isActive = true;
 
     // === AUDIT ===
     @Column(name = "created_at")
@@ -118,6 +83,8 @@ public class BreedEntity {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (totalReviews == null) totalReviews = 0;
+        if (avgRating == null) avgRating = 0.0;
     }
 
     @PreUpdate

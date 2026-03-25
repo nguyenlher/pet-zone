@@ -6,6 +6,8 @@ import com.petstore.petservice.dto.request.PetUpdateRequest;
 import com.petstore.petservice.dto.response.PetDetailResponse;
 import com.petstore.petservice.dto.response.PetResponse;
 import com.petstore.petservice.entity.PetEntity;
+import com.petstore.petservice.enums.PetStatus;
+import com.petstore.petservice.enums.PetType;
 import com.petstore.petservice.exception.ResourceNotFoundException;
 import com.petstore.petservice.mapper.PetMapper;
 import com.petstore.petservice.model.Pet;
@@ -21,7 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -42,60 +45,22 @@ public class PetServiceImpl implements PetService {
         Pet pet = Pet.builder()
                 .name(request.getName())
                 .petType(request.getPetType())
-                .breedPrimaryId(request.getBreedPrimaryId())
-                .breedSecondaryId(request.getBreedSecondaryId())
+                .breedId(request.getBreedId())
                 .gender(request.getGender())
                 .birthDate(request.getBirthDate())
-                .birthDateAccuracy(request.getBirthDateAccuracy())
                 .weight(request.getWeight())
                 .height(request.getHeight())
-                .length(request.getLength())
                 .colors(request.getColors())
                 .colorPattern(request.getColorPattern())
                 .furType(request.getFurType())
-                .faceShape(request.getFaceShape())
-                .eyeColor(request.getEyeColor())
-                .eyeShape(request.getEyeShape())
-                .earType(request.getEarType())
-                .muzzleLength(request.getMuzzleLength())
-                .bodyShape(request.getBodyShape())
-                .legLength(request.getLegLength())
-                .tailType(request.getTailType())
-                .distinctiveFeatures(request.getDistinctiveFeatures())
                 .healthStatus(request.getHealthStatus())
-                .spayedNeutered(request.getSpayedNeutered())
                 .vaccinated(request.getVaccinated())
-                .dewormed(request.getDewormed())
-                .lastCheckupDate(request.getLastCheckupDate())
-                .allergies(request.getAllergies())
-                .chronicConditions(request.getChronicConditions())
-                .energyLevel(request.getEnergyLevel())
-                .sociability(request.getSociability())
-                .childFriendly(request.getChildFriendly())
-                .petFriendly(request.getPetFriendly())
-                .trainability(request.getTrainability())
-                .barkingTendency(request.getBarkingTendency())
-                .separationAnxiety(request.getSeparationAnxiety())
-                .commands(request.getCommands())
-                .favoriteActivities(request.getFavoriteActivities())
                 .price(request.getPrice())
-                .originalPrice(request.getOriginalPrice())
-                .negotiable(request.getNegotiable())
-                .availableFrom(request.getAvailableFrom())
-                .availableTo(request.getAvailableTo())
-                .city(request.getCity())
-                .district(request.getDistrict())
-                .addressDetail(request.getAddressDetail())
-                .latitude(request.getLatitude())
-                .longitude(request.getLongitude())
-                .status(request.getStatus() != null ? request.getStatus() : "available")
-                .isFeatured(request.getIsFeatured() != null ? request.getIsFeatured() : false)
-                .featuredUntil(request.getFeaturedUntil())
-                .promotionBadges(request.getPromotionBadges())
-                .modelSourceImageUrl(request.getModelSourceImageUrl())
+                .description(request.getDescription())
+                .status(request.getStatus() != null ? request.getStatus() : PetStatus.DRAFT)
+                .thumbnailUrl(request.getThumbnailUrl())
+                .imageUrls(request.getImageUrls())
                 .viewCount(0)
-                .favoriteCount(0)
-                .inquiryCount(0)
                 .build();
         
         Pet savedPet = petRepository.save(pet);
@@ -112,55 +77,20 @@ public class PetServiceImpl implements PetService {
         Pet existingPet = petRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pet not found with ID: " + id));
         
-        // Update only non-null fields
         if (request.getName() != null) existingPet.setName(request.getName());
-        if (request.getBreedPrimaryId() != null) existingPet.setBreedPrimaryId(request.getBreedPrimaryId());
-        if (request.getBreedSecondaryId() != null) existingPet.setBreedSecondaryId(request.getBreedSecondaryId());
+        if (request.getBreedId() != null) existingPet.setBreedId(request.getBreedId());
         if (request.getWeight() != null) existingPet.setWeight(request.getWeight());
         if (request.getHeight() != null) existingPet.setHeight(request.getHeight());
-        if (request.getLength() != null) existingPet.setLength(request.getLength());
         if (request.getColors() != null) existingPet.setColors(request.getColors());
         if (request.getColorPattern() != null) existingPet.setColorPattern(request.getColorPattern());
         if (request.getFurType() != null) existingPet.setFurType(request.getFurType());
-        if (request.getFaceShape() != null) existingPet.setFaceShape(request.getFaceShape());
-        if (request.getEyeColor() != null) existingPet.setEyeColor(request.getEyeColor());
-        if (request.getEyeShape() != null) existingPet.setEyeShape(request.getEyeShape());
-        if (request.getEarType() != null) existingPet.setEarType(request.getEarType());
-        if (request.getMuzzleLength() != null) existingPet.setMuzzleLength(request.getMuzzleLength());
-        if (request.getBodyShape() != null) existingPet.setBodyShape(request.getBodyShape());
-        if (request.getLegLength() != null) existingPet.setLegLength(request.getLegLength());
-        if (request.getTailType() != null) existingPet.setTailType(request.getTailType());
-        if (request.getDistinctiveFeatures() != null) existingPet.setDistinctiveFeatures(request.getDistinctiveFeatures());
         if (request.getHealthStatus() != null) existingPet.setHealthStatus(request.getHealthStatus());
-        if (request.getSpayedNeutered() != null) existingPet.setSpayedNeutered(request.getSpayedNeutered());
         if (request.getVaccinated() != null) existingPet.setVaccinated(request.getVaccinated());
-        if (request.getDewormed() != null) existingPet.setDewormed(request.getDewormed());
-        if (request.getLastCheckupDate() != null) existingPet.setLastCheckupDate(request.getLastCheckupDate());
-        if (request.getAllergies() != null) existingPet.setAllergies(request.getAllergies());
-        if (request.getChronicConditions() != null) existingPet.setChronicConditions(request.getChronicConditions());
-        if (request.getEnergyLevel() != null) existingPet.setEnergyLevel(request.getEnergyLevel());
-        if (request.getSociability() != null) existingPet.setSociability(request.getSociability());
-        if (request.getChildFriendly() != null) existingPet.setChildFriendly(request.getChildFriendly());
-        if (request.getPetFriendly() != null) existingPet.setPetFriendly(request.getPetFriendly());
-        if (request.getTrainability() != null) existingPet.setTrainability(request.getTrainability());
-        if (request.getBarkingTendency() != null) existingPet.setBarkingTendency(request.getBarkingTendency());
-        if (request.getSeparationAnxiety() != null) existingPet.setSeparationAnxiety(request.getSeparationAnxiety());
-        if (request.getCommands() != null) existingPet.setCommands(request.getCommands());
-        if (request.getFavoriteActivities() != null) existingPet.setFavoriteActivities(request.getFavoriteActivities());
         if (request.getPrice() != null) existingPet.setPrice(request.getPrice());
-        if (request.getOriginalPrice() != null) existingPet.setOriginalPrice(request.getOriginalPrice());
-        if (request.getNegotiable() != null) existingPet.setNegotiable(request.getNegotiable());
-        if (request.getAvailableFrom() != null) existingPet.setAvailableFrom(request.getAvailableFrom());
-        if (request.getAvailableTo() != null) existingPet.setAvailableTo(request.getAvailableTo());
-        if (request.getCity() != null) existingPet.setCity(request.getCity());
-        if (request.getDistrict() != null) existingPet.setDistrict(request.getDistrict());
-        if (request.getAddressDetail() != null) existingPet.setAddressDetail(request.getAddressDetail());
-        if (request.getLatitude() != null) existingPet.setLatitude(request.getLatitude());
-        if (request.getLongitude() != null) existingPet.setLongitude(request.getLongitude());
+        if (request.getDescription() != null) existingPet.setDescription(request.getDescription());
         if (request.getStatus() != null) existingPet.setStatus(request.getStatus());
-        if (request.getIsFeatured() != null) existingPet.setIsFeatured(request.getIsFeatured());
-        if (request.getFeaturedUntil() != null) existingPet.setFeaturedUntil(request.getFeaturedUntil());
-        if (request.getPromotionBadges() != null) existingPet.setPromotionBadges(request.getPromotionBadges());
+        if (request.getThumbnailUrl() != null) existingPet.setThumbnailUrl(request.getThumbnailUrl());
+        if (request.getImageUrls() != null) existingPet.setImageUrls(request.getImageUrls());
         
         Pet updatedPet = petRepository.save(existingPet);
         log.info("Pet updated successfully: {}", id);
@@ -184,12 +114,8 @@ public class PetServiceImpl implements PetService {
     @Override
     @Transactional(readOnly = true)
     public Page<PetResponse> getAllAvailablePets(Pageable pageable) {
-        Page<PetEntity> petPage = jpaPetRepository.findLatestAvailable(pageable);
-        List<PetResponse> responses = petPage.getContent().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        
-        return new PageImpl<>(responses, pageable, petPage.getTotalElements());
+        Page<Pet> petPage = petRepository.findByStatus(PetStatus.AVAILABLE, pageable);
+        return petPage.map(this::mapToResponse);
     }
     
     @Override
@@ -204,42 +130,17 @@ public class PetServiceImpl implements PetService {
     @Override
     @Transactional(readOnly = true)
     public Page<PetResponse> searchPets(PetSearchRequest request, Pageable pageable) {
-        // Sử dụng Specification để xây dựng query động
         var specification = PetSpecification.withFilters(request);
         Page<PetEntity> petPage = jpaPetRepository.findAll(specification, pageable);
         
-        List<PetResponse> responses = petPage.getContent().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        
-        return new PageImpl<>(responses, pageable, petPage.getTotalElements());
+        return petPage.map(entity -> mapToResponse(petMapper.toDomain(entity)));
     }
     
     @Override
     @Transactional(readOnly = true)
-    public Page<PetResponse> getFeaturedPets(Pageable pageable) {
-        List<PetEntity> featuredPets = jpaPetRepository.findFeaturedPets();
-        
-        // Manual pagination (có thể tối ưu bằng query riêng)
-        int start = (int) pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), featuredPets.size());
-        
-        List<PetResponse> responses = featuredPets.subList(start, end).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        
-        return new PageImpl<>(responses, pageable, featuredPets.size());
-    }
-    
-    @Override
-    @Transactional(readOnly = true)
-    public Page<PetResponse> getPetsByType(String petType, Pageable pageable) {
-        Page<PetEntity> petPage = jpaPetRepository.findByPetType(petType, pageable);
-        List<PetResponse> responses = petPage.getContent().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-        
-        return new PageImpl<>(responses, pageable, petPage.getTotalElements());
+    public Page<PetResponse> getPetsByType(PetType petType, Pageable pageable) {
+        Page<Pet> petPage = petRepository.findByPetType(petType, pageable);
+        return petPage.map(this::mapToResponse);
     }
     
     @Override
@@ -251,52 +152,59 @@ public class PetServiceImpl implements PetService {
     @Override
     @Transactional
     public void incrementInquiryCount(UUID id) {
-        Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pet not found with ID: " + id));
-        pet.setInquiryCount(pet.getInquiryCount() + 1);
-        petRepository.save(pet);
+        // Có thể implement sau nếu cần
+        log.info("Inquiry recorded for pet: {}", id);
     }
     
-    @Override
-    @Transactional
-    public void toggleFavorite(UUID id, boolean increment) {
-        Pet pet = petRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Pet not found with ID: " + id));
-        
-        if (increment) {
-            pet.setFavoriteCount(pet.getFavoriteCount() + 1);
-        } else {
-            pet.setFavoriteCount(Math.max(0, pet.getFavoriteCount() - 1));
-        }
-        
-        petRepository.save(pet);
-    }
-    
-    // Helper methods để map entity/model sang response
-    private PetResponse mapToResponse(PetEntity entity) {
-        // TODO: Implement mapping logic
+    private PetResponse mapToResponse(Pet pet) {
         return PetResponse.builder()
-                .id(entity.getId())
-                .name(entity.getName())
-                .petType(entity.getPetType())
-                .gender(entity.getGender())
-                .weight(entity.getWeight())
-                .colors(entity.getColors())
-                .price(entity.getPrice())
-                .city(entity.getCity())
-                .status(entity.getStatus())
-                .isFeatured(entity.getIsFeatured())
-                .viewCount(entity.getViewCount())
-                .favoriteCount(entity.getFavoriteCount())
-                .has3DModel(entity.getModel3dUrlGlb() != null)
-                .createdAt(entity.getCreatedAt())
+                .id(pet.getId())
+                .name(pet.getName())
+                .petType(pet.getPetType())
+                .gender(pet.getGender())
+                .ageInMonths(calculateAgeInMonths(pet.getBirthDate()))
+                .weight(pet.getWeight())
+                .colors(pet.getColors())
+                .price(pet.getPrice())
+                .status(pet.getStatus())
+                .viewCount(pet.getViewCount())
+                .thumbnailUrl(pet.getThumbnailUrl())
+                .has3DModel(false) // Sẽ update sau khi có 3D model service
+                .createdAt(pet.getCreatedAt())
                 .build();
     }
     
     private PetDetailResponse mapToDetailResponse(Pet pet) {
-        // TODO: Implement full mapping logic
-        PetDetailResponse response = new PetDetailResponse();
-        // Map các trường từ pet sang response
-        return response;
+        return PetDetailResponse.builder()
+                .id(pet.getId())
+                .name(pet.getName())
+                .petType(pet.getPetType())
+                .breedId(pet.getBreedId())
+                .gender(pet.getGender())
+                .birthDate(pet.getBirthDate())
+                .ageInMonths(calculateAgeInMonths(pet.getBirthDate()))
+                .weight(pet.getWeight())
+                .height(pet.getHeight())
+                .colors(pet.getColors())
+                .colorPattern(pet.getColorPattern())
+                .furType(pet.getFurType())
+                .healthStatus(pet.getHealthStatus())
+                .vaccinated(pet.getVaccinated())
+                .price(pet.getPrice())
+                .description(pet.getDescription())
+                .status(pet.getStatus())
+                .thumbnailUrl(pet.getThumbnailUrl())
+                .imageUrls(pet.getImageUrls())
+                .aiDescription(pet.getAiDescription())
+                .viewCount(pet.getViewCount())
+                .createdAt(pet.getCreatedAt())
+                .updatedAt(pet.getUpdatedAt())
+                .build();
+    }
+    
+    private Integer calculateAgeInMonths(LocalDate birthDate) {
+        if (birthDate == null) return null;
+        Period period = Period.between(birthDate, LocalDate.now());
+        return period.getYears() * 12 + period.getMonths();
     }
 }

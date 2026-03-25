@@ -1,5 +1,6 @@
 package com.petstore.petservice.dto.response;
 
+import com.petstore.petservice.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,101 +17,43 @@ import java.util.UUID;
 public class PetDetailResponse {
     private UUID id;
     private String name;
-    private String petType;
+    private PetType petType;
     
     // Breed info
-    private UUID breedPrimaryId;
-    private String breedPrimaryName;
-    private UUID breedSecondaryId;
-    private String breedSecondaryName;
-    private Boolean isMixedBreed;
+    private UUID breedId;
+    private String breedName;
     
     // Basic info
-    private String gender;
+    private Gender gender;
     private LocalDate birthDate;
-    private Integer age;
+    private Integer ageInMonths;
     private Double weight;
     private Double height;
-    private Double length;
     private String[] colors;
-    private String colorPattern;
-    private String furType;
-    
-    // Face features
-    private String faceShape;
-    private String eyeColor;
-    private String eyeShape;
-    private String earType;
-    private String muzzleLength;
-    
-    // Body features
-    private String bodyShape;
-    private String legLength;
-    private String tailType;
-    private String[] distinctiveFeatures;
+    private ColorPattern colorPattern;
+    private FurType furType;
     
     // Health
-    private String healthStatus;
-    private Boolean spayedNeutered;
+    private HealthStatus healthStatus;
     private Boolean vaccinated;
-    private Boolean dewormed;
-    private LocalDate lastCheckupDate;
-    private String[] allergies;
-    private String[] chronicConditions;
     
-    // Behavior
-    private Integer energyLevel;
-    private Integer sociability;
-    private Integer childFriendly;
-    private Integer petFriendly;
-    private Integer trainability;
-    private Integer barkingTendency;
-    private Integer separationAnxiety;
-    private String[] commands;
-    private String[] favoriteActivities;
+    // Business
+    private Double price;
+    private String description;
+    private PetStatus status;
     
-    // AI 3D Model
-    private String model3dUrlGlb;
-    private String model3dUrlObj;
-    private String modelThumbnailUrl;
-    private String modelSourceImageUrl;
-    private Boolean modelAiGenerated;
-    private Double modelConfidenceScore;
-    private LocalDateTime modelGeneratedAt;
+    // Media
+    private String thumbnailUrl;
+    private String[] imageUrls;
     
     // AI Generated
     private String aiDescription;
-    private String[] aiTags;
-    private Double aiPriceSuggestion;
-    
-    // Price & Listing
-    private Double price;
-    private Double originalPrice;
-    private Boolean negotiable;
-    private LocalDate availableFrom;
-    private LocalDate availableTo;
-    
-    // Location
-    private String city;
-    private String district;
-    private String addressDetail;
-    private Double latitude;
-    private Double longitude;
-    
-    // Status
-    private String status;
-    private Boolean isFeatured;
-    private LocalDate featuredUntil;
-    private String[] promotionBadges;
     
     // Metrics
     private Integer viewCount;
-    private Integer favoriteCount;
-    private Integer inquiryCount;
     
-    // Media
-    private String[] imageUrls;
-    private String[] videoUrls;
+    // 3D Model
+    private Pet3DModelResponse model3d;
     
     // Audit
     private LocalDateTime createdAt;

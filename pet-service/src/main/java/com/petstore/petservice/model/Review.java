@@ -1,6 +1,5 @@
 package com.petstore.petservice.model;
 
-import com.petstore.petservice.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,23 +14,19 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class Breed {
+public class Review {
     UUID id;
-    String name;
-    PetType petType;
-    String description;
-    String originCountry;
-    Double avgWeightMin;
-    Double avgWeightMax;
-    Double avgHeightMin;
-    Double avgHeightMax;
-    String commonColors;
-    String lifeExpectancy;
-    Double avgRating;
-    Integer totalReviews;
-    String imageUrl;
-    String model3dTemplateUrl;
-    Boolean isActive;
+    UUID breedId;
+    UUID userId;
+    Integer rating; // 1-5 sao
+    String comment;
+    
+    // Đánh giá chi tiết
+    Integer ratingFriendly; // Thân thiện
+    Integer ratingHealth; // Sức khỏe tốt
+    Integer ratingTrain; // Dễ huấn luyện
+    Integer ratingKids; // Tốt với trẻ em
+    
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

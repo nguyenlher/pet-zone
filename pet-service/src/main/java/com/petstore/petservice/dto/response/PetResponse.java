@@ -1,5 +1,6 @@
 package com.petstore.petservice.dto.response;
 
+import com.petstore.petservice.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,20 +16,16 @@ import java.util.UUID;
 public class PetResponse {
     private UUID id;
     private String name;
-    private String petType;
+    private PetType petType;
     private String breedName;
-    private String gender;
-    private Integer age; // Tính từ birthDate
+    private Gender gender;
+    private Integer ageInMonths;
     private Double weight;
     private String[] colors;
     private Double price;
-    private String city;
-    private String status;
-    private Boolean isFeatured;
+    private PetStatus status;
     private Integer viewCount;
-    private Integer favoriteCount;
-    private String primaryImageUrl;
-    private String modelThumbnailUrl;
+    private String thumbnailUrl;
     private Boolean has3DModel;
     private LocalDateTime createdAt;
 }

@@ -1,5 +1,6 @@
 package com.petstore.petservice.dto.request;
 
+import com.petstore.petservice.enums.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,19 +13,17 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PetSearchRequest {
-    private String keyword; // Tìm theo tên
-    private String petType; // dog, cat
+    private String keyword;
+    private PetType petType;
     private UUID breedId;
-    private String gender;
+    private Gender gender;
     private Double minWeight;
     private Double maxWeight;
     private Double minPrice;
     private Double maxPrice;
-    private String city;
-    private String status;
-    private Boolean isFeatured;
-    private Integer minAge; // Tháng tuổi tối thiểu
-    private Integer maxAge; // Tháng tuổi tối đa
+    private PetStatus status;
+    private Integer minAge; // Months
+    private Integer maxAge; // Months
     private String[] colors;
     private String sortBy; // price, createdAt, viewCount
     private String sortDirection; // asc, desc

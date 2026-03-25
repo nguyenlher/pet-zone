@@ -1,3 +1,39 @@
 spring:
   application:
     name: pet-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/petstore
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+  
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${ISSUER_URI:http://localhost:8080/realms/petstore}
+          jwk-set-uri: ${JWK_SET_URI:http://localhost:8080/realms/petstore/protocol/openid-connect/certs}
+
+server:
+  port: ${PORT:8081}
+
+logging:
+  level:
+    com.petstore.petservice: DEBUG
+    org.springframework.security: DEBUG

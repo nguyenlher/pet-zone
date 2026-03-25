@@ -1,7 +1,20 @@
 package com.petstore.orderservice.service.impl;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
 import com.petstore.orderservice.dto.PetDTO;
-import com.petstore.orderservice.dto.UserDTO;
 import com.petstore.orderservice.dto.request.CancelOrderRequest;
 import com.petstore.orderservice.dto.request.CreateOrderRequest;
 import com.petstore.orderservice.dto.request.OrderItemRequest;
@@ -13,49 +26,36 @@ import com.petstore.orderservice.model.OrderItem;
 import com.petstore.orderservice.model.enums.OrderStatus;
 import com.petstore.orderservice.repository.OrderRepository;
 import com.petstore.orderservice.service.OrderService;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
-
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
-    private final RestClient userRestClient;
     private final RestClient petRestClient;
 
     private final OrderRepository orderRepository;
 
     public OrderServiceImpl(
-            @Qualifier("userRestClient") RestClient userRestClient,
             @Qualifier("petRestClient") RestClient petRestClient,
             OrderRepository orderRepository) {
-        this.userRestClient = userRestClient;
         this.petRestClient = petRestClient;
         this.orderRepository = orderRepository;
     }
 
     @Override
     public CreateOrderResponse createOrder(CreateOrderRequest request) {
-        UserDTO user = userRestClient.get()
-                .uri("/api/users/{id}", request.getUserId())
-                .retrieve()
-                .body(UserDTO.class);
 
         Set<UUID> petIds = request.getItems().stream()
                 .map(OrderItemRequest::getPetId)
                 .collect(Collectors.toSet());
 
-        Map<UUID, PetDTO> petDTOMap = new HashMap<>();
-        for (UUID petId : petIds) {
+        Map<UUID, PetDTO> petDTOMap = new ConcurrentHashMap<>();
+
+        petIds.parallelStream().forEach(petId -> {
             PetDTO pet = petRestClient.get()
                     .uri("/api/pets/{id}", petId)
                     .retrieve()
                     .body(PetDTO.class);
             if (pet != null) petDTOMap.put(petId, pet);
-        }
+        });
 
         List<OrderItem> orderItems = new ArrayList<>();
 

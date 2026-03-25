@@ -17,7 +17,7 @@ export default function PetDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const [viewMode, setViewMode] = useState(pet?.modelUrl ? '3d' : 'photos');
+  const [viewMode, setViewMode] = useState(pet?.modelUrl ? 'photos' : '3d');
 
   if (!pet) {
     return (
@@ -62,16 +62,16 @@ export default function PetDetail() {
             {pet.modelUrl && (
               <div className="detail-view-tabs">
                 <button
-                  className={`detail-view-tab ${viewMode === '3d' ? 'active' : ''}`}
-                  onClick={() => setViewMode('3d')}
-                >
-                  <Box size={16} /> 3D View
-                </button>
-                <button
                   className={`detail-view-tab ${viewMode === 'photos' ? 'active' : ''}`}
                   onClick={() => setViewMode('photos')}
                 >
                   <Image size={16} /> Photos
+                </button>
+                <button
+                    className={`detail-view-tab ${viewMode === '3d' ? 'active' : ''}`}
+                    onClick={() => setViewMode('3d')}
+                >
+                  <Box size={16} /> 3D View
                 </button>
               </div>
             )}

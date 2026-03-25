@@ -1,49 +1,51 @@
-package com.petstore.orderservice.entity;
+package com.petstore.paymentservice.entity;
 
-import com.petstore.orderservice.model.enums.OrderStatus;
+import com.petstore.paymentservice.model.enums.PaymentMethod;
+import com.petstore.paymentservice.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "payments")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class OrderEntity {
+public class PaymentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
+    @Column(name = "order_id")
+    UUID orderId;
+
     @Column(name = "user_id")
     UUID userId;
 
-    @Column(name = "pet_id")
-    UUID petId;
+    @Column(name = "transaction_id")
+    String transactionId;
 
-    @Column(name = "discount_amount")
-    double discountAmount;
+    @Column(name = "amount")
+    double amount;
 
-    @Column(name = "shipping_fee")
-    double shippingFee;
-
-    @Column(name = "address")
-    String address;
+    @Column(name = "method")
+    PaymentMethod method;
 
     @Column(name = "status")
-    OrderStatus status;
+    PaymentStatus status;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_At")
     LocalDateTime updatedAt;
 }

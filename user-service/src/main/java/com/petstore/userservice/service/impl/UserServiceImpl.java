@@ -1,16 +1,17 @@
 package com.petstore.userservice.service.impl;
 
+import java.time.LocalDateTime;
+
+import org.springframework.stereotype.Service;
+
 import com.petstore.userservice.dto.request.RegisterRequest;
 import com.petstore.userservice.dto.request.UpdateUserRequest;
 import com.petstore.userservice.model.User;
 import com.petstore.userservice.repository.UserRepository;
 import com.petstore.userservice.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

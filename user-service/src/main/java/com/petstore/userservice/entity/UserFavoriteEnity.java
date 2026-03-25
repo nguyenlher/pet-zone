@@ -1,7 +1,9 @@
 package com.petstore.userservice.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
@@ -9,9 +11,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "user_favorites")
 @Getter
 @Setter
-@Table(name = "user_favorites")
+@AllArgsConstructor
+@NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class UserFavoriteEnity {
     @Id

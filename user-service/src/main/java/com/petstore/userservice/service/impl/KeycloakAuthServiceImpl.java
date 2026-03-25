@@ -251,7 +251,7 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
     }
 
     @Override
-    public AuthResponse refreshToken(String refreshToken) {
+    public AuthResponse  refreshToken(String refreshToken) {
         try {
             String tokenUrl = serverUrl + "/realms/" + realm + "/protocol/openid-connect/token";
             log.info("Attempting to refresh token at URL: {}", tokenUrl);

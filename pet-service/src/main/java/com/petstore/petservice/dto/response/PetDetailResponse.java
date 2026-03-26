@@ -6,8 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,11 +19,11 @@ import java.util.UUID;
 public class PetDetailResponse {
     private UUID id;
     private String name;
-    private PetType petType;
     
     // Breed info
     private UUID breedId;
     private String breedName;
+    private BreedResponse breed;
     
     // Basic info
     private Gender gender;
@@ -29,8 +31,7 @@ public class PetDetailResponse {
     private Integer ageInMonths;
     private Double weight;
     private Double height;
-    private String[] colors;
-    private ColorPattern colorPattern;
+    private List<String> colors;
     private FurType furType;
     
     // Health
@@ -38,16 +39,12 @@ public class PetDetailResponse {
     private Boolean vaccinated;
     
     // Business
-    private Double price;
+    private BigDecimal price;
     private String description;
     private PetStatus status;
     
     // Media
-    private String thumbnailUrl;
-    private String[] imageUrls;
-    
-    // AI Generated
-    private String aiDescription;
+    private List<PetImageResponse> images;
     
     // Metrics
     private Integer viewCount;
@@ -58,4 +55,25 @@ public class PetDetailResponse {
     // Audit
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Helper
+    public String getThumbnailUrl() {
+        if (images != null && !images.isEmpty()) {
+            return images.stream()
+                    .filter(PetImageResponse::getIsThumbnail)
+                    .findFirst()
+                    .map(PetImageResponse::getImageUrl)
+                    .orElse(images.get(0).getImageUrl());
+        }
+        return null;
+    }
+    
+    public List<String> getImageUrls() {
+        if (images != null) {
+            return images.stream()
+                    .map(PetImageResponse::getImageUrl)
+                    .toList();
+        }
+        return List.of();
+    }
 }

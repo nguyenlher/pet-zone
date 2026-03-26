@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -31,28 +33,6 @@ public class BreedEntity {
     @Column(length = 2000)
     String description; // Mô tả về giống
 
-    @Column(name = "origin_country")
-    String originCountry; // "Việt Nam", "Mỹ"
-
-    // === PHYSICAL CHARACTERISTICS ===
-    @Column(name = "avg_weight_min")
-    Double avgWeightMin; // kg
-
-    @Column(name = "avg_weight_max")
-    Double avgWeightMax; // kg
-
-    @Column(name = "avg_height_min")
-    Double avgHeightMin; // cm
-
-    @Column(name = "avg_height_max")
-    Double avgHeightMax; // cm
-
-    @Column(name = "common_colors")
-    String commonColors; // "Vàng, đen, trắng"
-
-    @Column(name = "life_expectancy")
-    String lifeExpectancy; // "10-15 năm"
-
     // === REVIEW STATS (TỔNG HỢP TỪ BẢNG REVIEW) ===
     @Column(name = "avg_rating")
     Double avgRating = 0.0;
@@ -64,13 +44,13 @@ public class BreedEntity {
     @Column(name = "image_url")
     String imageUrl; // Ảnh đại diện giống
 
-    // === AI METADATA ===
-    @Column(name = "model_3d_template_url")
-    String model3dTemplateUrl; // Template 3D cho giống (nếu có)
-
     // === STATUS ===
     @Column(name = "is_active")
     Boolean isActive = true;
+
+    // === RELATIONSHIPS ===
+    @OneToMany(mappedBy = "breed", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    List<BreedReviewEntity> reviews = new ArrayList<>();
 
     // === AUDIT ===
     @Column(name = "created_at")
@@ -90,5 +70,10 @@ public class BreedEntity {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void updateReviewStats(Double newAvgRating, Integer newTotalReviews) {
+        this.avgRating = newAvgRating;
+        this.totalReviews = newTotalReviews;
     }
 }

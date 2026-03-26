@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -14,17 +16,16 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PetSearchRequest {
     private String keyword;
-    private PetType petType;
     private UUID breedId;
     private Gender gender;
     private Double minWeight;
     private Double maxWeight;
-    private Double minPrice;
-    private Double maxPrice;
+    private BigDecimal minPrice;
+    private BigDecimal maxPrice;
     private PetStatus status;
     private Integer minAge; // Months
     private Integer maxAge; // Months
-    private String[] colors;
+    private List<String> colors;
     private String sortBy; // price, createdAt, viewCount
     private String sortDirection; // asc, desc
 }

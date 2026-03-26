@@ -14,19 +14,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
-public class Review {
+public class BreedReview {
     UUID id;
     UUID breedId;
+    Breed breed; //optional
     UUID userId;
     Integer rating; // 1-5 sao
     String comment;
-    
-    // Đánh giá chi tiết
-    Integer ratingFriendly; // Thân thiện
-    Integer ratingHealth; // Sức khỏe tốt
-    Integer ratingTrain; // Dễ huấn luyện
-    Integer ratingKids; // Tốt với trẻ em
-    
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

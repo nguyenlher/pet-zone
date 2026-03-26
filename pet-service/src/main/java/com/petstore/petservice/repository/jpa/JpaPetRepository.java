@@ -17,7 +17,7 @@ public interface JpaPetRepository extends JpaRepository<PetEntity, UUID>, JpaSpe
     
     Page<PetEntity> findByStatus(PetStatus status, Pageable pageable);
     
-    Page<PetEntity> findByPetType(PetType petType, Pageable pageable);
+    // Page<PetEntity> findByPetType(PetType petType, Pageable pageable);
     
     Page<PetEntity> findByBreedId(UUID breedId, Pageable pageable);
     

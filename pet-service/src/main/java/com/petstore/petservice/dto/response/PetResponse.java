@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -16,13 +18,12 @@ import java.util.UUID;
 public class PetResponse {
     private UUID id;
     private String name;
-    private PetType petType;
     private String breedName;
     private Gender gender;
     private Integer ageInMonths;
     private Double weight;
-    private String[] colors;
-    private Double price;
+    private List<String> colors;
+    private BigDecimal price;
     private PetStatus status;
     private Integer viewCount;
     private String thumbnailUrl;

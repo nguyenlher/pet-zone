@@ -1,51 +1,66 @@
 package com.petstore.paymentservice.entity;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.petstore.paymentservice.model.enums.PaymentMethod;
 import com.petstore.paymentservice.model.enums.PaymentStatus;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import org.springframework.cglib.core.Local;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
 @Table(name = "payments")
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class PaymentEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    @Column(name = "order_id")
+    @Column(name = "order_id", nullable = false)
     UUID orderId;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     UUID userId;
 
-    @Column(name = "transaction_id")
+    @Column(name = "transaction_id", unique = true)
     String transactionId;
 
-    @Column(name = "amount")
+    @Column(name = "amount", nullable = false)
     double amount;
 
-    @Column(name = "method")
-    PaymentMethod method;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", nullable = false)
+    PaymentMethod paymentMethod;
 
-    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
     PaymentStatus status;
+
+    @Column(name = "expired_at")
+    LocalDateTime expiredAt;
 
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
-    @Column(name = "updated_At")
+    @Column(name = "updated_at")
     LocalDateTime updatedAt;
 }

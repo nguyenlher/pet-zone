@@ -1,6 +1,5 @@
 package com.petstore.paymentservice.mapper;
 
-import ch.qos.logback.core.model.ModelConstants;
 import com.petstore.paymentservice.entity.PaymentEntity;
 import com.petstore.paymentservice.model.Payment;
 import org.mapstruct.Mapper;
@@ -9,7 +8,10 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import java.util.List;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(
+    componentModel = MappingConstants.ComponentModel.SPRING,
+    nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
+)
 public interface PaymentMapper {
     PaymentEntity toEntity(Payment payment);
     Payment toDomain(PaymentEntity entity);

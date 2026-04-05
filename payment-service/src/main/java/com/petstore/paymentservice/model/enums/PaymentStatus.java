@@ -2,7 +2,8 @@ package com.petstore.paymentservice.model.enums;
 
 public enum PaymentStatus {
     PENDING,
-    COMPLETED,
+    SUCCESS,
     FAILED,
-    REFUNDED
+    REFUNDED,
+    CANCELLED
 }

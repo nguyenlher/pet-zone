@@ -1,12 +1,13 @@
 package com.petstore.petservice.entity;
 
-import com.petstore.petservice.enums.*;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+
+import com.petstore.petservice.model.enums.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,7 +31,6 @@ public class PetEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
 
-    // ========== BASIC INFO ==========
     @Column(nullable = false)
     String name;
 

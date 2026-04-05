@@ -1,15 +1,15 @@
 package com.petstore.petservice.model;
 
-import com.petstore.petservice.enums.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import com.petstore.petservice.model.enums.PetType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -18,16 +18,22 @@ import java.util.UUID;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class Breed {
     UUID id;
+
     String name;
+
     PetType petType;
+
     String description;
+
     Double avgRating;
+
     Integer totalReviews;
-    String imageUrl;
+
+    String ImageUrl;
+
     Boolean isActive;
+
     LocalDateTime createdAt;
+
     LocalDateTime updatedAt;
-    
-    //opional
-    List<BreedReview> reviews;
 }

@@ -1,6 +1,5 @@
 package com.petstore.petservice.entity;
 
-import com.petstore.petservice.enums.*;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -9,6 +8,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import com.petstore.petservice.model.enums.PetType;
 
 @Entity
 @Table(name = "breeds", indexes = {

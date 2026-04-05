@@ -1,13 +1,16 @@
 package com.petstore.petservice.model;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -16,9 +19,16 @@ import java.util.UUID;
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class PetImage {
     UUID id;
-    UUID petId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pet_id", nullable = false)
+    Pet pet;
+
     String imageUrl;
+
     Boolean isThumbnail;
+
     Integer sortOrder;
+    
     LocalDateTime createdAt;
 }

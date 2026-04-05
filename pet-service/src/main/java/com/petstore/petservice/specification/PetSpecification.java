@@ -2,7 +2,8 @@ package com.petstore.petservice.specification;
 
 import com.petstore.petservice.dto.request.PetSearchRequest;
 import com.petstore.petservice.entity.PetEntity;
-import com.petstore.petservice.enums.PetStatus;
+import com.petstore.petservice.model.enums.PetStatus;
+
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 

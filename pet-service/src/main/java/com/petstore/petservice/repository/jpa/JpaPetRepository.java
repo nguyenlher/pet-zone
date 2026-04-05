@@ -1,8 +1,9 @@
 package com.petstore.petservice.repository.jpa;
 
 import com.petstore.petservice.entity.PetEntity;
-import com.petstore.petservice.enums.PetStatus;
-import com.petstore.petservice.enums.PetType;
+import com.petstore.petservice.model.enums.PetStatus;
+import com.petstore.petservice.model.enums.PetType;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

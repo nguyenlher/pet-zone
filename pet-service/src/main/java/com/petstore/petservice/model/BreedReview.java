@@ -1,13 +1,13 @@
 package com.petstore.petservice.model;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -17,10 +17,10 @@ import java.util.UUID;
 public class BreedReview {
     UUID id;
     UUID breedId;
-    Breed breed; //optional
     UUID userId;
-    Integer rating; // 1-5 sao
+    Boolean verifiedPurchase;
+    Integer rating;
     String comment;
+    Integer likes;
     LocalDateTime createdAt;
-    LocalDateTime updatedAt;
 }

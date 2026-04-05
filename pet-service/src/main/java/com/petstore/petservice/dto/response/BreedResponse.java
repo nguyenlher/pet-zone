@@ -1,6 +1,5 @@
 package com.petstore.petservice.dto.response;
 
-import com.petstore.petservice.enums.PetType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import com.petstore.petservice.model.enums.PetType;
 
 @Data
 @Builder

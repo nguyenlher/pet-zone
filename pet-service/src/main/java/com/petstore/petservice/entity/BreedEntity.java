@@ -1,80 +1,62 @@
 package com.petstore.petservice.entity;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import com.petstore.petservice.model.enums.PetType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(name = "breeds", indexes = {
-        @Index(name = "idx_breeds_pet_type", columnList = "pet_type"),
-        @Index(name = "idx_breeds_name", columnList = "name")
-})
-@Data
+@Getter
+@Setter
+@Builder
+@Table(name = "breeds")
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class BreedEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id")
     UUID id;
-
-    @Column(nullable = false)
-    String name; // "Chó Phốc", "Mèo Ba Tư"
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "pet_type", nullable = false)
-    PetType petType;
-
-    @Column(length = 2000)
-    String description; // Mô tả về giống
-
-    // === REVIEW STATS (TỔNG HỢP TỪ BẢNG REVIEW) ===
+    
+    @Column(name = "name")
+    String name;
+    
+    @Column(name = "pet_type_id")
+    UUID petTypeId;
+    
+    @Column(name = "description")
+    String description;
+    
     @Column(name = "avg_rating")
-    Double avgRating = 0.0;
-
+    Double avgRating;
+    
     @Column(name = "total_reviews")
+    @Builder.Default
     Integer totalReviews = 0;
-
-    // === MEDIA ===
+    
     @Column(name = "image_url")
-    String imageUrl; // Ảnh đại diện giống
-
-    // === STATUS ===
+    String imageUrl;
+    
     @Column(name = "is_active")
+    @Builder.Default
     Boolean isActive = true;
-
-    // === RELATIONSHIPS ===
-    @OneToMany(mappedBy = "breed", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<BreedReviewEntity> reviews = new ArrayList<>();
-
-    // === AUDIT ===
+    
     @Column(name = "created_at")
     LocalDateTime createdAt;
-
+    
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-        if (totalReviews == null) totalReviews = 0;
-        if (avgRating == null) avgRating = 0.0;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
-
-    public void updateReviewStats(Double newAvgRating, Integer newTotalReviews) {
-        this.avgRating = newAvgRating;
-        this.totalReviews = newTotalReviews;
-    }
 }

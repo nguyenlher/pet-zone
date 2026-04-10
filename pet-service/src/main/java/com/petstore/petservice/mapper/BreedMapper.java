@@ -13,6 +13,6 @@ import java.util.List;
 public interface BreedMapper {
     BreedEntity toEntity(Breed breed);
     Breed toDomain(BreedEntity entity);
-    List<BreedEntity> toEntity(List<Breed> breeds);
-    List<Breed> toDomain(List<BreedEntity> entities);
+    List<BreedEntity> toEntityList(List<Breed> breeds);
+    List<Breed> toDomainList(List<BreedEntity> entities);
 }

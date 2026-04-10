@@ -1,3 +1,125 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/petstore
+
+  cloud:
+    gateway:
+      routes:
+        # user-service routes
+        - id: user-service-public
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/users/public/**
+          filters:
+            - RewritePath=/api/users/public/(?<segment>.*), /api/public/$\{segment}
+
+        - id: user-service-private
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/users/private/**
+          filters:
+            - RewritePath=/api/users/private/(?<segment>.*), /api/private/$\{segment}
+
+        # pet-service routes
+        - id: pet-service-public
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/pets/public/**
+          filters:
+            - RewritePath=/api/pets/public/(?<segment>.*), /api/public/$\{segment}
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 1
+                '[redis-rate-limiter.burstCapacity]': 5
+                '[redis-rate-limiter.requestedTokens]': 1
+
+        - id: pet-service-private
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/pets/private/**
+          filters:
+            - RewritePath=/api/pets/private/(?<segment>.*), /api/private/$\{segment}
+
+        # order-service routes
+        - id: order-service-public
+          uri: http://order-service:8084
+          predicates:
+            - Path=/api/orders/public/**
+          filters:
+            - RewritePath=/api/orders/public/(?<segment>.*), /api/public/$\{segment}
+
+        - id: order-service-private
+          uri: http://order-service:8084
+          predicates:
+            - Path=/api/orders/private/**
+          filters:
+            - RewritePath=/api/orders/private/(?<segment>.*), /api/private/$\{segment}
+
+        # payment-service routes
+        - id: payment-service-public
+          uri: http://payment-service:8085
+          predicates:
+            - Path=/api/payments/public/**
+          filters:
+            - RewritePath=/api/payments/public/(?<segment>.*), /api/public/$\{segment}
+
+        - id: payment-service-private
+          uri: http://payment-service:8085
+          predicates:
+            - Path=/api/payments/private/**
+          filters:
+            - RewritePath=/api/payments/private/(?<segment>.*), /api/private/$\{segment}
+
+        # notification-service routes
+        - id: notification-service-public
+          uri: http://notification-service:8086
+          predicates:
+            - Path=/api/notifications/public/**
+          filters:
+            - RewritePath=/api/notifications/public/(?<segment>.*), /api/public/$\{segment}
+
+        - id: notification-service-private
+          uri: http://notification-service:8086
+          predicates:
+            - Path=/api/notifications/private/**
+          filters:
+            - RewritePath=/api/notifications/private/(?<segment>.*), /api/private/$\{segment}
+
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: false
+            maxAge: 3600
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 60000
+      connect-timeout: 10000
+
+jwt:
+  secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+
+logging:
+  level:
+    '[org.springframework.cloud.gateway]': DEBUG
+    '[reactor.netty]': DEBUG

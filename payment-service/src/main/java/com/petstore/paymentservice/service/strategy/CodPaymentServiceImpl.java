@@ -1,4 +1,4 @@
-package com.petstore.paymentservice.integration;
+package com.petstore.paymentservice.service.strategy;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -16,7 +16,6 @@ import com.petstore.paymentservice.model.Payment;
 import com.petstore.paymentservice.model.enums.PaymentMethod;
 import com.petstore.paymentservice.model.enums.PaymentStatus;
 import com.petstore.paymentservice.repository.PaymentRepository;
-import com.petstore.paymentservice.service.strategy.PaymentStrategy;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,15 +64,13 @@ public class CodPaymentServiceImpl implements PaymentStrategy {
         return PaymentResponse.builder()
                 .id(saved.getId())
                 .orderId(order.id())
-                .paymentUrl(null) // COD does not require redirection to a payment gateway
+                .paymentUrl(null)
                 .status(PaymentStatus.PENDING)
                 .build();
     }
 
     @Override
     public PaymentCallbackResponse handleReturn(Map<String, String> params) {
-        // COD does not have automated hooks like VNPay.
-        // Usually, the shipper or admin updates the payment status manually using a different API endpoint.
         log.warn("COD does not support automatic return callbacks. Params received: {}", params);
         
         return PaymentCallbackResponse.builder()

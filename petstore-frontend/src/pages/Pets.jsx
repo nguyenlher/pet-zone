@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { SlidersHorizontal, Grid3X3, List, Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { pets, categories } from '../data/mockData';
+import { usePets, usePetTypes } from '../hooks/usePets';
 import PetCard from '../components/PetCard';
 import '../styles/pages/Pets.css';
 
@@ -15,39 +15,50 @@ export default function Pets() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('featured');
-  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const [priceRange, setPriceRange] = useState([0, 50000000]); // VND
   const [showFilters, setShowFilters] = useState(false);
+  const [page, setPage] = useState(0);
 
-  const activeCategory = searchParams.get('category') || 'all';
+  const activeType = searchParams.get('type') || 'all';
+  const { pets, loading: petsLoading, totalPages } = usePets('AVAILABLE', page, 50);
+  const { petTypes, loading: typesLoading } = usePetTypes();
 
-  const setCategory = (slug) => {
-    if (slug === 'all') {
-      searchParams.delete('category');
+  const setType = (typeId) => {
+    if (typeId === 'all') {
+      searchParams.delete('type');
     } else {
-      searchParams.set('category', slug);
+      searchParams.set('type', typeId);
     }
     setSearchParams(searchParams);
+    setPage(0);
   };
 
   const filteredPets = useMemo(() => {
     let result = [...pets];
 
-    if (activeCategory !== 'all') {
-      result = result.filter(p => p.category === activeCategory);
+    if (activeType !== 'all') {
+      // Filter by type will be done via API in future
+      // For now, we show all pets
     }
 
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(p => p.name.toLowerCase().includes(q) || p.breed.toLowerCase().includes(q));
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(q) || 
+        (p.breedName && p.breedName.toLowerCase().includes(q))
+      );
     }
 
-    result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1]);
+    result = result.filter(p => {
+      const price = Number(p.price);
+      return price >= priceRange[0] && price <= priceRange[1];
+    });
 
     switch (sort) {
-      case 'price-asc': result.sort((a, b) => a.price - b.price); break;
-      case 'price-desc': result.sort((a, b) => b.price - a.price); break;
+      case 'price-asc': result.sort((a, b) => Number(a.price) - Number(b.price)); break;
+      case 'price-desc': result.sort((a, b) => Number(b.price) - Number(a.price)); break;
       case 'name': result.sort((a, b) => a.name.localeCompare(b.name)); break;
-      case 'rating': result.sort((a, b) => b.rating - a.rating); break;
+      case 'views': result.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)); break;
       default: result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     }
 
@@ -61,7 +72,7 @@ export default function Pets() {
         <motion.div className="pets-header" initial="hidden" animate="visible" variants={fadeInUp}>
           <div>
             <h1 className="page-title">
-              {activeCategory === 'all' ? 'All Pets' : categories.find(c => c.slug === activeCategory)?.name || 'Pets'}
+              {activeType === 'all' ? 'All Pets' : petTypes.find(t => t.id === activeType)?.name || 'Pets'}
             </h1>
             <p className="page-subtitle">
               {filteredPets.length} pet{filteredPets.length !== 1 ? 's' : ''} available
@@ -93,7 +104,7 @@ export default function Pets() {
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
               <option value="name">Name A-Z</option>
-              <option value="rating">Top Rated</option>
+              <option value="views">Most Viewed</option>
             </select>
             <button className="filter-toggle btn btn-secondary btn-sm" onClick={() => setShowFilters(!showFilters)}>
               <SlidersHorizontal size={16} /> Filters
@@ -105,12 +116,12 @@ export default function Pets() {
         {showFilters && (
           <motion.div className="filter-bar animate-slide-down" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
             <div className="filter-group">
-              <label>Price Range: ${priceRange[0]} - ${priceRange[1]}</label>
+              <label>Price Range: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceRange[0])} - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceRange[1])}</label>
               <input
                 type="range"
                 min="0"
-                max="5000"
-                step="50"
+                max="50000000"
+                step="1000000"
                 value={priceRange[1]}
                 onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
                 className="range-input"
@@ -122,19 +133,18 @@ export default function Pets() {
         {/* Category tabs */}
         <motion.div className="category-tabs" initial="hidden" animate="visible" variants={fadeInUp} custom={2}>
           <button
-            className={`category-tab ${activeCategory === 'all' ? 'active' : ''}`}
-            onClick={() => setCategory('all')}
+            className={`category-tab ${activeType === 'all' ? 'active' : ''}`}
+            onClick={() => setType('all')}
           >
             All
           </button>
-          {categories.map(cat => (
+          {petTypes.map(type => (
             <button
-              key={cat.id}
-              className={`category-tab ${activeCategory === cat.slug ? 'active' : ''}`}
-              onClick={() => setCategory(cat.slug)}
+              key={type.id}
+              className={`category-tab ${activeType === type.id ? 'active' : ''}`}
+              onClick={() => setType(type.id)}
             >
-              {cat.name}
-              <span className="tab-count">{cat.count}</span>
+              {type.name}
             </button>
           ))}
         </motion.div>

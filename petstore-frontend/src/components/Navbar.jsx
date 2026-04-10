@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, ChevronDown, Search, Heart, LogOut, Package, Settings } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { categories } from '../data/mockData';
+import { usePetTypes } from '../hooks/usePets';
 import '../styles/components/Navbar.css';
 
 export default function Navbar() {
@@ -13,6 +13,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { cartCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
+  const { petTypes } = usePetTypes();
   const navigate = useNavigate();
   const petRef = useRef(null);
   const profileRef = useRef(null);
@@ -70,15 +71,14 @@ export default function Navbar() {
                     <Link to="/pets" className="dropdown-item" onClick={() => { setPetDropdown(false); setMobileOpen(false); }}>
                       <span className="dropdown-icon">🐾</span> All Pets
                     </Link>
-                    {categories.map(cat => (
+                    {petTypes.map(type => (
                       <Link
-                        key={cat.id}
-                        to={`/pets?category=${cat.slug}`}
+                        key={type.id}
+                        to={`/pets?type=${type.id}`}
                         className="dropdown-item"
                         onClick={() => { setPetDropdown(false); setMobileOpen(false); }}
                       >
-                        <span className="dropdown-count">{cat.count}</span>
-                        {cat.name}
+                        {type.name}
                       </Link>
                     ))}
                   </div>

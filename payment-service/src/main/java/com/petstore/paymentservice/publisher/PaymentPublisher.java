@@ -5,4 +5,6 @@ import com.petstore.paymentservice.model.Payment;
 public interface PaymentPublisher {
     void publishPaymentSucceeded(Payment payment);
     void publishPaymentFailed(Payment payment, String reason);
+    void publishPaymentCanceled(Payment payment);
 }
+

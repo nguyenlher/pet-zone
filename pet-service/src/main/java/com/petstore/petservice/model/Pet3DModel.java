@@ -1,13 +1,13 @@
 package com.petstore.petservice.model;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -19,9 +19,5 @@ public class Pet3DModel {
     UUID petId;
     String modelUrl;
     String sourceImageUrl;
-    String thumbnailUrl;
-    Boolean aiGenerated;
-    Double confidenceScore;
-    LocalDateTime generatedAt;
     LocalDateTime createdAt;
 }

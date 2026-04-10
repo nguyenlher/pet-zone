@@ -2,8 +2,20 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, ChevronDown, ChevronUp, Search, Calendar, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { sampleOrders } from '../data/mockData';
 import '../styles/pages/OrderHistory.css';
+
+// Mock orders data (temporary until order service is integrated)
+const sampleOrders = [
+  {
+    id: 'ORD-2024-001', date: '2024-12-15', status: 'Delivered', total: 885,
+    items: [
+      { id: 1, name: 'Buddy - Golden Retriever', price: 850, quantity: 1, image: 'https://images.unsplash.com/photo-1633722715463-d30f4f325e24?w=100&h=100&fit=crop' },
+      { id: 101, name: 'Premium Dog Food (5kg)', price: 35, quantity: 1, image: 'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?w=100&h=100&fit=crop' },
+    ],
+    shipping: { name: 'Sarah Johnson', address: '123 Pet Street, New York, NY 10001', phone: '+1 234 567 8900' },
+    payment: 'Credit Card (**** 4242)',
+  },
+];
 
 const statusColors = {
   'Pending': 'badge-warning',

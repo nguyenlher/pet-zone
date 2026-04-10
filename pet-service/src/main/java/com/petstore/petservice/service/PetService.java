@@ -1,27 +1,23 @@
 package com.petstore.petservice.service;
 
-import com.petstore.petservice.dto.request.PetCreateRequest;
-import com.petstore.petservice.dto.request.PetSearchRequest;
-import com.petstore.petservice.dto.request.PetUpdateRequest;
-import com.petstore.petservice.dto.response.PetDetailResponse;
-import com.petstore.petservice.dto.response.PetResponse;
+import java.util.UUID;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.UUID;
+import com.petstore.petservice.dto.request.PetCreateRequest;
+import com.petstore.petservice.dto.request.PetUpdateRequest;
+import com.petstore.petservice.dto.response.PetDetailResponse;
+import com.petstore.petservice.dto.response.PetResponse;
+import com.petstore.petservice.model.enums.PetStatus;
 
 public interface PetService {
-    // Admin endpoints
-    PetDetailResponse createPet(PetCreateRequest request, String username);
-    PetDetailResponse updatePet(UUID id, PetUpdateRequest request, String username);
-    void deletePet(UUID id);
-    
-    // Public endpoints
-    Page<PetResponse> getAllAvailablePets(Pageable pageable);
-    PetDetailResponse getPetById(UUID id);
-    Page<PetResponse> searchPets(PetSearchRequest request, Pageable pageable);
-    
-    // Utility methods
+    PetDetailResponse create(PetCreateRequest request);
+    PetDetailResponse update(UUID id, PetUpdateRequest request);
+    PetDetailResponse getById(UUID id);
+    Page<PetResponse> getByStatus(PetStatus status, Pageable pageable);
     void incrementViewCount(UUID id);
-    void incrementInquiryCount(UUID id);
+    void updateStatus(UUID id, PetStatus status);
+    boolean checkAvailability(UUID id);
+    void delete(UUID id);
 }

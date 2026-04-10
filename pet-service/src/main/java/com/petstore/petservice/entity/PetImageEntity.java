@@ -1,61 +1,53 @@
 package com.petstore.petservice.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
-import java.util.Objects;
-import java.util.UUID;
-
 @Entity
-@Table(name = "pet_images", indexes = {
-        @Index(name = "idx_pet_image_pet_id", columnList = "pet_id"),
-        @Index(name = "idx_pet_image_thumbnail", columnList = "is_thumbnail")
-})
 @Getter
 @Setter
+@Builder
+@Table(name = "pet_images")
+@NoArgsConstructor
+@AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class PetImageEntity {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id")
     UUID id;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pet_id", nullable = false)
+    @JoinColumn(name = "pet_id")
     PetEntity pet;
-
-    @Column(name = "image_url", nullable = false, length = 500)
+    
+    @Column(name = "image_url")
     String imageUrl;
-
+    
     @Column(name = "is_thumbnail")
+    @Builder.Default
     Boolean isThumbnail = false;
-
-    @Column(name = "sort_order")
-    Integer sortOrder = 0;
-
+    
+    @Column(name = "display_order")
+    Integer displayOrder;
+    
     @Column(name = "created_at")
     LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        if (sortOrder == null) sortOrder = 0;
-        if (isThumbnail == null) isThumbnail = false;
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PetImageEntity)) return false;
-        PetImageEntity that = (PetImageEntity) o;
-        return id != null && Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }

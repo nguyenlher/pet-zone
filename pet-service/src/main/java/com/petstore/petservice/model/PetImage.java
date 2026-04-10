@@ -28,7 +28,7 @@ public class PetImage {
 
     Boolean isThumbnail;
 
-    Integer sortOrder;
+    Integer displayOrder;
     
     LocalDateTime createdAt;
 }

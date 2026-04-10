@@ -1,15 +1,25 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { currentUser } from '../data/mockData';
 
 const AuthContext = createContext();
 
+// Mock user data (temporary until auth service is integrated)
+const mockCurrentUser = {
+  id: 1,
+  name: 'Sarah Johnson',
+  email: 'sarah.johnson@email.com',
+  phone: '+1 234 567 8900',
+  avatar: 'https://i.pravatar.cc/200?img=1',
+  address: '123 Pet Street, New York, NY 10001',
+  joinDate: '2024-06-15',
+};
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(currentUser);
+  const [user, setUser] = useState(mockCurrentUser);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   const login = useCallback((email, password) => {
-    // Mock login
-    setUser(currentUser);
+    // Mock login - will be replaced with actual API call
+    setUser(mockCurrentUser);
     setIsAuthenticated(true);
   }, []);
 
@@ -19,8 +29,13 @@ export function AuthProvider({ children }) {
   }, []);
 
   const register = useCallback((data) => {
-    // Mock register
-    const newUser = { ...currentUser, name: `${data.firstName} ${data.lastName}`, email: data.email, phone: data.phone };
+    // Mock register - will be replaced with actual API call
+    const newUser = { 
+      ...mockCurrentUser, 
+      name: `${data.firstName} ${data.lastName}`, 
+      email: data.email, 
+      phone: data.phone 
+    };
     setUser(newUser);
     setIsAuthenticated(true);
   }, []);

@@ -1,23 +1,22 @@
 services:
-
-  keycloak-db:
-    image: postgres:14
-    container_name: keycloak-db
+  postgres-keycloak:
+    image: postgres:16-alpine
+    container_name: postgres-keycloak
     environment:
-      POSTGRES_DB: keycloak
+      POSTGRES_DB: keycloak_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5439:5432"
     volumes:
-      - keycloak-db-data:/var/lib/postgresql/data
+      - postgres-keycloak-data:/var/lib/postgresql/data
     networks:
       - petstore-network
     restart: unless-stopped
 
   postgres-user:
-    image: postgres:14
-    container_name: user-db
+    image: postgres:16-alpine
+    container_name: postgres-user
     environment:
       POSTGRES_DB: user_db
       POSTGRES_USER: postgres
@@ -25,14 +24,14 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - user-db-data:/var/lib/postgresql/data
+      - postgres-user-data:/var/lib/postgresql/data
     networks:
       - petstore-network
     restart: unless-stopped
 
   postgres-pet:
-    image: postgres:14
-    container_name: pet-db
+    image: postgres:16-alpine
+    container_name: postgres-pet
     environment:
       POSTGRES_DB: pet_db
       POSTGRES_USER: postgres
@@ -40,14 +39,14 @@ services:
     ports:
       - "5434:5432"
     volumes:
-      - pet-db-data:/var/lib/postgresql/data
+      - postgres-pet-data:/var/lib/postgresql/data
     networks:
       - petstore-network
     restart: unless-stopped
 
   postgres-order:
-    image: postgres:14
-    container_name: order-db
+    image: postgres:16-alpine
+    container_name: postgres-order
     environment:
       POSTGRES_DB: order_db
       POSTGRES_USER: postgres
@@ -55,14 +54,14 @@ services:
     ports:
       - "5435:5432"
     volumes:
-      - order-db-data:/var/lib/postgresql/data
+      - postgres-order-data:/var/lib/postgresql/data
     networks:
       - petstore-network
     restart: unless-stopped
 
   postgres-payment:
-    image: postgres:14
-    container_name: payment-db
+    image: postgres:16-alpine
+    container_name: postgres-payment
     environment:
       POSTGRES_DB: payment_db
       POSTGRES_USER: postgres
@@ -70,14 +69,14 @@ services:
     ports:
       - "5436:5432"
     volumes:
-      - payment-db-data:/var/lib/postgresql/data
+      - postgres-payment-data:/var/lib/postgresql/data
     networks:
       - petstore-network
     restart: unless-stopped
 
   postgres-notification:
-    image: postgres:14
-    container_name: notification-db
+    image: postgres:16-alpine
+    container_name: postgres-notification
     environment:
       POSTGRES_DB: notification_db
       POSTGRES_USER: postgres
@@ -85,7 +84,7 @@ services:
     ports:
       - "5437:5432"
     volumes:
-      - notification-db-data:/var/lib/postgresql/data
+      - postgres-notification-data:/var/lib/postgresql/data
     networks:
       - petstore-network
     restart: unless-stopped
@@ -161,14 +160,14 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak_db
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: postgres
     command: start-dev
     ports:
       - "8088:8080"
     depends_on:
-      - keycloak-db
+      - postgres-keycloak
     networks:
       - petstore-network
     restart: unless-stopped
@@ -327,9 +326,9 @@ networks:
     driver: bridge
 
 volumes:
-  keycloak-db-data:
-  user-db-data:
-  pet-db-data:
-  order-db-data:
-  payment-db-data:
-  notification-db-data:
+  postgres-keycloak-data:
+  postgres-user-data:
+  postgres-pet-data:
+  postgres-order-data:
+  postgres-payment-data:
+  postgres-notification-data:

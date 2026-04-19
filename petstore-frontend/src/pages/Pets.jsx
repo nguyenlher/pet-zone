@@ -63,7 +63,7 @@ export default function Pets() {
     }
 
     return result;
-  }, [activeCategory, search, sort, priceRange]);
+  }, [activeType, pets, search, sort, priceRange]);
 
   return (
     <div className="pets-page">
@@ -163,7 +163,7 @@ export default function Pets() {
             <Search size={48} />
             <h3>No pets found</h3>
             <p>Try adjusting your search or filters</p>
-            <button className="btn btn-primary" onClick={() => { setSearch(''); setCategory('all'); setPriceRange([0, 5000]); }}>
+            <button className="btn btn-primary" onClick={() => { setSearch(''); setType('all'); setPriceRange([0, 50000000]); }}>
               Clear Filters
             </button>
           </div>

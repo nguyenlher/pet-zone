@@ -1,15 +1,15 @@
 server:
-  port: 8081
+  port: ${SERVER_PORT:8082}
 
 spring:
   application:
     name: pet-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/pet_service_db
+    url: ${DB_URL:jdbc:postgresql://localhost:5434/pet_db}
     driver-class-name: org.postgresql.Driver
-    username: postgres
-    password: postgres
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -34,8 +34,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://localhost:8088/realms/3d-petmark/protocol/openid-connect/certs
-          issuer-uri: http://localhost:8088/realms/3d-petmark
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8088/realms/petstore/protocol/openid-connect/certs}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8088/realms/petstore}
 
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
@@ -51,14 +51,16 @@ spring:
         spring.json.trusted.packages: "*"
 
 keycloak:
-  server-url: http://localhost:8088
-  realm: 3d-petmark
-  client-id: spring-boot-api
-  client-secret: Ji9NSOcVjSUul7finhrE5dGuLZuVSagV
+  server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8088}
+  realm: ${KEYCLOAK_REALM:petstore}
+  client-id: ${KEYCLOAK_CLIENT_ID:spring-boot-api}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:Ji9NSOcVjSUul7finhrE5dGuLZuVSagV}
 
 logging:
   level:
     com.petstore.petservice: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
-    liquibase: INFO
+    liquibase: DEBUG
+    liquibase.changelog: DEBUG
+    liquibase.database: DEBUG

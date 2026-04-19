@@ -28,6 +28,9 @@ CREATE TABLE IF NOT EXISTS pets (
     CONSTRAINT chk_pets_status CHECK (status IN ('AVAILABLE', 'SOLD', 'RESERVED'))
 );
 
+-- Enable pg_trgm extension for fuzzy search (must be before using gin_trgm_ops)
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 -- Indexes
 CREATE INDEX idx_pets_type_id ON pets(type_id);
 CREATE INDEX idx_pets_breed_id ON pets(breed_id);
@@ -39,10 +42,6 @@ CREATE INDEX idx_pets_view_count ON pets(view_count DESC);
 -- Full-text search index for name and description
 CREATE INDEX idx_pets_name_trgm ON pets USING gin(name gin_trgm_ops);
 CREATE INDEX idx_pets_description_trgm ON pets USING gin(description gin_trgm_ops);
-
--- Enable pg_trgm extension for fuzzy search
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
-
 
 -- ============================================
 -- INSERT SAMPLE DATA FOR DOGS

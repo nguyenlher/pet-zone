@@ -3,7 +3,7 @@ spring:
     name: payment-service
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/petstore_payment}
+    url: ${DB_URL:jdbc:postgresql://localhost:5436/payment_db}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -17,14 +17,27 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  liquibase:
+    enabled: false
+
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:payment-service-group}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    concurrency: ${KAFKA_CONCURRENCY:3}
 
 server:
   port: ${SERVER_PORT:8085}
+
+services:
+  order-service:
+    url: ${ORDER_SERVICE_URL:http://localhost:8083}
+
+api-key:
+  value: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
 
 vnpay:
   tmn-code: ${VNPAY_TMN_CODE:LPY4D96Y}
@@ -36,6 +49,14 @@ vnpay:
   version: 2.1.0
   command: pay
   order-type: other
+
+app:
+  kafka:
+    topics:
+      payment:
+        succeeded: ${KAFKA_TOPIC_PAYMENT_SUCCEEDED:payment.succeeded}
+        failed: ${KAFKA_TOPIC_PAYMENT_FAILED:payment.failed}
+        canceled: ${KAFKA_TOPIC_PAYMENT_CANCELED:payment.canceled}
 
 logging:
   level:

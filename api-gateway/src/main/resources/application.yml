@@ -17,82 +17,106 @@ spring:
         - id: user-service-public
           uri: http://user-service:8081
           predicates:
-            - Path=/api/users/public/**
-          filters:
-            - RewritePath=/api/users/public/(?<segment>.*), /api/public/$\{segment}
+            - Path=/api/public/users/**,/api/auth/**
 
         - id: user-service-private
           uri: http://user-service:8081
           predicates:
-            - Path=/api/users/private/**
-          filters:
-            - RewritePath=/api/users/private/(?<segment>.*), /api/private/$\{segment}
+            - Path=/api/private/users/**
 
         # pet-service routes
-        - id: pet-service-public
+        - id: pet-service-public-pet-types
           uri: http://pet-service:8082
           predicates:
-            - Path=/api/pets/public/**
+            - Path=/api/public/pet-types/**
           filters:
-            - RewritePath=/api/pets/public/(?<segment>.*), /api/public/$\{segment}
+            - StripPrefix=1
             - name: RequestRateLimiter
               args:
                 key-resolver: "#{@ipKeyResolver}"
-                '[redis-rate-limiter.replenishRate]': 1
-                '[redis-rate-limiter.burstCapacity]': 5
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
                 '[redis-rate-limiter.requestedTokens]': 1
 
-        - id: pet-service-private
+        - id: pet-service-public-breeds
           uri: http://pet-service:8082
           predicates:
-            - Path=/api/pets/private/**
+            - Path=/api/public/breeds/**
           filters:
-            - RewritePath=/api/pets/private/(?<segment>.*), /api/private/$\{segment}
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
+                '[redis-rate-limiter.requestedTokens]': 1
+
+        - id: pet-service-public-pets
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/public/pets/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
+                '[redis-rate-limiter.requestedTokens]': 1
+
+        - id: pet-service-private-pets
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/pets/**
+          filters:
+            - StripPrefix=1
+
+        - id: pet-service-private-pet-types
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/pet-types/**
+          filters:
+            - StripPrefix=1
+
+        - id: pet-service-private-breeds
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/breeds/**
+          filters:
+            - StripPrefix=1
 
         # order-service routes
         - id: order-service-public
           uri: http://order-service:8084
           predicates:
-            - Path=/api/orders/public/**
-          filters:
-            - RewritePath=/api/orders/public/(?<segment>.*), /api/public/$\{segment}
+            - Path=/api/public/orders/**
 
         - id: order-service-private
           uri: http://order-service:8084
           predicates:
-            - Path=/api/orders/private/**
-          filters:
-            - RewritePath=/api/orders/private/(?<segment>.*), /api/private/$\{segment}
+            - Path=/api/private/orders/**
 
         # payment-service routes
         - id: payment-service-public
           uri: http://payment-service:8085
           predicates:
-            - Path=/api/payments/public/**
-          filters:
-            - RewritePath=/api/payments/public/(?<segment>.*), /api/public/$\{segment}
+            - Path=/api/public/payments/**
 
         - id: payment-service-private
           uri: http://payment-service:8085
           predicates:
-            - Path=/api/payments/private/**
-          filters:
-            - RewritePath=/api/payments/private/(?<segment>.*), /api/private/$\{segment}
+            - Path=/api/private/payments/**
 
         # notification-service routes
         - id: notification-service-public
           uri: http://notification-service:8086
           predicates:
-            - Path=/api/notifications/public/**
-          filters:
-            - RewritePath=/api/notifications/public/(?<segment>.*), /api/public/$\{segment}
+            - Path=/api/public/notifications/**
 
         - id: notification-service-private
           uri: http://notification-service:8086
           predicates:
-            - Path=/api/notifications/private/**
-          filters:
-            - RewritePath=/api/notifications/private/(?<segment>.*), /api/private/$\{segment}
+            - Path=/api/private/notifications/**
 
       globalcors:
         corsConfigurations:

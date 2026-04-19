@@ -1,6 +1,6 @@
 package com.petstore.petservice.exception;
 
-import com.petstore.petservice.dto.response.MessageResponse;
+import com.petstore.petservice.api.dto.response.MessageResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;

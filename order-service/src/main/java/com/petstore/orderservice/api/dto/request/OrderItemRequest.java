@@ -1,0 +1,17 @@
+package com.petstore.orderservice.api.dto.request;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+import java.util.UUID;
+
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class OrderItemRequest {
+    UUID petId;
+    int quantity;
+}

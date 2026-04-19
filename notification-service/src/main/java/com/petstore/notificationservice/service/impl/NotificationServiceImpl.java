@@ -1,15 +1,17 @@
 package com.petstore.notificationservice.service.impl;
 
-import com.petstore.notificationservice.client.UserClient;
-import com.petstore.notificationservice.client.UserInfo;
-import com.petstore.notificationservice.dto.request.SendMailRequest;
-import com.petstore.notificationservice.service.NotificationService;
-import lombok.RequiredArgsConstructor;
+import java.util.UUID;
+
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
+import com.petstore.notificationservice.client.UserClient;
+import com.petstore.notificationservice.client.UserClient.UserInfo;
+import com.petstore.notificationservice.dto.request.SendMailRequest;
+import com.petstore.notificationservice.service.NotificationService;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

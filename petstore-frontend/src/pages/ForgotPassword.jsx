@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send, CheckCircle, PawPrint } from 'lucide-react';
 import { motion } from 'framer-motion';
+import authService from '../services/authService';
 import '../styles/pages/Auth.css';
 
 const fadeInUp = {
@@ -23,11 +24,18 @@ export default function ForgotPassword() {
       return;
     }
     setLoading(true);
-    // Mock send
-    setTimeout(() => {
+    try {
+      const response = await authService.forgotPassword(email);
+      if (response.success) {
+        setSent(true);
+      } else {
+        setError(response.message || 'Failed to send reset link. Please try again.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to send reset link. Please try again.');
+    } finally {
       setLoading(false);
-      setSent(true);
-    }, 1200);
+    }
   };
 
   return (

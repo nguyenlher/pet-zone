@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, ChevronDown, Search, Heart, LogOut, Package, Settings } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -36,8 +36,9 @@ export default function Navbar() {
   const navLinks = [
     { to: '/', label: 'Home' },
     { label: 'Pets', dropdown: true },
-    { to: '/contact', label: 'Contact' },
     { to: '/faq', label: 'FAQ' },
+    { to: '/contact', label: 'Contact' },
+    { to: '/3d-store', label: '3D Store', highlight: true },
   ];
 
   return (
@@ -85,9 +86,9 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              <Link key={i} to={link.to} className="nav-link" onClick={() => setMobileOpen(false)}>
+              <NavLink key={i} to={link.to} className={({ isActive }) => `nav-link${link.highlight ? ' nav-link-3d' : ''}${isActive ? ' active' : ''}`} onClick={() => setMobileOpen(false)}>
                 {link.label}
-              </Link>
+              </NavLink>
             )
           )}
         </div>
@@ -126,7 +127,11 @@ export default function Navbar() {
                       <Package size={16} /> Order History
                     </Link>
                     <div className="dropdown-divider" />
-                    <button className="dropdown-item logout-item" onClick={() => { logout(); setProfileDropdown(false); }}>
+                    <button className="dropdown-item logout-item" onClick={async () => { 
+                      await logout(); 
+                      setProfileDropdown(false);
+                      navigate('/');
+                    }}>
                       <LogOut size={16} /> Logout
                     </button>
                   </>

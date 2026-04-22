@@ -16,6 +16,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import FAQ from './pages/FAQ';
+import Store3D from './pages/Store3D';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -42,6 +43,7 @@ function AppLayout() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/3d-store" element={<Store3D />} />
         </Routes>
       </main>
       <Footer />

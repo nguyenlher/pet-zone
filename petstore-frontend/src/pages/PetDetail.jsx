@@ -44,7 +44,9 @@ export default function PetDetail() {
     );
   }
 
-  const images = pet.imageUrls || [];
+  const images = pet.imageUrls?.length
+    ? pet.imageUrls
+    : (pet.images?.map(img => img.imageUrl) || []);
   const hasModel = pet.model3d && pet.model3d.modelUrl;
   const relatedPets = allPets.filter(p => p.breedId === pet.breedId && p.id !== pet.id).slice(0, 4);
 

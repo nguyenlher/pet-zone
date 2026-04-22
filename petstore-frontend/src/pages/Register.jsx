@@ -53,10 +53,10 @@ export default function Register() {
 
     setLoading(true);
     try {
-      register(form);
+      await register(form);
       navigate('/');
-    } catch {
-      setError('Registration failed. Please try again.');
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }

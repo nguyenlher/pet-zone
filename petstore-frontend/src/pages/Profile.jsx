@@ -1,12 +1,13 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, Edit3, Save, Camera, Package, Settings, LogOut } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import '../styles/pages/Profile.css';
 
 export default function Profile() {
-  const { user, updateProfile, logout } = useAuth();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, loading, updateProfile, logout } = useAuth();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
     name: user?.name || '',
@@ -16,14 +17,60 @@ export default function Profile() {
   });
   const [saved, setSaved] = useState(false);
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, loading, navigate]);
+
+  // Update form when user data loads
+  useEffect(() => {
+    if (user) {
+      setForm({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        address: user.address || '',
+      });
+    }
+  }, [user]);
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSave = () => {
-    updateProfile(form);
-    setEditing(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    try {
+      await updateProfile(form);
+      setEditing(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+    }
   };
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <div className="container">
+          <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+            <p>Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
   return (
     <div className="profile-page">
@@ -49,7 +96,7 @@ export default function Profile() {
               <Link to="/orders" className="profile-nav-link">
                 <Package size={18} /> Order History
               </Link>
-              <button className="profile-nav-link logout" onClick={logout}>
+              <button className="profile-nav-link logout" onClick={handleLogout}>
                 <LogOut size={18} /> Logout
               </button>
             </nav>

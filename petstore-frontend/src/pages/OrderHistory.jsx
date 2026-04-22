@@ -4,7 +4,6 @@ import { Package, ChevronDown, ChevronUp, Search, Calendar, Eye } from 'lucide-r
 import { motion } from 'framer-motion';
 import '../styles/pages/OrderHistory.css';
 
-// Mock orders data (temporary until order service is integrated)
 const sampleOrders = [
   {
     id: 'ORD-2024-001', date: '2024-12-15', status: 'Delivered', total: 885,

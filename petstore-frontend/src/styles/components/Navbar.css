@@ -72,7 +72,8 @@
   background: none;
 }
 
-.nav-link:hover {
+.nav-link:hover,
+.nav-link.active {
   color: var(--primary);
   background: var(--primary-50);
 }
@@ -257,4 +258,48 @@
   }
 
   .mobile-toggle { display: flex; }
+}
+
+/* 3D Store highlight button */
+.nav-link-3d {
+  position: relative;
+  color: #fff !important;
+  background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899);
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+  border-radius: var(--radius-md);
+  padding: 8px 16px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 12px rgba(168, 85, 247, 0.4);
+  overflow: hidden;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.nav-link-3d::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.nav-link-3d:hover,
+.nav-link-3d.active {
+  color: #fff !important;
+  background: linear-gradient(135deg, #7c3aed, #a855f7, #ec4899);
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.6);
+  transform: translateY(-1px);
+}
+
+.nav-link-3d:hover::before,
+.nav-link-3d.active::before {
+  opacity: 1;
+}
+
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }

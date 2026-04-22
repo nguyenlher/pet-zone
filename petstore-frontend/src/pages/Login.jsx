@@ -31,10 +31,10 @@ export default function Login() {
     }
     setLoading(true);
     try {
-      login(form.email, form.password);
+      await login(form.email, form.password);
       navigate('/');
-    } catch {
-      setError('Invalid email or password.');
+    } catch (err) {
+      setError(err.message || 'Invalid email or password.');
     } finally {
       setLoading(false);
     }

@@ -1,51 +1,124 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import authService from '../services/authService';
 
 const AuthContext = createContext();
 
-// Mock user data (temporary until auth service is integrated)
-const mockCurrentUser = {
-  id: 1,
-  name: 'Sarah Johnson',
-  email: 'sarah.johnson@email.com',
-  phone: '+1 234 567 8900',
-  avatar: 'https://i.pravatar.cc/200?img=1',
-  address: '123 Pet Street, New York, NY 10001',
-  joinDate: '2024-06-15',
-};
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(mockCurrentUser);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const login = useCallback((email, password) => {
-    // Mock login - will be replaced with actual API call
-    setUser(mockCurrentUser);
-    setIsAuthenticated(true);
-  }, []);
-
-  const logout = useCallback(() => {
-    setUser(null);
-    setIsAuthenticated(false);
-  }, []);
-
-  const register = useCallback((data) => {
-    // Mock register - will be replaced with actual API call
-    const newUser = { 
-      ...mockCurrentUser, 
-      name: `${data.firstName} ${data.lastName}`, 
-      email: data.email, 
-      phone: data.phone 
+  // Check if user is already logged in on mount
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = authService.getAccessToken();
+      if (token) {
+        try {
+          const userData = await authService.getCurrentUser();
+          setUser(userData);
+          setIsAuthenticated(true);
+        } catch (error) {
+          console.error('Failed to fetch user data:', error);
+          // Token might be expired, try to refresh
+          try {
+            await authService.refreshToken();
+            const userData = await authService.getCurrentUser();
+            setUser(userData);
+            setIsAuthenticated(true);
+          } catch (refreshError) {
+            console.error('Failed to refresh token:', refreshError);
+            // Clear invalid tokens
+            await authService.logout();
+            setUser(null);
+            setIsAuthenticated(false);
+          }
+        }
+      }
+      setLoading(false);
     };
-    setUser(newUser);
-    setIsAuthenticated(true);
+
+    initAuth();
   }, []);
 
-  const updateProfile = useCallback((updates) => {
-    setUser(prev => ({ ...prev, ...updates }));
+  const login = useCallback(async (email, password) => {
+    try {
+      // Call login API
+      await authService.login(email, password);
+      
+      // Fetch user profile after successful login
+      const userData = await authService.getCurrentUser();
+      setUser(userData);
+      setIsAuthenticated(true);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error);
+      throw new Error(error.response?.data?.message || 'Login failed. Please check your credentials.');
+    }
   }, []);
+
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+  }, []);
+
+  const register = useCallback(async (data) => {
+    try {
+      // Call register API
+      const response = await authService.register({
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName
+      });
+      
+      if (response.success) {
+        // After successful registration, log the user in
+        await login(data.email, data.password);
+        return { success: true, message: response.message };
+      } else {
+        throw new Error(response.message || 'Registration failed');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      throw new Error(error.response?.data?.message || error.message || 'Registration failed. Please try again.');
+    }
+  }, [login]);
+
+  const updateProfile = useCallback(async (updates) => {
+    try {
+      // Update user profile via API (you'll need to implement this endpoint)
+      // For now, just update local state
+      setUser(prev => ({ ...prev, ...updates }));
+      
+      // TODO: Call API to update profile on backend
+      // await api.put('/api/user/profile', updates);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Update profile error:', error);
+      throw new Error('Failed to update profile');
+    }
+  }, []);
+
+  const value = {
+    user,
+    isAuthenticated,
+    loading,
+    login,
+    logout,
+    register,
+    updateProfile
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register, updateProfile }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

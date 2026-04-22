@@ -16,7 +16,7 @@ export default function Cart() {
             <h2>Your cart is empty</h2>
             <p>Looks like you haven't added any pets to your cart yet.</p>
             <Link to="/pets" className="btn btn-primary btn-lg">
-              <ArrowLeft size={18} /> Browse Pets
+            Browse Pets
             </Link>
           </div>
         </div>

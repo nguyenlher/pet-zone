@@ -18,17 +18,36 @@ export function AuthProvider({ children }) {
           setUser(userData);
           setIsAuthenticated(true);
         } catch (error) {
-          console.error('Failed to fetch user data:', error);
-          // Token might be expired, try to refresh
-          try {
-            await authService.refreshToken();
-            const userData = await authService.getCurrentUser();
-            setUser(userData);
-            setIsAuthenticated(true);
-          } catch (refreshError) {
-            console.error('Failed to refresh token:', refreshError);
-            // Clear invalid tokens
-            await authService.logout();
+          // Token is invalid or expired
+          if (error.response?.status === 401) {
+            // Try to refresh token
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (refreshToken) {
+              try {
+                await authService.refreshToken();
+                const userData = await authService.getCurrentUser();
+                setUser(userData);
+                setIsAuthenticated(true);
+              } catch (refreshError) {
+                // Refresh failed, clear tokens silently
+                localStorage.removeItem('token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('token_type');
+                localStorage.removeItem('expires_in');
+                setUser(null);
+                setIsAuthenticated(false);
+              }
+            } else {
+              // No refresh token, clear everything
+              localStorage.removeItem('token');
+              localStorage.removeItem('refresh_token');
+              localStorage.removeItem('token_type');
+              localStorage.removeItem('expires_in');
+              setUser(null);
+              setIsAuthenticated(false);
+            }
+          } else {
+            console.error('Failed to fetch user data:', error);
             setUser(null);
             setIsAuthenticated(false);
           }

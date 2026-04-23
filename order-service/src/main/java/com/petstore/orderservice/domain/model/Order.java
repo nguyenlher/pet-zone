@@ -1,11 +1,18 @@
 package com.petstore.orderservice.domain.model;
 
-import com.petstore.orderservice.domain.model.enums.OrderStatus;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+
+import com.petstore.orderservice.domain.model.enums.OrderStatus;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -16,9 +23,11 @@ import java.util.UUID;
 public class Order {
     UUID id;
     UUID userId;
-    UUID petId;
+    List<OrderItem> items;
+    double subtotalAmount;
     double discountAmount;
     double shippingFee;
+    double totalAmount;
     String address;
     OrderStatus status;
     LocalDateTime createdAt;

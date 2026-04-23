@@ -1,9 +1,8 @@
-import { Suspense, useRef, useState, useEffect } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { OrbitControls, Environment, useGLTF, Center, ContactShadows, Html, useProgress } from '@react-three/drei';
+import { Suspense, useRef, useState, useEffect, useCallback } from 'react';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { OrbitControls, useGLTF, ContactShadows, Html, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
 
-/* ── Loading indicator ── */
 function Loader() {
   const { progress } = useProgress();
   return (
@@ -32,28 +31,6 @@ function Loader() {
   );
 }
 
-/* ── Auto-fit model to viewport ── */
-function Model({ url }) {
-  const { scene } = useGLTF(url);
-  const ref = useRef();
-
-  useEffect(() => {
-    if (ref.current) {
-      const box = new THREE.Box3().setFromObject(ref.current);
-      const size = box.getSize(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z);
-      const scale = 2 / maxDim;
-      ref.current.scale.setScalar(scale);
-
-      const center = box.getCenter(new THREE.Vector3());
-      ref.current.position.sub(center.multiplyScalar(scale));
-    }
-  }, [scene]);
-
-  return <primitive ref={ref} object={scene} />;
-}
-
-/* ── Animation mixer for animated models ── */
 function AnimatedModel({ url }) {
   const { scene, animations } = useGLTF(url);
   const groupRef = useRef();
@@ -61,29 +38,24 @@ function AnimatedModel({ url }) {
 
   useEffect(() => {
     if (groupRef.current) {
-      // Reset transforms
       scene.position.set(0, 0, 0);
       scene.scale.set(1, 1, 1);
       scene.rotation.set(0, 0, 0);
 
-      // Calculate bounding box
       const box = new THREE.Box3().setFromObject(scene);
       const size = box.getSize(new THREE.Vector3());
       const center = box.getCenter(new THREE.Vector3());
 
-      // Center the model
       scene.position.x -= center.x;
       scene.position.y -= center.y;
       scene.position.z -= center.z;
 
-      // Scale to fit (target size = 2.5 units)
       const maxDim = Math.max(size.x, size.y, size.z);
       if (maxDim > 0) {
         const scale = 2.5 / maxDim;
         groupRef.current.scale.setScalar(scale);
       }
 
-      // Shift up so model sits on the ground plane
       const newBox = new THREE.Box3().setFromObject(groupRef.current);
       const yOffset = -newBox.min.y;
       groupRef.current.position.y = yOffset;
@@ -111,11 +83,32 @@ function AnimatedModel({ url }) {
   );
 }
 
-/* ── Main Component ── */
-export default function Pet3DViewer({ modelUrl, petName = 'Pet' }) {
+export default function Pet3DViewer({ modelUrl }) {
   const [hasError, setHasError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [canvasKey, setCanvasKey] = useState(0);
   const containerRef = useRef();
+  const canvasWrapRef = useRef();
+
+  const handleContextLost = useCallback((e) => {
+    e.preventDefault();
+    setTimeout(() => setCanvasKey(k => k + 1), 500);
+  }, []);
+
+  const handleContextRestored = useCallback(() => {
+    console.info('WebGL context restored');
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasWrapRef.current?.querySelector('canvas');
+    if (!canvas) return;
+    canvas.addEventListener('webglcontextlost', handleContextLost);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored);
+    return () => {
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+    };
+  }, [canvasKey, handleContextLost, handleContextRestored]);
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -149,62 +142,63 @@ export default function Pet3DViewer({ modelUrl, petName = 'Pet' }) {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={`viewer-3d-container ${isFullscreen ? 'fullscreen' : ''}`}
-    >
-      <Canvas
-        camera={{ position: [3, 2, 4], fov: 45 }}
-        gl={{ antialias: true, alpha: true }}
-        dpr={[1, 2]}
-        onError={() => setHasError(true)}
-      >
-        {/* Lighting */}
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow />
-        <directionalLight position={[-3, 4, -5]} intensity={0.4} />
+    <div ref={containerRef} className={`viewer-3d-container ${isFullscreen ? 'fullscreen' : ''}`}>
+      <div ref={canvasWrapRef} style={{ width: '100%', height: '100%' }}>
+        <Canvas
+          key={canvasKey}
+          camera={{ position: [3, 2, 4], fov: 45 }}
+          gl={{
+            antialias: true,
+            alpha: true,
+            powerPreference: 'default',
+            failIfMajorPerformanceCaveat: false,
+          }}
+          dpr={[1, 1.5]}
+          onError={() => setHasError(true)}
+        >
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[5, 8, 5]} intensity={1.2} />
+          <directionalLight position={[-3, 4, -5]} intensity={0.4} />
+          <hemisphereLight skyColor="#ffffff" groundColor="#b0b0b0" intensity={0.4} />
 
-        <Suspense fallback={<Loader />}>
-          <AnimatedModel url={modelUrl} />
-          <ContactShadows
-            position={[0, -1, 0]}
-            opacity={0.4}
-            scale={8}
-            blur={2.5}
-            far={4}
+          <Suspense fallback={<Loader />}>
+            <AnimatedModel url={modelUrl} />
+            <ContactShadows position={[0, -1, 0]} opacity={0.35} scale={8} blur={2.5} far={4} />
+          </Suspense>
+
+          <OrbitControls
+            enablePan={false}
+            minDistance={2}
+            maxDistance={8}
+            minPolarAngle={Math.PI / 6}
+            maxPolarAngle={Math.PI / 2}
+            autoRotate
+            autoRotateSpeed={1.5}
+            target={[0, 0, 0]}
           />
-          <Environment preset="city" />
-        </Suspense>
+        </Canvas>
+      </div>
 
-        <OrbitControls
-          enablePan={false}
-          minDistance={2}
-          maxDistance={8}
-          minPolarAngle={Math.PI / 6}
-          maxPolarAngle={Math.PI / 2}
-          autoRotate
-          autoRotateSpeed={1.5}
-          target={[0, 0, 0]}
-        />
-      </Canvas>
-
-      {/* Control hints */}
       <div className="viewer-3d-hints">
         <span>Drag to rotate | Scroll to zoom</span>
       </div>
 
-      {/* Fullscreen toggle */}
       <button className="viewer-3d-fullscreen" onClick={toggleFullscreen} title="Toggle fullscreen">
         {isFullscreen ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" /></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+          </svg>
         ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" /></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+          </svg>
         )}
       </button>
 
-      {/* 3D badge */}
       <div className="viewer-3d-badge">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        </svg>
         3D
       </div>
     </div>

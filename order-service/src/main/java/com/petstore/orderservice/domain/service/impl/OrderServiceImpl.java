@@ -1,7 +1,6 @@
 package com.petstore.orderservice.domain.service.impl;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,12 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import com.petstore.orderservice.api.dto.PetDTO;
-import com.petstore.orderservice.api.dto.request.CancelOrderRequest;
-import com.petstore.orderservice.api.dto.request.CreateOrderRequest;
-import com.petstore.orderservice.api.dto.request.OrderItemRequest;
-import com.petstore.orderservice.api.dto.response.CancelOrderResponse;
-import com.petstore.orderservice.api.dto.response.CreateOrderResponse;
-import com.petstore.orderservice.api.dto.response.OrderItemResponse;
 import com.petstore.orderservice.domain.model.Order;
 import com.petstore.orderservice.domain.model.OrderItem;
 import com.petstore.orderservice.domain.model.enums.OrderStatus;
@@ -29,8 +22,8 @@ import com.petstore.orderservice.domain.service.OrderService;
 
 @Service
 public class OrderServiceImpl implements OrderService {
-    private final RestClient petRestClient;
 
+    private final RestClient petRestClient;
     private final OrderRepository orderRepository;
 
     public OrderServiceImpl(
@@ -41,10 +34,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public CreateOrderResponse createOrder(CreateOrderRequest request) {
+    public Order createOrder(UUID userId, List<OrderItem> items, String discountCode) {
 
-        Set<UUID> petIds = request.getItems().stream()
-                .map(OrderItemRequest::getPetId)
+        Set<UUID> petIds = items.stream()
+                .map(OrderItem::getPetId)
                 .collect(Collectors.toSet());
 
         Map<UUID, PetDTO> petDTOMap = new ConcurrentHashMap<>();
@@ -57,76 +50,60 @@ public class OrderServiceImpl implements OrderService {
             if (pet != null) petDTOMap.put(petId, pet);
         });
 
-        List<OrderItem> orderItems = new ArrayList<>();
-
-        for (OrderItemRequest itemRequest : request.getItems()) {
-            PetDTO pet = petDTOMap.get(itemRequest.getPetId());
-            if (pet == null) {
-                throw new RuntimeException("Pet not found: " + itemRequest.getPetId());
-            }
-            OrderItem orderItem = OrderItem.builder()
-                    .petId(pet.getId())
-                    .quantity(itemRequest.getQuantity())
-                    .build();
-            orderItems.add(orderItem);
-        }
-
-        double subtotalAmount = orderItems.stream()
-                .mapToDouble(item -> {
+        List<OrderItem> enrichedItems = items.stream()
+                .map(item -> {
                     PetDTO pet = petDTOMap.get(item.getPetId());
-                    return pet.getPrice() * item.getQuantity();
+                    if (pet == null) {
+                        throw new RuntimeException("Pet not found: " + item.getPetId());
+                    }
+                    return OrderItem.builder()
+                            .petId(pet.getId())
+                            .petName(pet.getName())
+                            .unitPrice(pet.getPrice())
+                            .quantity(item.getQuantity())
+                            .subtotalAmount(pet.getPrice() * item.getQuantity())
+                            .build();
                 })
+                .collect(Collectors.toList());
+
+        double subtotalAmount = enrichedItems.stream()
+                .mapToDouble(OrderItem::getSubtotalAmount)
                 .sum();
         double discountAmount = 0;
         double shippingFee = 0;
         double totalAmount = subtotalAmount + shippingFee - discountAmount;
 
-        List<OrderItemResponse> itemResponses = orderItems.stream()
-                .map(item -> {
-                    PetDTO pet = petDTOMap.get(item.getPetId());
-                    return OrderItemResponse.builder()
-                            .id(pet.getId())
-                            .name(pet.getName())
-                            .quantity(item.getQuantity())
-                            .price(pet.getPrice())
-                            .subtotalPrice(pet.getPrice() * item.getQuantity())
-                            .build();
-                })
-                .collect(Collectors.toList());
-
-        return CreateOrderResponse.builder()
-                .userId(request.getUserId())
+        return Order.builder()
+                .userId(userId)
+                .items(enrichedItems)
                 .subtotalAmount(subtotalAmount)
                 .discountAmount(discountAmount)
                 .shippingFee(shippingFee)
                 .totalAmount(totalAmount)
-                .items(itemResponses)
-                .orderStatus(OrderStatus.PENDING)
+                .status(OrderStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
     }
 
-    public CancelOrderResponse cancelOrder(CancelOrderRequest request) {
-        Optional<Order> order = orderRepository.findById(request.getOrderId());
+    @Override
+    public Order cancelOrder(UUID orderId, String reason) {
+        Optional<Order> order = orderRepository.findById(orderId);
         if (order.isEmpty()) {
-            throw new RuntimeException("Order not found: " + request.getOrderId());
+            throw new RuntimeException("Order not found: " + orderId);
         }
 
         Order existingOrder = order.get();
 
         if (existingOrder.getStatus() == OrderStatus.CONFIRM) {
-            throw new RuntimeException("Cannot cancel confirmed order: " + request.getOrderId());
+            throw new RuntimeException("Cannot cancel confirmed order: " + orderId);
         }
 
         if (existingOrder.getStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Order already canceled: " + request.getOrderId());
+            throw new RuntimeException("Order already canceled: " + orderId);
         }
 
-        return CancelOrderResponse.builder()
-                .orderId(request.getOrderId())
-                .orderStatus(OrderStatus.CANCELLED)
-                .updatedAt(LocalDateTime.now())
-                .message("Order canceled successfully")
-                .build();
+        existingOrder.setStatus(OrderStatus.CANCELLED);
+        existingOrder.setUpdatedAt(LocalDateTime.now());
+        return existingOrder;
     }
 }

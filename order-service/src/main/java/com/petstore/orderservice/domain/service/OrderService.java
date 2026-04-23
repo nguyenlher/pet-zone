@@ -1,11 +1,12 @@
 package com.petstore.orderservice.domain.service;
 
-import com.petstore.orderservice.api.dto.request.CancelOrderRequest;
-import com.petstore.orderservice.api.dto.request.CreateOrderRequest;
-import com.petstore.orderservice.api.dto.response.CancelOrderResponse;
-import com.petstore.orderservice.api.dto.response.CreateOrderResponse;
+import java.util.List;
+import java.util.UUID;
+
+import com.petstore.orderservice.domain.model.Order;
+import com.petstore.orderservice.domain.model.OrderItem;
 
 public interface OrderService {
-    CreateOrderResponse createOrder(CreateOrderRequest request);
-    CancelOrderResponse cancelOrder(CancelOrderRequest request);
+    Order createOrder(UUID userId, List<OrderItem> items, String discountCode);
+    Order cancelOrder(UUID orderId, String reason);
 }

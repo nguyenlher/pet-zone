@@ -1,12 +1,13 @@
 package com.petstore.orderservice.infra.mapper;
 
-import com.petstore.orderservice.infra.entity.OrderEntity;
-import com.petstore.orderservice.domain.model.Order;
+import java.util.List;
+
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import java.util.List;
+import com.petstore.orderservice.domain.model.Order;
+import com.petstore.orderservice.infra.entity.OrderEntity;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface OrderMapper {

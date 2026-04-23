@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.petstore.userservice.api.dto.request.RegisterRequest;
 import com.petstore.userservice.api.dto.request.UpdateUserRequest;
+import com.petstore.userservice.api.dto.response.UserResponse;
 import com.petstore.userservice.domain.model.User;
 import com.petstore.userservice.domain.repository.UserRepository;
 import com.petstore.userservice.domain.service.UserService;
@@ -46,5 +47,22 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
         log.info("User updated with Keycloak ID: {}", keycloakId);
         return savedUser;
+    }
+
+    @Override
+    public UserResponse getProfile(String keycloakId) {
+        User user = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new RuntimeException("User not found with keycloakId: " + keycloakId));
+        return UserResponse.builder()
+                .id(user.getId())
+                .keycloakId(user.getKeycloakId())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .avatarUrl(user.getAvatarUrl())
+                .isActive(user.getIsActive())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
     }
 }

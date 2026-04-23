@@ -27,11 +27,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8088/realms/petstore/protocol/openid-connect/certs}
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8088/realms/petstore}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8088/realms/super-petmark-3d/protocol/openid-connect/certs}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8088/realms/super-petmark-3d}
 
 keycloak:
   server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8088}
-  realm: ${KEYCLOAK_REALM:petstore}
-  client-id: ${KEYCLOAK_CLIENT_ID:spring-boot-api}
-  client-secret: ${KEYCLOAK_CLIENT_SECRET:Ji9NSOcVjSUul7finhrE5dGuLZuVSagV}
+  realm: ${KEYCLOAK_REALM:super-petmark-3d}
+  client-id: ${KEYCLOAK_CLIENT_ID:user-service}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:qrKrTktbpeX4VSkI9pONfyRId4WCJh6h}

@@ -1,13 +1,16 @@
 import api from './api';
+import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:8090';
 
 const authService = {
 
   async login(email, password) {
-    const response = await api.post(`${API_BASE_URL}/api/auth/login`, {
+    const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
       email,
       password
+    }, {
+      headers: { 'Content-Type': 'application/json' }
     });
     
     if (response.data.access_token) {
@@ -21,11 +24,13 @@ const authService = {
   },
 
   async register(userData) {
-    const response = await api.post(`${API_BASE_URL}/api/auth/register`, {
+    const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
       email: userData.email,
       password: userData.password,
       firstName: userData.firstName,
       lastName: userData.lastName
+    }, {
+      headers: { 'Content-Type': 'application/json' }
     });
     
     return response.data;
@@ -74,8 +79,10 @@ const authService = {
   },
 
   async forgotPassword(email) {
-    const response = await api.post(`${API_BASE_URL}/api/auth/forgot-password`, {
+    const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, {
       email
+    }, {
+      headers: { 'Content-Type': 'application/json' }
     });
     return response.data;
   },
@@ -89,7 +96,7 @@ const authService = {
 
   isAuthenticated() {
     return !!localStorage.getItem('token');
-  },
+    },
 
   getAccessToken() {
     return localStorage.getItem('token');

@@ -1,23 +1,8 @@
-import { Suspense, useRef, useEffect } from 'react';
+import { Suspense, useState, useCallback, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, Environment, ContactShadows, Center } from '@react-three/drei';
+import { OrbitControls, useGLTF, ContactShadows, Center } from '@react-three/drei';
 
 function Model({ url }) {
-  useEffect(() => {
-    if (import.meta.env.DEV) {
-      const originalWarn = console.warn;
-      console.warn = (...args) => {
-        const msg = args[0];
-        if (typeof msg === 'string' && (
-          msg.includes('THREE.Clock') ||
-          msg.includes('WebGLProgram') ||
-          msg.includes('X4122')
-        )) return;
-        originalWarn(...args);
-      };
-      return () => { console.warn = originalWarn; };
-    }
-  }, []);
   const { scene } = useGLTF(url);
   return (
     <Center>
@@ -48,42 +33,54 @@ function Loader() {
 }
 
 export default function GLBViewer({ url, background = '#0f0f1a' }) {
+  const [key, setKey] = useState(0);
+  const canvasRef = useRef(null);
+
+  const handleContextLost = useCallback((e) => {
+    e.preventDefault();
+    setTimeout(() => setKey(k => k + 1), 500);
+  }, []);
+
+  const handleContextRestored = useCallback(() => {
+    console.info('WebGL context restored');
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current?.querySelector('canvas');
+    if (!canvas) return;
+    canvas.addEventListener('webglcontextlost', handleContextLost);
+    canvas.addEventListener('webglcontextrestored', handleContextRestored);
+    return () => {
+      canvas.removeEventListener('webglcontextlost', handleContextLost);
+      canvas.removeEventListener('webglcontextrestored', handleContextRestored);
+    };
+  }, [key, handleContextLost, handleContextRestored]);
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', background }}>
+    <div ref={canvasRef} style={{ position: 'relative', width: '100%', height: '100%', background }}>
       <Suspense fallback={<Loader />}>
         <Canvas
+          key={key}
           camera={{ position: [0, 1.5, 4], fov: 45 }}
           style={{ width: '100%', height: '100%' }}
+          dpr={1}
+          gl={{
+            powerPreference: 'default',
+            antialias: true,
+            preserveDrawingBuffer: false,
+            failIfMajorPerformanceCaveat: false,
+          }}
         >
-          {/* Lighting */}
-          <ambientLight intensity={0.4} />
-          <directionalLight position={[5, 8, 5]} intensity={1.2} castShadow />
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[5, 8, 5]} intensity={1.2} />
           <directionalLight position={[-5, 3, -5]} intensity={0.4} color="#c084fc" />
+          <hemisphereLight skyColor="#c084fc" groundColor="#1a0533" intensity={0.3} />
 
-          {/* Model */}
           <Model url={url} />
 
-          {/* Ground shadow */}
-          <ContactShadows
-            position={[0, -1.2, 0]}
-            opacity={0.5}
-            scale={10}
-            blur={2}
-            far={4}
-          />
+          <ContactShadows position={[0, -1.2, 0]} opacity={0.4} scale={10} blur={2} far={4} />
 
-          {/* Environment lighting (HDRI) */}
-          <Environment preset="city" />
-
-          {/* Controls: orbit, zoom, pan */}
-          <OrbitControls
-            enablePan={true}
-            enableZoom={true}
-            enableRotate={true}
-            autoRotate={false}
-            minDistance={1}
-            maxDistance={20}
-          />
+          <OrbitControls minDistance={1} maxDistance={20} />
         </Canvas>
       </Suspense>
     </div>

@@ -7,10 +7,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.petstore.petservice.infra.mapper.PetMapper;
 import com.petstore.petservice.domain.model.Pet;
 import com.petstore.petservice.domain.model.enums.PetStatus;
 import com.petstore.petservice.domain.repository.PetRepository;
+import com.petstore.petservice.infra.mapper.PetMapper;
 import com.petstore.petservice.infra.repository.jpa.JpaPetRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -31,7 +31,7 @@ public class PetRepositoryImpl implements PetRepository {
 
     @Override
     public Optional<Pet> findById(UUID id) {
-        return jpaPetRepository.findById(id)
+        return jpaPetRepository.findByIdWithImagesAndModel(id)
                 .map(petMapper::toDomain);
     }
 

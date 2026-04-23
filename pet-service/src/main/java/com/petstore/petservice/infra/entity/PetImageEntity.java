@@ -45,7 +45,7 @@ public class PetImageEntity {
     @Builder.Default
     Boolean isThumbnail = false;
     
-    @Column(name = "display_order")
+    @Column(name = "sort_order")
     Integer displayOrder;
     
     @Column(name = "created_at")

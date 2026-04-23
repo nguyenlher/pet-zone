@@ -41,8 +41,6 @@ public interface PetMapper {
     @Mapping(target = "ageInMonths", expression = "java(calculateAgeInMonths(pet.getBirthDate()))")
     @Mapping(target = "breed", ignore = true)
     @Mapping(target = "breedName", ignore = true)
-    @Mapping(target = "images", ignore = true)
-    @Mapping(target = "model3d", ignore = true)
     PetDetailResponse toDetailResponse(Pet pet);
     
     @Mapping(target = "ageInMonths", expression = "java(calculateAgeInMonths(pet.getBirthDate()))")

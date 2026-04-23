@@ -41,6 +41,8 @@ public class Pet {
     String description;
     PetStatus status;
     Integer viewCount;
+    List<PetImage> images;
+    Pet3DModel model3d;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

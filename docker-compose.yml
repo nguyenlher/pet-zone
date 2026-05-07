@@ -1,90 +1,16 @@
 services:
-  postgres-keycloak:
+  postgres:
     image: postgres:16-alpine
-    container_name: postgres-keycloak
+    container_name: postgres
     environment:
-      POSTGRES_DB: keycloak_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5439:5432"
-    volumes:
-      - postgres-keycloak-data:/var/lib/postgresql/data
-    networks:
-      - super-petmark-3d-network
-    restart: unless-stopped
-
-  postgres-user:
-    image: postgres:16-alpine
-    container_name: postgres-user
-    environment:
-      POSTGRES_DB: user_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     ports:
       - "5433:5432"
     volumes:
-      - postgres-user-data:/var/lib/postgresql/data
-    networks:
-      - super-petmark-3d-network
-    restart: unless-stopped
-
-  postgres-pet:
-    image: postgres:16-alpine
-    container_name: postgres-pet
-    environment:
-      POSTGRES_DB: pet_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres-pet-data:/var/lib/postgresql/data
-    networks:
-      - super-petmark-3d-network
-    restart: unless-stopped
-
-  postgres-order:
-    image: postgres:16-alpine
-    container_name: postgres-order
-    environment:
-      POSTGRES_DB: order_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5435:5432"
-    volumes:
-      - postgres-order-data:/var/lib/postgresql/data
-    networks:
-      - super-petmark-3d-network
-    restart: unless-stopped
-
-  postgres-payment:
-    image: postgres:16-alpine
-    container_name: postgres-payment
-    environment:
-      POSTGRES_DB: payment_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5436:5432"
-    volumes:
-      - postgres-payment-data:/var/lib/postgresql/data
-    networks:
-      - super-petmark-3d-network
-    restart: unless-stopped
-
-  postgres-notification:
-    image: postgres:16-alpine
-    container_name: postgres-notification
-    environment:
-      POSTGRES_DB: notification_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5437:5432"
-    volumes:
-      - postgres-notification-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
       - super-petmark-3d-network
     restart: unless-stopped
@@ -160,14 +86,14 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak_db
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: postgres
     command: start-dev
     ports:
       - "8088:8080"
     depends_on:
-      - postgres-keycloak
+      - postgres
     networks:
       - super-petmark-3d-network
     restart: unless-stopped
@@ -181,7 +107,7 @@ services:
       - "8081:8081"
     environment:
       SERVER_PORT: 8081
-      DB_URL: jdbc:postgresql://postgres-user:5432/user_db
+      DB_URL: jdbc:postgresql://postgres:5432/user_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -196,7 +122,7 @@ services:
       KEYCLOAK_CLIENT_ID: user-service
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
     depends_on:
-      - postgres-user
+      - postgres
       - redis
       - kafka
       - keycloak
@@ -213,7 +139,7 @@ services:
       - "8082:8082"
     environment:
       SERVER_PORT: 8082
-      DB_URL: jdbc:postgresql://postgres-pet:5432/pet_db
+      DB_URL: jdbc:postgresql://postgres:5432/pet_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -227,7 +153,7 @@ services:
       KEYCLOAK_CLIENT_ID: user-service
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
     depends_on:
-      - postgres-pet
+      - postgres
       - redis
       - kafka
       - keycloak
@@ -244,7 +170,7 @@ services:
       - "8084:8084"
     environment:
       SERVER_PORT: 8084
-      DB_URL: jdbc:postgresql://postgres-order:5432/order_db
+      DB_URL: jdbc:postgresql://postgres:5432/order_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -255,7 +181,7 @@ services:
       PET_SERVICE_URL: http://pet-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8085
     depends_on:
-      - postgres-order
+      - postgres
       - redis
       - kafka
     networks:
@@ -271,7 +197,7 @@ services:
       - "8085:8085"
     environment:
       SERVER_PORT: 8085
-      DB_URL: jdbc:postgresql://postgres-payment:5432/payment_db
+      DB_URL: jdbc:postgresql://postgres:5432/payment_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -279,7 +205,7 @@ services:
       API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
       ORDER_SERVICE_URL: http://order-service:8084
     depends_on:
-      - postgres-payment
+      - postgres
       - kafka
     networks:
       - super-petmark-3d-network
@@ -294,7 +220,7 @@ services:
       - "8086:8086"
     environment:
       SERVER_PORT: 8086
-      DB_URL: jdbc:postgresql://postgres-notification:5432/notification_db
+      DB_URL: jdbc:postgresql://postgres:5432/notification_db
       DB_USERNAME: postgres
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -307,7 +233,7 @@ services:
       MAIL_USERNAME: ${MAIL_USERNAME:-}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-}
     depends_on:
-      - postgres-notification
+      - postgres
       - redis
       - kafka
     networks:
@@ -342,9 +268,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres-keycloak-data:
-  postgres-user-data:
-  postgres-pet-data:
-  postgres-order-data:
-  postgres-payment-data:
-  postgres-notification-data:
+  postgres-data:

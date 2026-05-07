@@ -11,7 +11,6 @@ import com.petstore.petservice.domain.model.enums.Gender;
 import com.petstore.petservice.domain.model.enums.HealthStatus;
 import com.petstore.petservice.domain.model.enums.PetStatus;
 
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +21,6 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @Builder
-@Table(name = "pets")
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = lombok.AccessLevel.PRIVATE)
@@ -41,7 +39,7 @@ public class Pet {
     String description;
     PetStatus status;
     Integer viewCount;
-    List<PetImage> images;
+    List<PetProductImage> images;
     Pet3DModel model3d;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

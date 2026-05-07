@@ -6,8 +6,9 @@ import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.petstore.userservice.infra.entity.UserEntity;
+import com.petstore.userservice.api.dto.response.UserResponse;
 import com.petstore.userservice.domain.model.User;
+import com.petstore.userservice.infra.entity.UserEntity;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface UserMapper {
@@ -18,4 +19,6 @@ public interface UserMapper {
     List<UserEntity> toEntity(List<User> users);
 
     List<User> toDomain(List<UserEntity> entities);
+
+    UserResponse toUserDto(User user);
 }

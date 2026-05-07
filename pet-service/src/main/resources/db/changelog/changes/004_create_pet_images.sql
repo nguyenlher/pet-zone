@@ -1,139 +1,123 @@
 -- ============================================
--- CREATE PET_IMAGES TABLE
+-- CREATE PET_PRODUCT_IMAGES TABLE (UNIFIED FOR PETS AND PET PRODUCTS)
 -- ============================================
-CREATE TABLE IF NOT EXISTS pet_images (
+CREATE TABLE IF NOT EXISTS pet_product_images (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    pet_id UUID NOT NULL,
+    entity_type VARCHAR(20),
+    entity_id UUID NOT NULL,
     image_url VARCHAR(500) NOT NULL,
     is_thumbnail BOOLEAN NOT NULL DEFAULT FALSE,
-    sort_order INTEGER,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
-    CONSTRAINT fk_pet_images_pet FOREIGN KEY (pet_id) REFERENCES pets(id) ON DELETE CASCADE
+    display_order INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes
-CREATE INDEX idx_pet_images_pet_id ON pet_images(pet_id);
-CREATE INDEX idx_pet_images_sort_order ON pet_images(pet_id, sort_order);
-CREATE INDEX idx_pet_images_thumbnail ON pet_images(pet_id, is_thumbnail) WHERE is_thumbnail = TRUE;
+CREATE INDEX idx_pet_product_images_entity ON pet_product_images(entity_type, entity_id);
+CREATE INDEX idx_pet_product_images_display_order ON pet_product_images(entity_type, entity_id, display_order);
+CREATE INDEX idx_pet_product_images_thumbnail ON pet_product_images(entity_type, entity_id, is_thumbnail) WHERE is_thumbnail = TRUE;
 
--- Ensure only one thumbnail per pet
-CREATE UNIQUE INDEX idx_pet_images_one_thumbnail ON pet_images(pet_id) WHERE is_thumbnail = TRUE;
+-- Ensure only one thumbnail per entity
+CREATE UNIQUE INDEX idx_pet_product_images_one_thumbnail ON pet_product_images(entity_type, entity_id) WHERE is_thumbnail = TRUE;
 
 
 -- ============================================
 -- INSERT SAMPLE PET IMAGES FOR DOGS
 -- ============================================
--- Max (Golden Retriever)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1633722715463-d30f4f325e24', true, 1
-FROM pets p WHERE p.name = 'Max' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1552053831-71594a27632d', false, 2
-FROM pets p WHERE p.name = 'Max' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1558788353-f76d92427f16', false, 3
-FROM pets p WHERE p.name = 'Max' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
--- Bella (Labrador)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1587300003388-59208cc962cb', true, 1
-FROM pets p WHERE p.name = 'Bella' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1560807707-8cc77767d783', false, 2
-FROM pets p WHERE p.name = 'Bella' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
--- Charlie (Poodle)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1616080484084-8dc3b6c0d9e4', true, 1
-FROM pets p WHERE p.name = 'Charlie' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1546527868-ccb7ee7dfa6a', false, 2
-FROM pets p WHERE p.name = 'Charlie' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1537151608828-ea2b11777ee8', false, 3
-FROM pets p WHERE p.name = 'Charlie' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
--- Luna (Husky)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1568572933382-74d440642117', true, 1
-FROM pets p WHERE p.name = 'Luna' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1605568427561-40dd23c2acea', false, 2
-FROM pets p WHERE p.name = 'Luna' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+-- Hachi (Shiba Inu)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158480/super-petmark-3d/images/shiba_evmx7h.jpg', true, 1
+FROM pets p WHERE p.name = 'Hachi' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
 
 -- Rocky (Corgi)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1612536616423-e0b51f4e019e', true, 1
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158482/super-petmark-3d/images/Corgi_hdu868.jpg', true, 1
 FROM pets p WHERE p.name = 'Rocky' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
 
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e', false, 2
-FROM pets p WHERE p.name = 'Rocky' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+-- Max (Golden Retriever)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158475/super-petmark-3d/images/golden_retrieve_dtcl8d.jpg', true, 1
+FROM pets p WHERE p.name = 'Max' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
 
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1558929996-da64ba858215', false, 3
-FROM pets p WHERE p.name = 'Rocky' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+-- Snow (Samoyed)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158473/super-petmark-3d/images/Samoyed_xicjs9.jpg', true, 1
+FROM pets p WHERE p.name = 'Snow' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+
+-- Tiny (Chihuahua)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158481/super-petmark-3d/images/chiquaqua_wpfjzh.jpg', true, 1
+FROM pets p WHERE p.name = 'Tiny' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+
+-- Oscar (Dachshund)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://placeholder-dachshund.jpg', true, 1
+FROM pets p WHERE p.name = 'Oscar' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+
+-- Luna (Husky)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158480/super-petmark-3d/images/Dachshund_hakthj.jpg', true, 1
+FROM pets p WHERE p.name = 'Luna' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+
+-- Buddy (Labrador)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158476/super-petmark-3d/images/Labrador-Retriever_rywopc.jpg', true, 1
+FROM pets p WHERE p.name = 'Buddy' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+
+-- Fluffy (Pomeranian)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158481/super-petmark-3d/images/white-pomeranian_jctzhm.jpg', true, 1
+FROM pets p WHERE p.name = 'Fluffy' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+
+-- Charlie (Poodle)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158483/super-petmark-3d/images/poodle-toy_yc2fsp.jpg', true, 1
+FROM pets p WHERE p.name = 'Charlie' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
+
+-- Puggy (Pug)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158482/super-petmark-3d/images/pug_qhz84j.jpg', true, 1
+FROM pets p WHERE p.name = 'Puggy' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Chó');
 
 
 -- ============================================
 -- INSERT SAMPLE PET IMAGES FOR CATS
 -- ============================================
--- Mimi (Mèo Ba Tư)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1595433707802-6b2626ef1c91', true, 1
-FROM pets p WHERE p.name = 'Mimi' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1548681528-6a5c45b66b42', false, 2
-FROM pets p WHERE p.name = 'Mimi' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
-
--- Simba (Mèo Anh Lông Ngắn)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1551717743-49959800b1f6', true, 1
+-- Simba (British Shorthair)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158478/super-petmark-3d/images/british-shorthair_irezka.jpg', true, 1
 FROM pets p WHERE p.name = 'Simba' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
 
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1574158622682-e40e69881006', false, 2
-FROM pets p WHERE p.name = 'Simba' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
+-- Mochi (Munchkin)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158474/super-petmark-3d/images/Munchkin_hjtqoc.jpg', true, 1
+FROM pets p WHERE p.name = 'Mochi' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
 
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1596854407944-bf87f6fdd49e', false, 3
-FROM pets p WHERE p.name = 'Simba' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
+-- Angel (Ragdoll)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158476/super-petmark-3d/images/Ragdoll_vuy80r.jpg', true, 1
+FROM pets p WHERE p.name = 'Angel' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
 
--- Nala (Mèo Xiêm)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8', true, 1
+-- Nala (Siamese)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158478/super-petmark-3d/images/siamese_dnxdkz.jpg', true, 1
 FROM pets p WHERE p.name = 'Nala' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
 
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1573865526739-10c1d3a1f0cc', false, 2
-FROM pets p WHERE p.name = 'Nala' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
+-- Tiger (Bengal)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158475/super-petmark-3d/images/Bengal_kjp3xt.jpg', true, 1
+FROM pets p WHERE p.name = 'Tiger' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
 
--- Leo (Mèo Maine Coon)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1568152950566-c1bf43f4ab28', true, 1
+-- Leo (Maine Coon)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158475/super-petmark-3d/images/maine-coon_zqrnxg.jpg', true, 1
 FROM pets p WHERE p.name = 'Leo' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
 
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1615789591457-74a63395c990', false, 2
-FROM pets p WHERE p.name = 'Leo' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
+-- Blue (Russian Blue)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158477/super-petmark-3d/images/russian-blue_cbxmae.jpg', true, 1
+FROM pets p WHERE p.name = 'Blue' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
 
--- Mochi (Mèo Munchkin)
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1543852786-1cf6624b9987', true, 1
-FROM pets p WHERE p.name = 'Mochi' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba', false, 2
-FROM pets p WHERE p.name = 'Mochi' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
-
-INSERT INTO pet_images (pet_id, image_url, is_thumbnail, sort_order)
-SELECT p.id, 'https://images.unsplash.com/photo-1529778873920-4da4926a72c2', false, 3
-FROM pets p WHERE p.name = 'Mochi' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');
+-- Foldy (Scottish Fold)
+INSERT INTO pet_product_images (entity_type, entity_id, image_url, is_thumbnail, display_order)
+SELECT 'PET', p.id, 'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158475/super-petmark-3d/images/Scottish-Fold_d3c4ht.jpg', true, 1
+FROM pets p WHERE p.name = 'Foldy' AND EXISTS (SELECT 1 FROM pet_types pt WHERE pt.id = p.type_id AND pt.name = 'Mèo');

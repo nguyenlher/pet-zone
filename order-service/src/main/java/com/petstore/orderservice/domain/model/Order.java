@@ -24,11 +24,11 @@ public class Order {
     UUID id;
     UUID userId;
     List<OrderItem> items;
+    OrderShippingDetail shippingDetail;
     double subtotalAmount;
     double discountAmount;
     double shippingFee;
     double totalAmount;
-    String address;
     OrderStatus status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

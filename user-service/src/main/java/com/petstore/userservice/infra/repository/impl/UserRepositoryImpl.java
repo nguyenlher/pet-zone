@@ -1,18 +1,20 @@
 package com.petstore.userservice.infra.repository.impl;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import com.petstore.userservice.infra.entity.UserEntity;
-import com.petstore.userservice.infra.mapper.UserMapper;
 import com.petstore.userservice.domain.model.User;
 import com.petstore.userservice.domain.repository.UserRepository;
+import com.petstore.userservice.infra.entity.UserEntity;
+import com.petstore.userservice.infra.mapper.UserMapper;
 import com.petstore.userservice.infra.repository.jpa.JpaUserRepository;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
@@ -45,9 +47,36 @@ public class UserRepositoryImpl implements UserRepository {
         return entityOpt.map(mapper::toDomain);
     }
 
-     @Override
-     public List<User> findAll() {
-        List<UserEntity> entities = jpaUserRepository.findAll();
-        return mapper.toDomain(entities);
-     }
+    @Override
+    public Page<User> findAll(Pageable pageable) {
+        Page<UserEntity> entities = jpaUserRepository.findAll(pageable);
+        return entities.map(mapper::toDomain);
+    }
+
+    @Override
+    public Page<User> searchByKeyword(String keyword, Pageable pageable) {
+        Page<UserEntity> entities = jpaUserRepository.searchByKeyword(keyword, pageable);
+        return entities.map(mapper::toDomain);
+    }
+
+    @Override
+    public void delete(User user) {
+        UserEntity entity = mapper.toEntity(user);
+        jpaUserRepository.delete(entity);
+    }
+
+    @Override
+    public Long count() {
+        return jpaUserRepository.count();
+    }
+
+    @Override
+    public Long countByIsActive(Boolean isActive) {
+        return jpaUserRepository.countByIsActive(isActive);
+    }
+
+    @Override
+    public Long countByCreatedAtAfter(LocalDateTime dateTime) {
+        return jpaUserRepository.countByCreatedAtAfter(dateTime);
+    }
 }

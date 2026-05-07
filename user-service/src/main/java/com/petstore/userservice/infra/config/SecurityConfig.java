@@ -66,7 +66,7 @@ public class SecurityConfig {
             List<String> roles = (List<String>) rolesObj;
 
             return roles.stream()
-                    .map(SimpleGrantedAuthority::new)
+                    .map(role -> new SimpleGrantedAuthority(role.startsWith("ROLE_") ? role : "ROLE_" + role))
                     .collect(Collectors.toList());
         });
         return jwtConverter;

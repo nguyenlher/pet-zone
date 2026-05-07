@@ -1,11 +1,19 @@
 package com.petstore.userservice.infra.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(name = "user_shipping_infos")
@@ -28,14 +36,8 @@ public class UserShippingInfoEntity {
     @Column(name = "address")
     String address;
 
-    @Column(name = "district")
-    String district;
-
     @Column(name = "city")
     String city;
-
-    @Column(name = "note")
-    String note;
 
     @Column(name = "is_default")
     boolean isDefault;

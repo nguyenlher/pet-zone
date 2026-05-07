@@ -16,6 +16,13 @@ import com.petstore.petservice.infra.entity.PetEntity;
 
 @Repository
 public interface JpaPetRepository extends JpaRepository<PetEntity, UUID> {
+    
+    @Query("SELECT DISTINCT p FROM PetEntity p " +
+           "LEFT JOIN FETCH p.images " +
+           "LEFT JOIN FETCH p.model3d " +
+           "WHERE p.status = :status")
+    Page<PetEntity> findByStatusWithImages(@Param("status") PetStatus status, Pageable pageable);
+    
     Page<PetEntity> findByStatus(PetStatus status, Pageable pageable);
     
     @Query("SELECT p FROM PetEntity p " +

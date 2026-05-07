@@ -15,5 +15,6 @@ import java.util.UUID;
 public class CreateOrderRequest {
     UUID userId;
     List<OrderItemRequest> items;
+    ShippingDetailRequest shipping;
     String discountCode;
 }

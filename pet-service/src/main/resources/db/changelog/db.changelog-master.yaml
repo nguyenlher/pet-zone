@@ -38,4 +38,12 @@ databaseChangeLog:
         - sqlFile:
             path: changes/005_create_pet_3d_models.sql
             relativeToChangelogFile: true
+            
+  - changeSet:
+      id: 006_create_pet_product_reviews
+      author: pet-service
+      changes:
+        - sqlFile:
+            path: changes/006_create_pet_product_reviews.sql
+            relativeToChangelogFile: true
   

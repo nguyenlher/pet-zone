@@ -1,9 +1,10 @@
 package com.petstore.userservice.infra.repository.jpa;
 
-import com.petstore.userservice.infra.entity.UserShippingInfoEntity;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.UUID;
+import com.petstore.userservice.infra.entity.UserShippingInfoEntity;
 
 public interface JpaUserShippingInfoRepository extends JpaRepository<UserShippingInfoEntity, UUID> {
 }

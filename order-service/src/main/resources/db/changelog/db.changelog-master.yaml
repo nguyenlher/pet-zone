@@ -1,0 +1,24 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001_create_orders
+      author: order-service
+      changes:
+        - sqlFile:
+            path: changes/001_create_orders.sql
+            relativeToChangelogFile: true
+            
+  - changeSet:
+      id: 002_create_order_items
+      author: order-service
+      changes:
+        - sqlFile:
+            path: changes/002_create_order_items.sql
+            relativeToChangelogFile: true
+            
+  - changeSet:
+      id: 003_create_order_shipping_details
+      author: order-service
+      changes:
+        - sqlFile:
+            path: changes/003_create_order_shipping_details.sql
+            relativeToChangelogFile: true

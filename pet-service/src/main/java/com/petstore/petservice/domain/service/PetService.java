@@ -15,6 +15,7 @@ public interface PetService {
     PetDetailResponse create(PetCreateRequest request);
     PetDetailResponse update(UUID id, PetUpdateRequest request);
     PetDetailResponse getById(UUID id);
+    Page<PetResponse> getAll(Pageable pageable);
     Page<PetResponse> getByStatus(PetStatus status, Pageable pageable);
     void incrementViewCount(UUID id);
     void updateStatus(UUID id, PetStatus status);

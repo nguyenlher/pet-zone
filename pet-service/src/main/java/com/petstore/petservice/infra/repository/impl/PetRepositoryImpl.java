@@ -37,7 +37,13 @@ public class PetRepositoryImpl implements PetRepository {
 
     @Override
     public Page<Pet> findByStatus(PetStatus status, Pageable pageable) {
-        return jpaPetRepository.findByStatus(status, pageable)
+        return jpaPetRepository.findByStatusWithImages(status, pageable)
+                .map(petMapper::toDomain);
+    }
+
+    @Override
+    public Page<Pet> findAll(Pageable pageable) {
+        return jpaPetRepository.findAll(pageable)
                 .map(petMapper::toDomain);
     }
 

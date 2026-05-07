@@ -75,6 +75,13 @@ public class PetServiceImpl implements PetService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public Page<PetResponse> getAll(Pageable pageable) {
+        Page<Pet> pets = petRepository.findAll(pageable);
+        return pets.map(petMapper::toResponse);
+    }
+
+    @Override
     @Transactional
     public void incrementViewCount(UUID id) {
         if (!petRepository.existsById(id)) {

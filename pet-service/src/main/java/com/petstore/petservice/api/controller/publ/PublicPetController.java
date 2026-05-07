@@ -40,6 +40,12 @@ public class PublicPetController {
         return ResponseEntity.ok(petService.getByStatus(status, pageable));
     }
 
+    @GetMapping
+    public ResponseEntity<Page<PetResponse>> getAllPets(
+            @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ResponseEntity.ok(petService.getAll(pageable));
+    }
+
     @PostMapping(PetApiPath.PET_PUBLIC_INCREMENT_VIEW)
     public ResponseEntity<Void> incrementViewCount(@PathVariable UUID petId) {
         petService.incrementViewCount(petId);

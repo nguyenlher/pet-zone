@@ -52,4 +52,26 @@ public class PetApiPath {
     // Pet 3D Models - Private (Admin/AI Service)
     public static final String PET_3D_MODEL_PRIVATE_BASE = PRIVATE_BASE + "/pets/{petId}/3d-models";
     public static final String PET_3D_MODEL_PRIVATE_BY_ID = "/{modelId}";
+    
+    // Pet Products - Public (Client & Admin)
+    public static final String PET_PRODUCT_PUBLIC_BASE = PUBLIC_BASE + "/products";
+    public static final String PET_PRODUCT_PUBLIC_BY_ID = "/{productId}";
+    public static final String PET_PRODUCT_PUBLIC_BY_CATEGORY = "/category/{category}";
+    public static final String PET_PRODUCT_PUBLIC_BY_PET_TYPE = "/pet-type/{petTypeId}";
+    public static final String PET_PRODUCT_PUBLIC_SEARCH = "/search";
+    public static final String PET_PRODUCT_PUBLIC_TOP_SELLING = "/top-selling";
+    public static final String PET_PRODUCT_PUBLIC_TOP_RATED = "/top-rated";
+    public static final String PET_PRODUCT_PUBLIC_INCREMENT_VIEW = "/{productId}/view";
+    
+    // Pet Products - Private (Service to Service)
+    public static final String PET_PRODUCT_PRIVATE_BASE = PRIVATE_BASE + "/products";
+    public static final String PET_PRODUCT_PRIVATE_BY_ID = "/{productId}";
+    public static final String PET_PRODUCT_PRIVATE_CHECK_STOCK = "/{productId}/check-stock";
+    public static final String PET_PRODUCT_PRIVATE_UPDATE_STOCK = "/{productId}/stock";
+    public static final String PET_PRODUCT_PRIVATE_INCREMENT_SOLD = "/{productId}/sold";
+    public static final String PET_PRODUCT_PRIVATE_BATCH_CHECK = "/batch/check";
+    
+    // Pet Product Reviews - Public (Client & Admin)
+    public static final String PET_PRODUCT_REVIEW_PUBLIC_BASE = PUBLIC_BASE + "/products/{productId}/reviews";
+    public static final String PET_PRODUCT_REVIEW_PUBLIC_BY_ID = "/{reviewId}";
 }

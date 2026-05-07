@@ -1,19 +1,20 @@
 package com.petstore.petservice.api.dto.response;
 
-import com.petstore.petservice.domain.model.enums.FurType;
-import com.petstore.petservice.domain.model.enums.Gender;
-import com.petstore.petservice.domain.model.enums.HealthStatus;
-import com.petstore.petservice.domain.model.enums.PetStatus;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.petstore.petservice.domain.model.enums.FurType;
+import com.petstore.petservice.domain.model.enums.Gender;
+import com.petstore.petservice.domain.model.enums.HealthStatus;
+import com.petstore.petservice.domain.model.enums.PetStatus;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
@@ -47,7 +48,7 @@ public class PetDetailResponse {
     private PetStatus status;
     
     // Media
-    private List<PetImageResponse> images;
+    private List<PetProductImageResponse> images;
     
     // Metrics
     private Integer viewCount;
@@ -63,9 +64,9 @@ public class PetDetailResponse {
     public String getThumbnailUrl() {
         if (images != null && !images.isEmpty()) {
             return images.stream()
-                    .filter(PetImageResponse::getIsThumbnail)
+                    .filter(PetProductImageResponse::getIsThumbnail)
                     .findFirst()
-                    .map(PetImageResponse::getImageUrl)
+                    .map(PetProductImageResponse::getImageUrl)
                     .orElse(images.get(0).getImageUrl());
         }
         return null;
@@ -74,7 +75,7 @@ public class PetDetailResponse {
     public List<String> getImageUrls() {
         if (images != null) {
             return images.stream()
-                    .map(PetImageResponse::getImageUrl)
+                    .map(PetProductImageResponse::getImageUrl)
                     .toList();
         }
         return List.of();

@@ -96,6 +96,11 @@ spring:
           predicates:
             - Path=/api/public/orders/**
 
+        - id: order-service-base
+          uri: http://order-service:8084
+          predicates:
+            - Path=/api/order/**
+
         - id: order-service-private
           uri: http://order-service:8084
           predicates:

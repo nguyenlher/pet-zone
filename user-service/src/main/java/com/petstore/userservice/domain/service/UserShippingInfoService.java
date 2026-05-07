@@ -1,9 +1,9 @@
 package com.petstore.userservice.domain.service;
 
+import java.util.UUID;
+
 import com.petstore.userservice.api.dto.request.UserShippingInfoRequest;
 import com.petstore.userservice.domain.model.UserShippingInfo;
-
-import java.util.UUID;
 
 public interface UserShippingInfoService {
     UserShippingInfo createUserShippingInfo(UserShippingInfoRequest request);

@@ -1,6 +1,10 @@
 spring:
   application:
     name: order-service
+  
+  config:
+    import:
+      - classpath:kafka-config.yml
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5435/order_db}
@@ -10,14 +14,14 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false
 
   liquibase:
-    enabled: false
-
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    enabled: true
+    changelog: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+    drop-first: false
 
 server:
   port: ${SERVER_PORT:8084}
@@ -25,6 +29,8 @@ server:
 rest:
     api:
         user-service:
-            baseUrl: ${USER_SERVICE_URL:http://localhost:8081/}
+            baseUrl: ${USER_SERVICE_URL:http://localhost:8081}
         pet-service:
-            baseUrl: ${PET_SERVICE_URL:http://localhost:8082/}
+            baseUrl: ${PET_SERVICE_URL:http://localhost:8082}
+        payment-service:
+            baseUrl: ${PAYMENT_SERVICE_URL:http://localhost:8085}

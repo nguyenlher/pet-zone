@@ -1,14 +1,16 @@
 package com.petstore.userservice.domain.service.impl;
 
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
 import com.petstore.userservice.api.dto.request.UserShippingInfoRequest;
 import com.petstore.userservice.domain.model.UserShippingInfo;
 import com.petstore.userservice.domain.repository.UserShippingInfoRepository;
 import com.petstore.userservice.domain.service.UserShippingInfoService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,10 +24,8 @@ public class UserShippingInfoServiceImpl implements UserShippingInfoService {
                 .userId(request.getUserId())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
-                .district(request.getDistrict())
                 .city(request.getCity())
-                .note(request.getNote())
-                .isDefault(request.getIsDefault() != null ? request.getIsDefault() : false)
+                .isDefault(Boolean.TRUE.equals(request.getIsDefault()))
                 .build();
 
         UserShippingInfo saved = userShippingInfoRepository.save(created);
@@ -43,10 +43,8 @@ public class UserShippingInfoServiceImpl implements UserShippingInfoService {
                 .userId(request.getUserId() != null ? request.getUserId() : userShippingInfo.getUserId())
                 .phoneNumber(request.getPhoneNumber() != null ? request.getPhoneNumber() : userShippingInfo.getPhoneNumber())
                 .address(request.getAddress() != null ? request.getAddress() : userShippingInfo.getAddress())
-                .district(request.getDistrict() != null ? request.getDistrict() : userShippingInfo.getDistrict())
                 .city(request.getCity() != null ? request.getCity() : userShippingInfo.getCity())
-                .note(request.getNote() != null ? request.getNote() : userShippingInfo.getNote())
-                .isDefault(request.getIsDefault() != null ? request.getIsDefault() : userShippingInfo.isDefault())
+                .isDefault(Boolean.TRUE.equals(request.getIsDefault()) ? true : userShippingInfo.isDefault())
                 .createdAt(userShippingInfo.getCreatedAt())
                 .updatedAt(request.getUpdatedAt() != null ? request.getUpdatedAt() : userShippingInfo.getUpdatedAt())
                 .build();

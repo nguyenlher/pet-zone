@@ -19,7 +19,7 @@ import com.petstore.petservice.domain.model.Pet;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
-        uses = {PetImageMapper.class, Pet3DModelMapper.class, BreedMapper.class})
+        uses = {PetProductImageMapper.class, Pet3DModelMapper.class, BreedMapper.class})
 public interface PetMapper {
     PetEntity toEntity(Pet pet);
     Pet toDomain(PetEntity entity);
@@ -45,8 +45,8 @@ public interface PetMapper {
     
     @Mapping(target = "ageInMonths", expression = "java(calculateAgeInMonths(pet.getBirthDate()))")
     @Mapping(target = "breedName", ignore = true)
-    @Mapping(target = "thumbnailUrl", ignore = true)
-    @Mapping(target = "has3DModel", constant = "false")
+    @Mapping(target = "thumbnailUrl", expression = "java(getThumbnailUrl(pet))")
+    @Mapping(target = "has3DModel", expression = "java(pet.getModel3d() != null)")
     PetResponse toResponse(Pet pet);
     
     default Integer calculateAgeInMonths(LocalDate birthDate) {
@@ -55,5 +55,16 @@ public interface PetMapper {
         }
         return Period.between(birthDate, LocalDate.now()).getYears() * 12 
              + Period.between(birthDate, LocalDate.now()).getMonths();
+    }
+    
+    default String getThumbnailUrl(Pet pet) {
+        if (pet.getImages() == null || pet.getImages().isEmpty()) {
+            return null;
+        }
+        return pet.getImages().stream()
+                .filter(img -> img.getIsThumbnail() != null && img.getIsThumbnail())
+                .findFirst()
+                .map(img -> img.getImageUrl())
+                .orElse(pet.getImages().get(0).getImageUrl());
     }
 }

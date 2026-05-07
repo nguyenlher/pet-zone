@@ -192,6 +192,9 @@ services:
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
       KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: super-petmark-3d
+      KEYCLOAK_CLIENT_ID: user-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
     depends_on:
       - postgres-user
       - redis
@@ -220,6 +223,9 @@ services:
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
       KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: super-petmark-3d
+      KEYCLOAK_CLIENT_ID: user-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
     depends_on:
       - postgres-pet
       - redis
@@ -247,6 +253,7 @@ services:
       API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
       USER_SERVICE_URL: http://user-service:8081
       PET_SERVICE_URL: http://pet-service:8082
+      PAYMENT_SERVICE_URL: http://payment-service:8085
     depends_on:
       - postgres-order
       - redis

@@ -13,6 +13,9 @@ public class RestClientConfig {
     @Value("${rest.api.pet-service.baseUrl}")
     private String petServiceBaseUrl;
 
+    @Value("${rest.api.payment-service.baseUrl}")
+    private String paymentServiceBaseUrl;
+
     @Bean
     public RestClient userRestClient() {
         return RestClient.builder().baseUrl(userServiceBaseUrl).build();
@@ -21,5 +24,10 @@ public class RestClientConfig {
     @Bean
     public RestClient petRestClient() {
         return RestClient.builder().baseUrl(petServiceBaseUrl).build();
+    }
+
+    @Bean
+    public RestClient paymentRestClient() {
+        return RestClient.builder().baseUrl(paymentServiceBaseUrl).build();
     }
 }

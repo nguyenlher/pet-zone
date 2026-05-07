@@ -89,8 +89,10 @@ public class PetEntity {
     @Builder.Default
     Integer viewCount = 0;
     
-    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    List<PetImageEntity> images;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @jakarta.persistence.JoinColumn(name = "entity_id")
+    @org.hibernate.annotations.SQLRestriction("entity_type = 'PET'")
+    List<PetProductImageEntity> images;
     
     @OneToOne(mappedBy = "pet", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     Pet3DModelEntity model3d;

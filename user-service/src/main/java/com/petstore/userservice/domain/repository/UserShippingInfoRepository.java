@@ -1,9 +1,9 @@
 package com.petstore.userservice.domain.repository;
 
-import com.petstore.userservice.domain.model.UserShippingInfo;
-
 import java.util.Optional;
 import java.util.UUID;
+
+import com.petstore.userservice.domain.model.UserShippingInfo;
 
 public interface UserShippingInfoRepository {
     UserShippingInfo save(UserShippingInfo userShippingInfo);

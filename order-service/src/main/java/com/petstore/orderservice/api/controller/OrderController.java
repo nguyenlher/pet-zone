@@ -3,7 +3,10 @@ package com.petstore.orderservice.api.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +19,7 @@ import com.petstore.orderservice.api.dto.response.CreateOrderResponse;
 import com.petstore.orderservice.api.dto.response.OrderItemResponse;
 import com.petstore.orderservice.domain.model.Order;
 import com.petstore.orderservice.domain.model.OrderItem;
+import com.petstore.orderservice.domain.model.OrderShippingDetail;
 import com.petstore.orderservice.domain.service.OrderService;
 import com.petstore.orderservice.utils.apipaths.OrderApiPath;
 
@@ -37,9 +41,29 @@ public class OrderController {
                         .build())
                 .collect(Collectors.toList());
 
-        Order order = orderService.createOrder(request.getUserId(), items, request.getDiscountCode());
+        OrderShippingDetail shippingDetail = null;
+        if (request.getShipping() != null) {
+            shippingDetail = OrderShippingDetail.builder()
+                    .name(request.getShipping().getName())
+                    .phone(request.getShipping().getPhone())
+                    .address(request.getShipping().getAddress())
+                    .city(request.getShipping().getCity())
+                    .paymentMethod(request.getShipping().getPaymentMethod())
+                    .build();
+        }
 
-        return ResponseEntity.ok(toCreateOrderResponse(order));
+        Order order = orderService.createOrder(request.getUserId(), items, shippingDetail, request.getDiscountCode());
+
+        CreateOrderResponse response = toCreateOrderResponse(order);
+        
+        // Nếu là VNPay, lấy payment URL từ payment service
+        if (order.getStatus() == com.petstore.orderservice.domain.model.enums.OrderStatus.PENDING_PAYMENT) {
+            // Payment URL đã được tạo trong OrderService, cần trả về
+            // Tạm thời set null, sẽ refactor sau
+            response.setPaymentUrl(null); // TODO: Get from payment service
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping(OrderApiPath.ORDER_CANCEL)
@@ -53,6 +77,13 @@ public class OrderController {
                 .message("Order canceled successfully")
                 .build();
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<CreateOrderResponse>> getAllOrders(Pageable pageable) {
+        Page<Order> orders = orderService.getAllOrders(pageable);
+        Page<CreateOrderResponse> response = orders.map(this::toCreateOrderResponse);
         return ResponseEntity.ok(response);
     }
 

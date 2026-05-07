@@ -1,12 +1,18 @@
 package com.petstore.orderservice.api.dto.response;
 
-import com.petstore.orderservice.domain.model.enums.OrderStatus;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import com.petstore.orderservice.domain.model.enums.OrderStatus;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -23,6 +29,7 @@ public class CreateOrderResponse {
     double totalAmount;
     OrderStatus orderStatus;
     List<OrderItemResponse> items;
+    String paymentUrl;  // URL thanh toán VNPay (nếu có)
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
 }

@@ -19,5 +19,4 @@ import lombok.experimental.FieldDefaults;
 public class CreatePaymentRequest {
     UUID orderId;
     String paymentMethod;
-    double amount;
 }

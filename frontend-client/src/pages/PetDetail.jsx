@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import { usePetDetail, usePets } from '../hooks/usePets';
 import { useCart } from '../context/CartContext';
 import PetCard from '../components/PetCard';
-import '../styles/pages/PetDetail.css';
-import '../styles/components/Pet3DViewer.css';
 
 const Pet3DViewer = lazy(() => import('../components/Pet3DViewer'));
 
@@ -20,33 +18,23 @@ export default function PetDetail() {
   const [added, setAdded] = useState(false);
   const [viewMode, setViewMode] = useState('photos');
 
-  if (loading) {
-    return (
-      <div className="pet-detail-page">
-        <div className="container">
-          <div className="loading-spinner">Loading pet details...</div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="pt-20 min-h-screen bg-stone-50 flex items-center justify-center">
+      <div className="text-center"><div className="spinner mx-auto mb-4" /><p className="text-stone-500">Loading pet details...</p></div>
+    </div>
+  );
 
-  if (error || !pet) {
-    return (
-      <div className="pet-detail-page">
-        <div className="container">
-          <div className="empty-state">
-            <h3>Pet not found</h3>
-            <p>{error || "The pet you're looking for doesn't exist."}</p>
-            <Link to="/pets" className="btn btn-primary">Browse Pets</Link>
-          </div>
-        </div>
+  if (error || !pet) return (
+    <div className="pt-20 min-h-screen bg-stone-50 flex items-center justify-center">
+      <div className="text-center">
+        <h3 className="font-heading text-2xl font-bold text-stone-700 mb-3">Pet not found</h3>
+        <p className="text-stone-500 mb-6">{error || "The pet you're looking for doesn't exist."}</p>
+        <Link to="/pets" className="btn btn-primary">Browse Pets</Link>
       </div>
-    );
-  }
+    </div>
+  );
 
-  const images = pet.imageUrls?.length
-    ? pet.imageUrls
-    : (pet.images?.map(img => img.imageUrl) || []);
+  const images = pet.imageUrls?.length ? pet.imageUrls : (pet.images?.map(img => img.imageUrl) || []);
   const hasModel = pet.model3d && pet.model3d.modelUrl;
   const relatedPets = allPets.filter(p => p.breedId === pet.breedId && p.id !== pet.id).slice(0, 4);
 
@@ -56,62 +44,46 @@ export default function PetDetail() {
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
-
-  const getAgeDisplay = (ageInMonths) => {
-    if (!ageInMonths) return 'Age unknown';
-    if (ageInMonths < 12) return `${ageInMonths} months`;
-    const years = Math.floor(ageInMonths / 12);
-    const months = ageInMonths % 12;
-    return months > 0 ? `${years}y ${months}m` : `${years} years`;
+  const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+  const getAgeDisplay = (months) => {
+    if (!months) return 'Age unknown';
+    if (months < 12) return `${months} months`;
+    const y = Math.floor(months / 12), m = months % 12;
+    return m > 0 ? `${y}y ${m}m` : `${y} years`;
   };
 
   return (
-    <div className="pet-detail-page">
-      <div className="container">
+    <div className="pt-20 min-h-screen bg-stone-50">
+      <div className="max-w-6xl mx-auto px-6 py-10">
         {/* Breadcrumb */}
-        <nav className="breadcrumb">
-          <Link to="/">Home</Link>
-          <ChevronRight size={14} />
-          <Link to="/pets">Pets</Link>
-          <ChevronRight size={14} />
-          <span>{pet.name}</span>
+        <nav className="flex items-center gap-1.5 text-sm text-stone-500 mb-8">
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+          <ChevronRight size={13} />
+          <Link to="/pets" className="hover:text-primary transition-colors">Pets</Link>
+          <ChevronRight size={13} />
+          <span className="text-stone-900 font-medium">{pet.name}</span>
         </nav>
 
-        <div className="detail-grid">
-          {/* Images / 3D Viewer */}
-          <motion.div className="detail-images" initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-            {/* View mode tabs */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
+          {/* Images / 3D */}
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             {hasModel && (
-              <div className="detail-view-tabs">
-                <button
-                  className={`detail-view-tab ${viewMode === 'photos' ? 'active' : ''}`}
-                  onClick={() => setViewMode('photos')}
-                >
-                  <Image size={16} /> Photos
-                </button>
-                <button
-                    className={`detail-view-tab ${viewMode === '3d' ? 'active' : ''}`}
-                    onClick={() => setViewMode('3d')}
-                >
-                  <Box size={16} /> 3D View
-                </button>
+              <div className="flex gap-2 mb-3">
+                {[{ mode: 'photos', icon: Image, label: 'Photos' }, { mode: '3d', icon: Box, label: '3D View' }].map(({ mode, icon: Icon, label }) => (
+                  <button key={mode} onClick={() => setViewMode(mode)}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border transition-all ${viewMode === mode ? 'bg-primary text-white border-primary' : 'bg-white text-stone-600 border-stone-200 hover:border-primary'}`}>
+                    <Icon size={15} /> {label}
+                  </button>
+                ))}
               </div>
             )}
 
-            {/* 3D Viewer */}
             {viewMode === '3d' && hasModel && (
               <Suspense fallback={
-                <div className="viewer-3d-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                    <div style={{ width: 40, height: 40, border: '3px solid #e7e5e4', borderTopColor: '#f59e0b', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 12px' }} />
-                    Loading 3D Viewer...
-                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                <div className="viewer-3d-container flex items-center justify-center">
+                  <div className="text-center text-stone-400">
+                    <div className="spinner mx-auto mb-3" />
+                    <p className="text-sm">Loading 3D Viewer...</p>
                   </div>
                 </div>
               }>
@@ -119,20 +91,16 @@ export default function PetDetail() {
               </Suspense>
             )}
 
-            {/* Photo gallery */}
             {viewMode === 'photos' && images.length > 0 && (
               <>
-                <div className="main-image-wrap">
-                  <img src={images[selectedImage]} alt={pet.name} className="main-image" />
+                <div className="rounded-2xl overflow-hidden mb-3 aspect-square bg-stone-100">
+                  <img src={images[selectedImage]} alt={pet.name} className="w-full h-full object-cover" />
                 </div>
-                <div className="thumb-list">
+                <div className="flex gap-2 overflow-x-auto pb-1">
                   {images.map((img, i) => (
-                    <button
-                      key={i}
-                      className={`thumb ${i === selectedImage ? 'active' : ''}`}
-                      onClick={() => setSelectedImage(i)}
-                    >
-                      <img src={img} alt={`${pet.name} ${i + 1}`} />
+                    <button key={i} onClick={() => setSelectedImage(i)}
+                      className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === selectedImage ? 'border-primary' : 'border-stone-200'}`}>
+                      <img src={img} alt={`${pet.name} ${i + 1}`} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -141,81 +109,60 @@ export default function PetDetail() {
           </motion.div>
 
           {/* Info */}
-          <motion.div className="detail-info" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-            <div className="detail-category badge badge-primary">{pet.breedName || 'Pet'}</div>
-            <h1 className="detail-name">{pet.name}</h1>
-            <p className="detail-breed">{pet.breed?.name || pet.breedName}</p>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+            <span className="badge badge-primary mb-3">{pet.breedName || 'Pet'}</span>
+            <h1 className="font-heading text-4xl font-bold text-stone-900 mb-1">{pet.name}</h1>
+            <p className="text-stone-500 mb-4">{pet.breed?.name || pet.breedName}</p>
 
-            <div className="detail-rating">
-              <div className="stars">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={18} className={i < 4 ? 'star-filled' : 'star-empty'} />
-                ))}
-              </div>
-              <span className="rating-value">4.5</span>
-              <span className="rating-count">({pet.viewCount || 0} views)</span>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex gap-0.5">{Array.from({ length: 5 }).map((_, i) => <Star key={i} size={16} className={i < 4 ? 'star-filled' : 'star-empty'} />)}</div>
+              <span className="text-sm font-medium text-stone-700">4.5</span>
+              <span className="text-sm text-stone-400">({pet.viewCount || 0} views)</span>
             </div>
 
-            <div className="detail-price-row">
-              <span className="detail-price">{formatPrice(pet.price)}</span>
-            </div>
+            <p className="font-heading text-3xl font-bold text-stone-900 mb-5">{formatPrice(pet.price)}</p>
+            <p className="text-stone-600 text-sm leading-relaxed mb-6">{pet.description}</p>
 
-            <p className="detail-description">{pet.description}</p>
-
-            <div className="detail-specs">
-              {[
-                { label: 'Age', value: getAgeDisplay(pet.ageInMonths) },
-                { label: 'Gender', value: pet.gender },
-                { label: 'Weight', value: pet.weight ? `${pet.weight} kg` : 'N/A' },
-                { label: 'Colors', value: pet.colors?.join(', ') || 'N/A' },
-              ].map(spec => (
-                <div key={spec.label} className="spec-item">
-                  <span className="spec-label">{spec.label}</span>
-                  <span className="spec-value">{spec.value}</span>
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {[{ label: 'Age', value: getAgeDisplay(pet.ageInMonths) }, { label: 'Gender', value: pet.gender }, { label: 'Weight', value: pet.weight ? `${pet.weight} kg` : 'N/A' }, { label: 'Colors', value: pet.colors?.join(', ') || 'N/A' }].map(spec => (
+                <div key={spec.label} className="bg-stone-50 rounded-xl px-4 py-3">
+                  <span className="text-xs font-medium text-stone-500 uppercase tracking-wider block mb-0.5">{spec.label}</span>
+                  <span className="text-sm font-semibold text-stone-900">{spec.value}</span>
                 </div>
               ))}
             </div>
 
-            <div className="detail-tags">
-              {pet.vaccinated && (
-                <span className="detail-tag tag-success"><CheckCircle size={14} /> Vaccinated</span>
-              )}
-              {pet.healthStatus === 'EXCELLENT' && (
-                <span className="detail-tag tag-info"><Shield size={14} /> Excellent Health</span>
-              )}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {pet.vaccinated && <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold"><CheckCircle size={13} /> Vaccinated</span>}
+              {pet.healthStatus === 'EXCELLENT' && <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold"><Shield size={13} /> Excellent Health</span>}
             </div>
 
-            <div className="detail-actions">
-              <div className="quantity-control">
-                <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
-                <span>{quantity}</span>
-                <button onClick={() => setQuantity(quantity + 1)}>+</button>
+            <div className="flex items-center gap-3 mb-6">
+              <div className="flex items-center border border-stone-200 rounded-xl overflow-hidden">
+                <button className="px-4 py-3 text-stone-600 hover:bg-stone-50 transition-colors" onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button>
+                <span className="px-4 py-3 font-semibold text-stone-900 min-w-[48px] text-center">{quantity}</span>
+                <button className="px-4 py-3 text-stone-600 hover:bg-stone-50 transition-colors" onClick={() => setQuantity(quantity + 1)}>+</button>
               </div>
-              <button 
-                className={`btn btn-primary btn-lg flex-1 ${added ? 'added' : ''}`} 
-                onClick={handleAddToCart}
-                disabled={pet.status !== 'AVAILABLE'}
-              >
+              <button className={`btn flex-1 justify-center ${added ? 'btn-secondary' : 'btn-primary'}`}
+                onClick={handleAddToCart} disabled={pet.status !== 'AVAILABLE'}>
                 <ShoppingCart size={18} />
                 {added ? 'Added to Cart!' : pet.status === 'AVAILABLE' ? 'Add to Cart' : 'Not Available'}
               </button>
-              <button className="btn btn-secondary wishlist-btn">
-                <Heart size={18} />
-              </button>
+              <button className="btn btn-secondary p-3"><Heart size={18} /></button>
             </div>
 
-            <div className="detail-benefits">
-              <div className="benefit-mini"><Shield size={16} /> Health Guaranteed</div>
-              <div className="benefit-mini"><Truck size={16} /> Safe Delivery</div>
+            <div className="flex gap-4 bg-amber-50 rounded-xl p-4">
+              <span className="flex items-center gap-1.5 text-sm text-stone-600"><Shield size={15} className="text-primary" /> Health Guaranteed</span>
+              <span className="flex items-center gap-1.5 text-sm text-stone-600"><Truck size={15} className="text-primary" /> Safe Delivery</span>
             </div>
           </motion.div>
         </div>
 
         {/* Related */}
         {relatedPets.length > 0 && (
-          <section className="related-section">
-            <h2 className="section-title">Related Pets</h2>
-            <div className="related-grid">
+          <section>
+            <h2 className="font-heading text-2xl font-bold text-stone-900 mb-6">Related Pets</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedPets.map(p => <PetCard key={p.id} pet={p} />)}
             </div>
           </section>

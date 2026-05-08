@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import com.petstore.orderservice.api.dto.PetDTO;
-import com.petstore.orderservice.api.dto.response.PaymentResponse;
 import com.petstore.orderservice.domain.model.Order;
 import com.petstore.orderservice.domain.model.OrderItem;
 import com.petstore.orderservice.domain.model.OrderShippingDetail;
@@ -24,7 +23,6 @@ import com.petstore.orderservice.domain.model.enums.OrderStatus;
 import com.petstore.orderservice.domain.publisher.OrderPublisher;
 import com.petstore.orderservice.domain.repository.OrderRepository;
 import com.petstore.orderservice.domain.service.OrderService;
-import com.petstore.orderservice.infra.client.PaymentClient;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,17 +32,14 @@ public class OrderServiceImpl implements OrderService {
 
     private final RestClient petRestClient;
     private final OrderRepository orderRepository;
-    private final PaymentClient paymentClient;
     private final OrderPublisher orderPublisher;
 
     public OrderServiceImpl(
             @Qualifier("petRestClient") RestClient petRestClient,
             OrderRepository orderRepository,
-            PaymentClient paymentClient,
             OrderPublisher orderPublisher) {
         this.petRestClient = petRestClient;
         this.orderRepository = orderRepository;
-        this.paymentClient = paymentClient;
         this.orderPublisher = orderPublisher;
     }
 
@@ -113,25 +108,6 @@ public class OrderServiceImpl implements OrderService {
             orderPublisher.publishOrderCreated(savedOrder);
         } catch (Exception e) {
             log.error("Failed to publish order created event for order: {}", savedOrder.getId(), e);
-        }
-
-        // Nếu là VNPay, tạo payment URL
-        if (initialStatus == OrderStatus.PENDING_PAYMENT) {
-            try {
-                PaymentResponse paymentResponse = paymentClient.createPayment(
-                        savedOrder.getId(),
-                        "VNPAY",
-                        savedOrder.getTotalAmount()
-                );
-                // Lưu payment URL vào order (có thể thêm field mới hoặc return riêng)
-                log.info("Payment URL created for order {}: {}", savedOrder.getId(), paymentResponse.getPaymentUrl());
-            } catch (Exception e) {
-                log.error("Failed to create payment URL for order: {}", savedOrder.getId(), e);
-                // Rollback order hoặc mark as failed
-                savedOrder.setStatus(OrderStatus.PAYMENT_FAILED);
-                orderRepository.save(savedOrder);
-                throw new RuntimeException("Failed to create payment: " + e.getMessage());
-            }
         }
 
         return savedOrder;

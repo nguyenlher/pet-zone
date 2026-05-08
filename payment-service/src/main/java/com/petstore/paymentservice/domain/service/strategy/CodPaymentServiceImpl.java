@@ -7,11 +7,11 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.petstore.paymentservice.domain.client.OrderClient;
-import com.petstore.paymentservice.domain.client.OrderInfo;
 import com.petstore.paymentservice.api.dto.request.CreatePaymentRequest;
 import com.petstore.paymentservice.api.dto.response.PaymentCallbackResponse;
 import com.petstore.paymentservice.api.dto.response.PaymentResponse;
+import com.petstore.paymentservice.domain.client.OrderClient;
+import com.petstore.paymentservice.domain.client.OrderInfo;
 import com.petstore.paymentservice.domain.model.Payment;
 import com.petstore.paymentservice.domain.model.enums.PaymentMethod;
 import com.petstore.paymentservice.domain.model.enums.PaymentStatus;
@@ -48,7 +48,7 @@ public class CodPaymentServiceImpl implements PaymentStrategy {
         OrderInfo order = orderClient.getOrder(request.getOrderId());
 
         Payment payment = Payment.builder()
-                .orderId(order.id())
+                .orderId(order.orderId())
                 .userId(order.userId())
                 .transactionId("COD-" + UUID.randomUUID().toString().substring(0, 8)) 
                 .amount(order.totalAmount())
@@ -59,11 +59,11 @@ public class CodPaymentServiceImpl implements PaymentStrategy {
 
         Payment saved = paymentRepository.save(payment);
 
-        log.info("Created COD payment with id: {} for order: {}", saved.getId(), order.id());
+        log.info("Created COD payment with id: {} for order: {}", saved.getId(), order.orderId());
 
         return PaymentResponse.builder()
                 .id(saved.getId())
-                .orderId(order.id())
+                .orderId(order.orderId())
                 .paymentUrl(null)
                 .status(PaymentStatus.PENDING)
                 .build();

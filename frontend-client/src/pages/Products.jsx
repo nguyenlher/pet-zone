@@ -4,7 +4,6 @@ import { SlidersHorizontal, Search, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from '../components/ProductCard';
-import '../styles/pages/Pets.css'; // Reuse Pets page styles
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -25,44 +24,27 @@ export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('featured');
-  const [priceRange, setPriceRange] = useState([0, 5000000]); // VND
+  const [priceRange, setPriceRange] = useState([0, 5000000]);
   const [showFilters, setShowFilters] = useState(false);
   const [page, setPage] = useState(0);
 
   const activeCategory = searchParams.get('category') || 'all';
-  const { products, loading, totalPages } = useProducts('AVAILABLE', page, 50);
+  const { products, loading } = useProducts('AVAILABLE', page, 50);
 
   const setCategory = (categoryId) => {
-    if (categoryId === 'all') {
-      searchParams.delete('category');
-    } else {
-      searchParams.set('category', categoryId);
-    }
+    if (categoryId === 'all') { searchParams.delete('category'); } else { searchParams.set('category', categoryId); }
     setSearchParams(searchParams);
     setPage(0);
   };
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
-
-    if (activeCategory !== 'all') {
-      result = result.filter(p => p.category === activeCategory);
-    }
-
+    if (activeCategory !== 'all') result = result.filter(p => p.category === activeCategory);
     if (search) {
       const q = search.toLowerCase();
-      result = result.filter(p => 
-        p.name.toLowerCase().includes(q) || 
-        (p.brand && p.brand.toLowerCase().includes(q)) ||
-        (p.description && p.description.toLowerCase().includes(q))
-      );
+      result = result.filter(p => p.name.toLowerCase().includes(q) || (p.brand && p.brand.toLowerCase().includes(q)));
     }
-
-    result = result.filter(p => {
-      const price = Number(p.price);
-      return price >= priceRange[0] && price <= priceRange[1];
-    });
-
+    result = result.filter(p => { const price = Number(p.price); return price >= priceRange[0] && price <= priceRange[1]; });
     switch (sort) {
       case 'price-asc': result.sort((a, b) => Number(a.price) - Number(b.price)); break;
       case 'price-desc': result.sort((a, b) => Number(b.price) - Number(a.price)); break;
@@ -71,45 +53,27 @@ export default function Products() {
       case 'popular': result.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0)); break;
       default: result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     }
-
     return result;
   }, [activeCategory, products, search, sort, priceRange]);
 
   return (
-    <div className="pets-page">
-      <div className="container">
-        {/* Header */}
-        <motion.div className="pets-header" initial="hidden" animate="visible" variants={fadeInUp}>
-          <div>
-            <h1 className="page-title">
-              {activeCategory === 'all' ? 'All Products' : CATEGORIES.find(c => c.id === activeCategory)?.name || 'Products'}
-            </h1>
-            <p className="page-subtitle">
-              {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} available
-            </p>
-          </div>
+    <div className="pt-20 min-h-screen bg-stone-50">
+      <div className="max-w-7xl mx-auto px-6 py-10">
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp} className="mb-6">
+          <h1 className="font-heading text-4xl font-bold text-stone-900">
+            {activeCategory === 'all' ? 'All Products' : CATEGORIES.find(c => c.id === activeCategory)?.name || 'Products'}
+          </h1>
+          <p className="text-stone-500 mt-1">{filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} available</p>
         </motion.div>
 
-        {/* Controls */}
-        <motion.div className="pets-controls" initial="hidden" animate="visible" variants={fadeInUp} custom={1}>
-          <div className="search-bar">
-            <Search size={18} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="search-input"
-            />
-            {search && (
-              <button className="search-clear" onClick={() => setSearch('')}>
-                <X size={16} />
-              </button>
-            )}
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp} custom={1} className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search size={17} className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+            <input type="text" placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} className="input-field pl-10" />
+            {search && <button className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700" onClick={() => setSearch('')}><X size={15} /></button>}
           </div>
-
-          <div className="controls-right">
-            <select className="sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+          <div className="flex gap-2">
+            <select className="input-field w-auto" value={sort} onChange={(e) => setSort(e.target.value)}>
               <option value="featured">Featured</option>
               <option value="price-asc">Price: Low to High</option>
               <option value="price-desc">Price: High to Low</option>
@@ -117,46 +81,34 @@ export default function Products() {
               <option value="rating">Highest Rated</option>
               <option value="popular">Most Popular</option>
             </select>
-            <button className="filter-toggle btn btn-secondary btn-sm" onClick={() => setShowFilters(!showFilters)}>
-              <SlidersHorizontal size={16} /> Filters
+            <button className="btn btn-secondary btn-sm" onClick={() => setShowFilters(!showFilters)}>
+              <SlidersHorizontal size={15} /> Filters
             </button>
           </div>
         </motion.div>
 
-        {/* Filter bar */}
         {showFilters && (
-          <motion.div className="filter-bar animate-slide-down" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-            <div className="filter-group">
-              <label>Price Range: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceRange[0])} - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceRange[1])}</label>
-              <input
-                type="range"
-                min="0"
-                max="5000000"
-                step="100000"
-                value={priceRange[1]}
-                onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
-                className="range-input"
-              />
-            </div>
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="bg-white border border-stone-200 rounded-xl p-5 mb-4">
+            <label className="text-sm font-medium text-stone-600 mb-2 block">
+              Price Range: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceRange[0])} – {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(priceRange[1])}
+            </label>
+            <input type="range" min="0" max="5000000" step="100000" value={priceRange[1]} onChange={(e) => setPriceRange([0, parseInt(e.target.value)])} className="w-full" />
           </motion.div>
         )}
 
-        {/* Category tabs */}
-        <motion.div className="category-tabs" initial="hidden" animate="visible" variants={fadeInUp} custom={2}>
-          {CATEGORIES.map(category => (
-            <button
-              key={category.id}
-              className={`category-tab ${activeCategory === category.id ? 'active' : ''}`}
-              onClick={() => setCategory(category.id)}
-            >
-              {category.name}
+        <motion.div initial="hidden" animate="visible" variants={fadeInUp} custom={2} className="flex flex-wrap gap-2 mb-8">
+          {CATEGORIES.map(cat => (
+            <button key={cat.id} onClick={() => setCategory(cat.id)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium border transition-all ${activeCategory === cat.id ? 'bg-primary text-white border-primary shadow-sm' : 'bg-white text-stone-600 border-stone-200 hover:border-primary hover:text-primary'}`}>
+              {cat.name}
             </button>
           ))}
         </motion.div>
 
-        {/* Grid */}
-        {filteredProducts.length > 0 ? (
-          <div className="pets-grid">
+        {loading ? (
+          <div className="flex justify-center py-20"><div className="spinner" /></div>
+        ) : filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product, i) => (
               <motion.div key={product.id} initial="hidden" animate="visible" custom={i} variants={fadeInUp}>
                 <ProductCard product={product} />
@@ -164,13 +116,11 @@ export default function Products() {
             ))}
           </div>
         ) : (
-          <div className="empty-state">
-            <Search size={48} />
-            <h3>No products found</h3>
-            <p>Try adjusting your search or filters</p>
-            <button className="btn btn-primary" onClick={() => { setSearch(''); setCategory('all'); setPriceRange([0, 5000000]); }}>
-              Clear Filters
-            </button>
+          <div className="flex flex-col items-center justify-center py-20 text-stone-400">
+            <Search size={48} strokeWidth={1} className="mb-4" />
+            <h3 className="font-heading text-xl font-bold text-stone-700 mb-2">No products found</h3>
+            <p className="text-sm mb-6">Try adjusting your search or filters</p>
+            <button className="btn btn-primary" onClick={() => { setSearch(''); setCategory('all'); setPriceRange([0, 5000000]); }}>Clear Filters</button>
           </div>
         )}
       </div>

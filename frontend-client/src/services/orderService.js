@@ -40,6 +40,16 @@ const orderService = {
       reason
     });
     return response.data;
+  },
+
+  /**
+   * Get order by ID
+   * @param {string} orderId - Order ID (UUID)
+   * @returns {Promise} Order details
+   */
+  async getOrderById(orderId) {
+    const response = await api.get(`/private/orders/${orderId}`);
+    return response.data;
   }
 };
 

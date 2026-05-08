@@ -18,6 +18,7 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import FAQ from './pages/FAQ';
 import Store3D from './pages/Store3D';
+import PaymentCallback from './pages/PaymentCallback';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -38,6 +39,7 @@ function AppLayout() {
           <Route path="/pets/:id" element={<PetDetail />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/payment/callback" element={<PaymentCallback />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/orders" element={<Orders />} />

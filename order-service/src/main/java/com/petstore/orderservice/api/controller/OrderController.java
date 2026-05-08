@@ -24,13 +24,16 @@ import com.petstore.orderservice.domain.service.OrderService;
 import com.petstore.orderservice.utils.apipaths.OrderApiPath;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping(OrderApiPath.ORDER_BASE)
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
+    private final com.petstore.orderservice.infra.client.PaymentClient paymentClient;
 
     @PostMapping(OrderApiPath.ORDER_CREATE)
     public ResponseEntity<CreateOrderResponse> createOrder(@RequestBody CreateOrderRequest request) {
@@ -58,9 +61,14 @@ public class OrderController {
         
         // Nếu là VNPay, lấy payment URL từ payment service
         if (order.getStatus() == com.petstore.orderservice.domain.model.enums.OrderStatus.PENDING_PAYMENT) {
-            // Payment URL đã được tạo trong OrderService, cần trả về
-            // Tạm thời set null, sẽ refactor sau
-            response.setPaymentUrl(null); // TODO: Get from payment service
+            try {
+                com.petstore.orderservice.api.dto.response.PaymentResponse paymentResponse = 
+                    paymentClient.createPayment(order.getId(), "VNPAY");
+                response.setPaymentUrl(paymentResponse.getPaymentUrl());
+            } catch (Exception e) {
+                // Log error nhưng vẫn trả về order, frontend có thể retry
+                log.error("Failed to create payment URL for order: {}", order.getId(), e);
+            }
         }
 
         return ResponseEntity.ok(response);

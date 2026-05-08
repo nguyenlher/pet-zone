@@ -20,12 +20,11 @@ public class PaymentClient {
     @Qualifier("paymentRestClient")
     private final RestClient paymentRestClient;
 
-    public PaymentResponse createPayment(UUID orderId, String paymentMethod, double amount) {
+    public PaymentResponse createPayment(UUID orderId, String paymentMethod) {
         try {
             CreatePaymentRequest request = CreatePaymentRequest.builder()
                     .orderId(orderId)
                     .paymentMethod(paymentMethod)
-                    .amount(amount)
                     .build();
 
             return paymentRestClient.post()

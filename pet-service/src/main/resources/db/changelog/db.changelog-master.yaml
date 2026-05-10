@@ -24,11 +24,11 @@ databaseChangeLog:
             relativeToChangelogFile: true
             
   - changeSet:
-      id: 004_create_pet_images
+      id: 004_create_pet_product_images
       author: pet-service
       changes:
         - sqlFile:
-            path: changes/004_create_pet_images.sql
+            path: changes/004_create_pet_product_images.sql
             relativeToChangelogFile: true
             
   - changeSet:
@@ -40,10 +40,26 @@ databaseChangeLog:
             relativeToChangelogFile: true
             
   - changeSet:
-      id: 006_create_pet_product_reviews
+      id: 006_create_reviews
       author: pet-service
       changes:
         - sqlFile:
-            path: changes/006_create_pet_product_reviews.sql
+            path: changes/006_create_reviews.sql
+            relativeToChangelogFile: true
+            
+  - changeSet:
+      id: 007_create_products
+      author: pet-service
+      changes:
+        - sqlFile:
+            path: changes/007_create_products.sql
+            relativeToChangelogFile: true
+            
+  - changeSet:
+      id: 008_insert_product_images
+      author: pet-service
+      changes:
+        - sqlFile:
+            path: changes/008_insert_product_images.sql
             relativeToChangelogFile: true
   

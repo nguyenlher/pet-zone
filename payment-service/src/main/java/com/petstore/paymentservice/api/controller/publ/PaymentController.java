@@ -1,4 +1,4 @@
-package com.petstore.paymentservice.api.controller;
+package com.petstore.paymentservice.api.controller.publ;
 
 import java.util.Map;
 

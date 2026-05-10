@@ -62,3 +62,6 @@ management:
   endpoint:
     health:
       show-details: always
+
+api:
+  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}

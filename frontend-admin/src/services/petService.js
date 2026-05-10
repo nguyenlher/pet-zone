@@ -69,55 +69,55 @@ export const petService = {
   // Admin endpoints (private)
   // Create pet
   createPet: async (petData) => {
-    const response = await api.post('/api/private/pets', petData);
+    const response = await api.post('/api/public/pets', petData);
     return response.data;
   },
 
   // Update pet
   updatePet: async (id, petData) => {
-    const response = await api.put(`/api/private/pets/${id}`, petData);
+    const response = await api.put(`/api/public/pets/${id}`, petData);
     return response.data;
   },
 
   // Delete pet
   deletePet: async (id) => {
-    const response = await api.delete(`/api/private/pets/${id}`);
+    const response = await api.delete(`/api/public/pets/${id}`);
     return response.data;
   },
 
   // Create pet type
   createPetType: async (petTypeData) => {
-    const response = await api.post('/api/private/pet-types', petTypeData);
+    const response = await api.post('/api/public/pet-types', petTypeData);
     return response.data;
   },
 
   // Update pet type
   updatePetType: async (id, petTypeData) => {
-    const response = await api.put(`/api/private/pet-types/${id}`, petTypeData);
+    const response = await api.put(`/api/public/pet-types/${id}`, petTypeData);
     return response.data;
   },
 
   // Delete pet type
   deletePetType: async (id) => {
-    const response = await api.delete(`/api/private/pet-types/${id}`);
+    const response = await api.delete(`/api/public/pet-types/${id}`);
     return response.data;
   },
 
   // Create breed
   createBreed: async (breedData) => {
-    const response = await api.post('/api/private/breeds', breedData);
+    const response = await api.post('/api/public/breeds', breedData);
     return response.data;
   },
 
   // Update breed
   updateBreed: async (id, breedData) => {
-    const response = await api.put(`/api/private/breeds/${id}`, breedData);
+    const response = await api.put(`/api/public/breeds/${id}`, breedData);
     return response.data;
   },
 
   // Delete breed
   deleteBreed: async (id) => {
-    const response = await api.delete(`/api/private/breeds/${id}`);
+    const response = await api.delete(`/api/public/breeds/${id}`);
     return response.data;
   },
 

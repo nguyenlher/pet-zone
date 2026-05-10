@@ -6,11 +6,16 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.petstore.orderservice.api.dto.UserDTO;
 import com.petstore.orderservice.api.dto.request.CancelOrderRequest;
@@ -29,6 +34,10 @@ import com.petstore.orderservice.utils.apipaths.OrderApiPath;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Order Controller
+ * Handles both user and admin order operations
+ */
 @Slf4j
 @RestController
 @RequestMapping(OrderApiPath.ORDER_BASE)
@@ -39,11 +48,14 @@ public class OrderController {
     private final PaymentClient paymentClient;
     private final UserClient userClient;
 
+    // ==================== USER ENDPOINTS ====================
+
     @PostMapping(OrderApiPath.ORDER_CREATE)
     public ResponseEntity<CreateOrderResponse> createOrder(@RequestBody CreateOrderRequest request) {
         List<OrderItem> items = request.getItems().stream()
                 .map(item -> OrderItem.builder()
-                        .petId(item.getPetId())
+                        .itemType(item.getItemType())
+                        .itemId(item.getItemId())
                         .quantity(item.getQuantity())
                         .build())
                 .collect(Collectors.toList());
@@ -92,8 +104,30 @@ public class OrderController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/user")
+    public ResponseEntity<Page<CreateOrderResponse>> getUserOrders(
+            @AuthenticationPrincipal Jwt jwt,
+            HttpServletRequest request,
+            Pageable pageable) {
+        if (jwt == null) {
+            return org.springframework.http.ResponseEntity.status(401).build();
+        }
+        String authHeader = request.getHeader("Authorization");
+        java.util.UUID userId = userClient.getInternalUserIdFromBearer(authHeader);
+        if (userId == null) {
+            log.warn("Could not resolve internal user id for Keycloak subject: {}", jwt.getSubject());
+            return org.springframework.http.ResponseEntity.status(401).build();
+        }
+        Page<Order> orders = orderService.getUserOrders(userId, pageable);
+        return ResponseEntity.ok(orders.map(this::toCreateOrderResponse));
+    }
+
+    // ==================== ADMIN ENDPOINTS ====================
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<CreateOrderResponse>> getAllOrders(Pageable pageable) {
+        log.info("Admin API: Getting all orders");
         Page<Order> orders = orderService.getAllOrders(pageable);
         Page<CreateOrderResponse> response = orders.map(order -> {
             CreateOrderResponse orderResponse = toCreateOrderResponse(order);
@@ -112,8 +146,9 @@ public class OrderController {
     private CreateOrderResponse toCreateOrderResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> OrderItemResponse.builder()
-                        .id(item.getPetId())
-                        .name(item.getPetName())
+                        .itemType(item.getItemType())
+                        .id(item.getItemId())
+                        .name(item.getItemName())
                         .quantity(item.getQuantity())
                         .price(item.getUnitPrice())
                         .subtotalPrice(item.getSubtotalAmount())

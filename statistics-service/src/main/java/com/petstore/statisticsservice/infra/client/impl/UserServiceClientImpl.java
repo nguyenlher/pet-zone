@@ -5,6 +5,7 @@ import com.petstore.statisticsservice.infra.client.UserServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -18,10 +19,13 @@ public class UserServiceClientImpl implements UserServiceClient {
     @Qualifier("userRestClient")
     private final RestClient userRestClient;
 
+    @Value("${api-key.value:default-secret-key}")
+    private String apiKey;
+
     @Override
     public UserStatisticsDto getUserStatistics(LocalDate startDate, LocalDate endDate) {
         log.info("Calling user-service private API for statistics");
-        
+
         try {
             return userRestClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -29,6 +33,7 @@ public class UserServiceClientImpl implements UserServiceClient {
                             .queryParamIfPresent("startDate", java.util.Optional.ofNullable(startDate))
                             .queryParamIfPresent("endDate", java.util.Optional.ofNullable(endDate))
                             .build())
+                    .header("X-API-KEY", apiKey)
                     .retrieve()
                     .body(UserStatisticsDto.class);
         } catch (Exception e) {

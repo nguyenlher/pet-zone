@@ -27,11 +27,27 @@ export default function Profile() {
 
   const handleSave = async () => {
     try {
-      await updateProfile(form);
+      // Split full name into firstName and lastName
+      const nameParts = form.name.trim().split(/\s+/);
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+      
+      // Prepare update payload matching backend DTO
+      const updatePayload = {
+        firstName,
+        lastName,
+        phone: form.phone || null,
+        address: form.address || null,
+      };
+      
+      await updateProfile(updatePayload);
       setEditing(false);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
-    } catch (error) { console.error('Failed to update profile:', error); }
+    } catch (error) { 
+      console.error('Failed to update profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
   };
 
   const handleLogout = async () => { await logout(); navigate('/'); };

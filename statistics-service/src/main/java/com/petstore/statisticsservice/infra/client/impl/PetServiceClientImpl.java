@@ -5,6 +5,7 @@ import com.petstore.statisticsservice.infra.client.PetServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -15,6 +16,9 @@ public class PetServiceClientImpl implements PetServiceClient {
 
     @Qualifier("petRestClient")
     private final RestClient petRestClient;
+    
+    @Value("${api-key.value:default-secret-key}")
+    private String apiKey;
 
     @Override
     public PetStatisticsDto getPetStatistics(Integer topPetsLimit) {
@@ -26,6 +30,7 @@ public class PetServiceClientImpl implements PetServiceClient {
                             .path("/private/pets/statistics")
                             .queryParamIfPresent("topPetsLimit", java.util.Optional.ofNullable(topPetsLimit))
                             .build())
+                    .header("X-API-KEY", apiKey)
                     .retrieve()
                     .body(PetStatisticsDto.class);
         } catch (Exception e) {

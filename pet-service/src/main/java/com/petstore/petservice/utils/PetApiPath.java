@@ -1,9 +1,9 @@
 package com.petstore.petservice.utils;
 
 public class PetApiPath {
-    // Base paths
-    private static final String PUBLIC_BASE = "/public";
-    private static final String PRIVATE_BASE = "/private";
+    // Base paths for authentication levels
+    public static final String PUBLIC_BASE = "/public";
+    public static final String PRIVATE_BASE = "/private";
     
     // Pet Type - Public
     public static final String PET_TYPE_PUBLIC_BASE = PUBLIC_BASE + "/pet-types";
@@ -56,6 +56,7 @@ public class PetApiPath {
     // Pet Products - Public (Client & Admin)
     public static final String PET_PRODUCT_PUBLIC_BASE = PUBLIC_BASE + "/products";
     public static final String PET_PRODUCT_PUBLIC_BY_ID = "/{productId}";
+    public static final String PET_PRODUCT_PUBLIC_BY_STATUS = "/status/{status}";
     public static final String PET_PRODUCT_PUBLIC_BY_CATEGORY = "/category/{category}";
     public static final String PET_PRODUCT_PUBLIC_BY_PET_TYPE = "/pet-type/{petTypeId}";
     public static final String PET_PRODUCT_PUBLIC_SEARCH = "/search";

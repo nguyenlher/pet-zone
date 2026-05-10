@@ -6,12 +6,16 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.petstore.userservice.api.dto.request.RegisterRequest;
+import com.petstore.userservice.api.dto.request.UpdateProfileRequest;
 import com.petstore.userservice.api.dto.request.UpdateUserRequest;
 import com.petstore.userservice.api.dto.response.UserStatisticsResponse;
 import com.petstore.userservice.domain.model.User;
+import com.petstore.userservice.domain.model.UserShippingInfo;
 import com.petstore.userservice.domain.repository.UserRepository;
+import com.petstore.userservice.domain.repository.UserShippingInfoRepository;
 import com.petstore.userservice.domain.service.KeycloakAuthService;
 import com.petstore.userservice.domain.service.UserService;
 import com.petstore.userservice.exception.ResourceNotFoundException;
@@ -24,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final UserShippingInfoRepository userShippingInfoRepository;
     private final KeycloakAuthService keycloakAuthService;
 
     @Override
@@ -46,9 +51,18 @@ public class UserServiceImpl implements UserService {
     public User updateUser(String keycloakId, UpdateUserRequest request) {
         User user = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with keycloakId: " + keycloakId));
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setAvatarUrl(request.getAvatarUrl());
+        
+        // Update fields if provided
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+        
         user.setUpdatedAt(LocalDateTime.now());
         User savedUser = userRepository.save(user);
         log.info("User updated with Keycloak ID: {}", keycloakId);
@@ -56,9 +70,80 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public User updateProfile(String keycloakId, UpdateProfileRequest request) {
+        log.info("Updating profile for keycloakId: {}", keycloakId);
+        
+        // 1. Find user
+        User user = userRepository.findByKeycloakId(keycloakId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with keycloakId: " + keycloakId));
+        
+        // 2. Update User table (firstName, lastName, avatarUrl)
+        boolean userUpdated = false;
+        if (request.getFirstName() != null && !request.getFirstName().equals(user.getFirstName())) {
+            user.setFirstName(request.getFirstName());
+            userUpdated = true;
+        }
+        if (request.getLastName() != null && !request.getLastName().equals(user.getLastName())) {
+            user.setLastName(request.getLastName());
+            userUpdated = true;
+        }
+        if (request.getAvatarUrl() != null && !request.getAvatarUrl().equals(user.getAvatarUrl())) {
+            user.setAvatarUrl(request.getAvatarUrl());
+            userUpdated = true;
+        }
+        
+        if (userUpdated) {
+            user.setUpdatedAt(LocalDateTime.now());
+            user = userRepository.save(user);
+            log.info("User table updated for userId: {}", user.getId());
+        }
+        
+        // 3. Update UserShippingInfo (phone, address) - find or create default shipping info
+        if (request.getPhone() != null || request.getAddress() != null) {
+            UserShippingInfo shippingInfo = userShippingInfoRepository.findDefaultByUserId(user.getId())
+                    .orElse(UserShippingInfo.builder()
+                            .userId(user.getId())
+                            .isDefault(true)
+                            .createdAt(LocalDateTime.now())
+                            .build());
+            
+            if (request.getPhone() != null) {
+                shippingInfo.setPhoneNumber(request.getPhone());
+            }
+            if (request.getAddress() != null) {
+                shippingInfo.setAddress(request.getAddress());
+            }
+            shippingInfo.setUpdatedAt(LocalDateTime.now());
+            
+            userShippingInfoRepository.save(shippingInfo);
+            log.info("Shipping info updated for userId: {}", user.getId());
+        }
+        
+        // 4. Update Keycloak (firstName, lastName)
+        if (userUpdated && (request.getFirstName() != null || request.getLastName() != null)) {
+            try {
+                keycloakAuthService.updateUserInKeycloak(
+                        keycloakId,
+                        request.getFirstName() != null ? request.getFirstName() : user.getFirstName(),
+                        request.getLastName() != null ? request.getLastName() : user.getLastName()
+                );
+                log.info("Keycloak updated for keycloakId: {}", keycloakId);
+            } catch (Exception e) {
+                log.error("Failed to update Keycloak for keycloakId: {}, error: {}", keycloakId, e.getMessage());
+                // Continue even if Keycloak update fails
+            }
+        }
+        
+        return user;
+    }
+
+    @Override
     public User getProfile(String keycloakId) {
         User user = userRepository.findByKeycloakId(keycloakId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with keycloakId: " + keycloakId));
+        
+        // Note: phone and address will be populated by controller from UserShippingInfo
         return User.builder()
                 .id(user.getId())
                 .keycloakId(user.getKeycloakId())

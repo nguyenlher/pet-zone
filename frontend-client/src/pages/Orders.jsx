@@ -27,7 +27,7 @@ export default function Orders() {
   const fetchOrders = async () => {
     try {
       setLoading(true); setError(null);
-      const response = await orderService.getAllOrders(page, 10);
+      const response = await orderService.getUserOrders(page, 10);
       setOrders(response.content || []);
       setTotalPages(response.totalPages || 0);
     } catch (err) {

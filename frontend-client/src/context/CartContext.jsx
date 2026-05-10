@@ -52,7 +52,8 @@ export function CartProvider({ children }) {
         name: pet.name, 
         breed: pet.breedName || pet.breed?.name || pet.breed, 
         price: pet.price, 
-        image 
+        image,
+        itemType: pet.itemType || 'PET'  // Add itemType, default to PET
       } 
     });
   }, []);

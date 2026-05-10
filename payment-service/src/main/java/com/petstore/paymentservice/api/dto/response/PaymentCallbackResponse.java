@@ -1,5 +1,7 @@
 package com.petstore.paymentservice.api.dto.response;
 
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,4 +18,6 @@ public class PaymentCallbackResponse {
     private String message;
     private String transactionId;
     private String status;
+    private Boolean success;
+    private UUID orderId;
 }

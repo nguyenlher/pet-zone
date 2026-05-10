@@ -1,7 +1,7 @@
 import api from './api';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8090';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const authService = {
 
@@ -74,7 +74,12 @@ const authService = {
   },
 
   async getCurrentUser() {
-    const response = await api.get(`${API_BASE_URL}/api/user/profile`);
+    const response = await api.get(`${API_BASE_URL}/api/me/profile`);
+    return response.data;
+  },
+
+  async updateProfile(updates) {
+    const response = await api.put(`${API_BASE_URL}/api/me/profile`, updates);
     return response.data;
   },
 

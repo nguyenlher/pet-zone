@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { publicApi } from '../services/api';
 
 export default function PaymentCallback() {
   const [searchParams] = useSearchParams();
@@ -13,31 +14,55 @@ export default function PaymentCallback() {
   const [orderId, setOrderId] = useState(null);
 
   useEffect(() => {
-    const vnp_ResponseCode = searchParams.get('vnp_ResponseCode');
-    const vnp_TransactionStatus = searchParams.get('vnp_TransactionStatus');
-
-    if (!vnp_ResponseCode) { navigate('/'); return; }
-
-    if (vnp_ResponseCode === '00' && vnp_TransactionStatus === '00') {
-      const orderInfo = searchParams.get('vnp_OrderInfo');
-      if (orderInfo) {
-        const match = orderInfo.match(/([a-f0-9-]{36})/i);
-        if (match) setOrderId(match[1]);
+    const processPayment = async () => {
+      const vnp_ResponseCode = searchParams.get('vnp_ResponseCode');
+      
+      if (!vnp_ResponseCode) { 
+        navigate('/'); 
+        return; 
       }
-      clearCart();
-      setStatus('success');
-      setMessage('Payment completed successfully!');
-      setTimeout(() => navigate('/orders'), 3000);
-    } else if (vnp_ResponseCode === '24') {
-      setStatus('cancelled');
-      setMessage('Payment was cancelled. Your order has not been charged.');
-      setTimeout(() => navigate('/cart'), 4000);
-    } else {
-      setStatus('failed');
-      setMessage(`Payment failed (code: ${vnp_ResponseCode}). Please try again.`);
-      setTimeout(() => navigate('/cart'), 4000);
-    }
-  }, []);
+
+      try {
+        // Call backend to verify and process payment
+        const params = {};
+        searchParams.forEach((value, key) => {
+          params[key] = value;
+        });
+
+        const response = await publicApi.get('/api/public/payments/callback/VNPAY', { params });
+        
+        if (response.data.success || response.data.code === '00') {
+          // Use orderId from response
+          if (response.data.orderId) {
+            setOrderId(response.data.orderId);
+          } else {
+            // Fallback: Extract orderId from vnp_OrderInfo
+            const orderInfo = searchParams.get('vnp_OrderInfo');
+            if (orderInfo) {
+              const match = orderInfo.match(/([a-f0-9-]{36})/i);
+              if (match) setOrderId(match[1]);
+            }
+          }
+          
+          clearCart();
+          setStatus('success');
+          setMessage(response.data.message || 'Payment completed successfully!');
+          setTimeout(() => navigate('/orders'), 3000);
+        } else {
+          setStatus('failed');
+          setMessage(response.data.message || 'Payment verification failed.');
+          setTimeout(() => navigate('/cart'), 4000);
+        }
+      } catch (error) {
+        console.error('Payment callback error:', error);
+        setStatus('failed');
+        setMessage('Failed to verify payment. Please contact support.');
+        setTimeout(() => navigate('/cart'), 4000);
+      }
+    };
+
+    processPayment();
+  }, [searchParams, navigate, clearCart]);
 
   const configs = {
     processing: { icon: <Loader size={56} className="text-amber-500 animate-spin" />, bg: 'bg-amber-50', color: 'text-amber-600', title: 'Processing Payment' },

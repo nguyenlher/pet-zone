@@ -1,20 +1,20 @@
 package com.petstore.userservice.domain.model;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
-@Getter
-@Setter
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
 public class UserFavorite {
-    UUID id;
-    UUID userId;
-    UUID petId;
-    LocalDateTime createdAt;
+    private UUID id;
+    private UUID userId;
+    private UUID petId;
+    private Instant createdAt;
 }

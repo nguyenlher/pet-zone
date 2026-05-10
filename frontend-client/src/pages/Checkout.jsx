@@ -5,10 +5,11 @@ import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import orderService from '../services/orderService';
+import authService from '../services/authService';
 
 export default function Checkout() {
   const { items, cartTotal, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, register } = useAuth();
   const [step, setStep] = useState(1);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderResponse, setOrderResponse] = useState(null);
@@ -41,6 +42,11 @@ export default function Checkout() {
   const validateStep1 = () => {
     const errors = {};
     if (!form.name.trim()) errors.name = 'Full name is required.';
+    if (!form.email.trim()) {
+      errors.email = 'Email is required.';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      errors.email = 'Email address is invalid.';
+    }
     if (!form.phone.trim()) errors.phone = 'Phone number is required.';
     if (!form.address.trim()) errors.address = 'Address is required.';
     if (!form.city.trim()) errors.city = 'City is required.';
@@ -54,13 +60,42 @@ export default function Checkout() {
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
-    if (!user) { setShowLoginDialog(true); return; }
     setLoading(true);
     setError(null);
     try {
+      let currentUserId = user?.id;
+
+      if (!currentUserId) {
+        const password = form.phone; // Using phone number as default password
+        const nameParts = form.name.trim().split(' ');
+        const firstName = nameParts[0] || 'User';
+        const lastName = nameParts.slice(1).join(' ') || 'Name';
+
+        try {
+          await register({
+            email: form.email,
+            password: password,
+            firstName: firstName,
+            lastName: lastName
+          });
+          
+          const newUser = await authService.getCurrentUser();
+          currentUserId = newUser.id;
+        } catch (authErr) {
+          setError('Email is already registered. Please login to continue.');
+          setShowLoginDialog(true);
+          setLoading(false);
+          return;
+        }
+      }
+
       const orderData = {
-        userId: user.id,
-        items: items.map(item => ({ petId: item.id, quantity: item.quantity })),
+        userId: currentUserId,
+        items: items.map(item => ({ 
+          itemType: item.itemType || 'PET',  // Use itemType from cart item
+          itemId: item.id, 
+          quantity: item.quantity 
+        })),
         shipping: { name: form.name, phone: form.phone, address: form.address, city: form.city, paymentMethod: form.paymentMethod },
         discountCode: form.discountCode || '',
       };
@@ -143,7 +178,7 @@ export default function Checkout() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[
                     { id: 'name', label: 'Full Name *', type: 'text' },
-                    { id: 'email', label: 'Email', type: 'email', disabled: true },
+                    { id: 'email', label: 'Email *', type: 'email', disabled: !!user },
                     { id: 'phone', label: 'Phone *', type: 'text' },
                   ].map(({ id, label, type, disabled }) => (
                     <div key={id} className="input-group">
@@ -278,11 +313,10 @@ export default function Checkout() {
             <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-5">
               <LogIn size={28} className="text-primary" />
             </div>
-            <h2 className="font-heading text-2xl font-bold text-stone-900 mb-3">Login Required</h2>
-            <p className="text-stone-500 text-sm mb-6">You need to be logged in to place an order.</p>
+            <h2 className="font-heading text-2xl font-bold text-stone-900 mb-3">Email Registered</h2>
+            <p className="text-stone-500 text-sm mb-6">This email is already associated with an account. Please log in to complete your order.</p>
             <div className="flex gap-3">
               <Link to="/login" className="btn btn-primary flex-1"><LogIn size={16} /> Log In</Link>
-              <Link to="/register" className="btn btn-secondary flex-1">Register</Link>
             </div>
           </motion.div>
         </div>

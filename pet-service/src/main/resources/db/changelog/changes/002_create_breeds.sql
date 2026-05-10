@@ -38,7 +38,12 @@ CROSS JOIN (
         ('Poodle', 'Giống chó thông minh, không rụng lông'),
         ('Husky', 'Giống chó đẹp, năng động và thích hoạt động ngoài trời'),
         ('Corgi', 'Giống chó nhỏ, đáng yêu với đôi chân ngắn'),
-        ('Shiba Inu', 'Giống chó Nhật Bản, độc lập và trung thành')
+        ('Shiba Inu', 'Giống chó Nhật Bản, độc lập và trung thành'),
+        ('Samoyed', 'Giống chó lông trắng như tuyết, luôn cười, thân thiện'),
+        ('Chihuahua', 'Giống chó nhỏ nhất thế giới, dũng cảm và trung thành'),
+        ('Dachshund', 'Giống chó thân dài chân ngắn, thông minh và vui vẻ'),
+        ('Pomeranian', 'Giống chó nhỏ lông dài, năng động và đáng yêu'),
+        ('Pug', 'Giống chó mặt nhăn, tính cách vui vẻ và thân thiện')
 ) AS breeds_data(breed_name, breed_desc)
 WHERE pt.name = 'Chó';
 
@@ -54,11 +59,14 @@ SELECT
 FROM pet_types pt
 CROSS JOIN (
     VALUES 
-        ('Mèo Ba Tư', 'Giống mèo lông dài, hiền lành và sang trọng'),
-        ('Mèo Anh Lông Ngắn', 'Giống mèo đáng yêu, tròn trịa và dễ nuôi'),
-        ('Mèo Xiêm', 'Giống mèo thông minh, năng động và hay nói'),
-        ('Mèo Maine Coon', 'Giống mèo lớn, thân thiện và dễ gần'),
-        ('Mèo Munchkin', 'Giống mèo chân ngắn, đáng yêu và hiếu động'),
-        ('Mèo Ragdoll', 'Giống mèo hiền lành, thích được ôm ấp')
+        ('Ba Tư', 'Giống mèo lông dài, hiền lành và sang trọng'),
+        ('Anh Lông Ngắn', 'Giống mèo đáng yêu, tròn trịa và dễ nuôi'),
+        ('Xiêm', 'Giống mèo thông minh, năng động và hay nói'),
+        ('Maine Coon', 'Giống mèo lớn, thân thiện và dễ gần'),
+        ('Munchkin', 'Giống mèo chân ngắn, đáng yêu và hiếu động'),
+        ('Ragdoll', 'Giống mèo hiền lành, thích được ôm ấp'),
+        ('Bengal', 'Giống mèo vằn như hổ, năng động và thông minh'),
+        ('Russian Blue', 'Giống mèo lông xám xanh, nhút nhát nhưng trung thành'),
+        ('Scottish Fold', 'Giống mèo tai cụp, hiền lành và đáng yêu')
 ) AS breeds_data(breed_name, breed_desc)
 WHERE pt.name = 'Mèo';

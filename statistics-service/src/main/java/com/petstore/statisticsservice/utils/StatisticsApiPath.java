@@ -1,7 +1,7 @@
 package com.petstore.statisticsservice.utils;
 
 public class StatisticsApiPath {
-    public static final String BASE = "/api/statistics";
+    public static final String BASE = "/statistics";
     public static final String DASHBOARD = "/dashboard";
     public static final String REVENUE = "/revenue";
     public static final String ORDERS = "/orders";

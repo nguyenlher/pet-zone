@@ -16,18 +16,30 @@ public class RestClientConfig {
     @Value("${rest.api.payment-service.baseUrl}")
     private String paymentServiceBaseUrl;
 
+    @Value("${api.key:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}")
+    private String apiKey;
+
     @Bean
     public RestClient userRestClient() {
-        return RestClient.builder().baseUrl(userServiceBaseUrl).build();
+        return RestClient.builder()
+                .baseUrl(userServiceBaseUrl)
+                .defaultHeader("X-API-KEY", apiKey)
+                .build();
     }
 
     @Bean
     public RestClient petRestClient() {
-        return RestClient.builder().baseUrl(petServiceBaseUrl).build();
+        return RestClient.builder()
+                .baseUrl(petServiceBaseUrl)
+                .defaultHeader("X-API-KEY", apiKey)
+                .build();
     }
 
     @Bean
     public RestClient paymentRestClient() {
-        return RestClient.builder().baseUrl(paymentServiceBaseUrl).build();
+        return RestClient.builder()
+                .baseUrl(paymentServiceBaseUrl)
+                .defaultHeader("X-API-KEY", apiKey)
+                .build();
     }
 }

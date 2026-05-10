@@ -3,6 +3,8 @@ package com.petstore.orderservice.domain.model;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.petstore.orderservice.domain.model.enums.ItemType;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,8 +22,9 @@ import lombok.experimental.FieldDefaults;
 public class OrderItem {
     UUID id;
     UUID orderId;
-    UUID petId;
-    String petName;
+    ItemType itemType;
+    UUID itemId;
+    String itemName;
     double unitPrice;
     int quantity;
     double subtotalAmount;

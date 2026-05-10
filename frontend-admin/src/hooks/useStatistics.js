@@ -40,6 +40,13 @@ export const useTopSellingPets = (limit = 5, startDate, endDate) => {
   });
 };
 
+export const useTopSellingProducts = (limit = 5, startDate, endDate) => {
+  return useQuery({
+    queryKey: ['statistics', 'top-products', limit, startDate, endDate],
+    queryFn: () => statisticsService.getTopSellingProducts(limit, startDate, endDate),
+  });
+};
+
 export const useSalesChartData = (startDate, endDate) => {
   return useQuery({
     queryKey: ['statistics', 'sales-chart', startDate, endDate],

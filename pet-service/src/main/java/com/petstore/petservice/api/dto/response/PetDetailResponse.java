@@ -11,6 +11,8 @@ import com.petstore.petservice.domain.model.enums.Gender;
 import com.petstore.petservice.domain.model.enums.HealthStatus;
 import com.petstore.petservice.domain.model.enums.PetStatus;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +29,8 @@ public class PetDetailResponse {
     // Breed info
     private UUID breedId;
     private String breedName;
+    private UUID petTypeId;
+    private String petTypeName;
     private BreedResponse breed;
     
     // Basic info
@@ -61,10 +65,11 @@ public class PetDetailResponse {
     private LocalDateTime updatedAt;
     
     // Helper
+    @JsonProperty("thumbnailUrl")
     public String getThumbnailUrl() {
         if (images != null && !images.isEmpty()) {
             return images.stream()
-                    .filter(PetProductImageResponse::getIsThumbnail)
+                    .filter(img -> Boolean.TRUE.equals(img.getIsThumbnail()))
                     .findFirst()
                     .map(PetProductImageResponse::getImageUrl)
                     .orElse(images.get(0).getImageUrl());
@@ -72,7 +77,8 @@ public class PetDetailResponse {
         return null;
     }
     
-    public List<String> getImageUrls() {
+    @JsonProperty("imageUrls")
+    public List<String> getAllImageUrls() {
         if (images != null) {
             return images.stream()
                     .map(PetProductImageResponse::getImageUrl)

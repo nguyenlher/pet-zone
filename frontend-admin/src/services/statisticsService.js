@@ -38,6 +38,14 @@ export const statisticsService = {
     return response.data;
   },
 
+  // Get top selling products
+  getTopSellingProducts: async (limit = 5, startDate, endDate) => {
+    const response = await api.get('/api/statistics/top-products', {
+      params: { limit, startDate, endDate },
+    });
+    return response.data;
+  },
+
   // Get sales chart data
   getSalesChartData: async (startDate, endDate) => {
     const response = await api.get('/api/statistics/sales-chart', {

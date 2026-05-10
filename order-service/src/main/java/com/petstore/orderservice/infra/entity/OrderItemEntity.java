@@ -3,8 +3,12 @@ package com.petstore.orderservice.infra.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.petstore.orderservice.domain.model.enums.ItemType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,11 +38,15 @@ public class OrderItemEntity {
     @JoinColumn(name = "order_id", nullable = false)
     OrderEntity order;
 
-    @Column(name = "pet_id")
-    UUID petId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "item_type", nullable = false)
+    ItemType itemType;
 
-    @Column(name = "pet_name")
-    String petName;
+    @Column(name = "item_id", nullable = false)
+    UUID itemId;
+
+    @Column(name = "item_name")
+    String itemName;
 
     @Column(name = "unit_price")
     double unitPrice;

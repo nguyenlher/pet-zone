@@ -1,9 +1,16 @@
 package com.petstore.orderservice.api.dto.request;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.util.UUID;
+
+import com.petstore.orderservice.domain.model.enums.ItemType;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
@@ -12,6 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderItemRequest {
-    UUID petId;
+    ItemType itemType;  // PET or PRODUCT
+    UUID itemId;        // ID of pet or product
     int quantity;
 }

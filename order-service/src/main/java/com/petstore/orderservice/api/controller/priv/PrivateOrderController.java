@@ -132,7 +132,7 @@ public class PrivateOrderController {
                     .build());
         }
         
-        orderRepository.delete(order);
+        orderRepository.deleteById(id);
         
         return ResponseEntity.ok(MessageResponse.builder()
                 .message("Order deleted successfully")
@@ -143,8 +143,9 @@ public class PrivateOrderController {
     private CreateOrderResponse toCreateOrderResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> OrderItemResponse.builder()
-                        .id(item.getPetId())
-                        .name(item.getPetName())
+                        .itemType(item.getItemType())
+                        .id(item.getItemId())
+                        .name(item.getItemName())
                         .quantity(item.getQuantity())
                         .price(item.getUnitPrice())
                         .subtotalPrice(item.getSubtotalAmount())

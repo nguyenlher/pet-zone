@@ -187,11 +187,14 @@ public class VNPayServiceImpl implements PaymentStrategy {
             log.error("Failed to publish payment event", e);
         }
 
+        boolean isSuccess = "00".equals(responseCode);
         return PaymentCallbackResponse.builder()
                 .code(responseCode)
-                .message("00".equals(responseCode) ? "Payment successful" : "Payment failed")
+                .message(isSuccess ? "Payment successful" : "Payment failed")
                 .transactionId(transactionNo)
                 .status(newStatus.name())
+                .success(isSuccess)
+                .orderId(payment.getOrderId())
                 .build();
     }
 
@@ -218,9 +221,15 @@ public class VNPayServiceImpl implements PaymentStrategy {
 
     private Optional<PaymentCallbackResponse> validatePaymentForCallback(Payment payment, String transactionNo) {
         if (payment.getStatus() != PaymentStatus.PENDING) {
+            boolean isSuccess = payment.getStatus() == PaymentStatus.SUCCESS;
             return Optional.of(PaymentCallbackResponse.builder()
-                    .code("99").message("Payment already processed")
-                    .transactionId(transactionNo).status(payment.getStatus().name()).build());
+                    .code(isSuccess ? "00" : "99")
+                    .message(isSuccess ? "Payment successful" : "Payment already processed")
+                    .transactionId(transactionNo)
+                    .status(payment.getStatus().name())
+                    .success(isSuccess)
+                    .orderId(payment.getOrderId())
+                    .build());
         }
         if (payment.getExpiredAt() != null && payment.getExpiredAt().isBefore(LocalDateTime.now(VN_ZONE))) {
             payment.setStatus(PaymentStatus.FAILED);

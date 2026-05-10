@@ -11,6 +11,7 @@ import com.petstore.statisticsservice.api.dto.response.PaymentMethodStatsRespons
 import com.petstore.statisticsservice.api.dto.response.RevenueStatsResponse;
 import com.petstore.statisticsservice.api.dto.response.SalesChartResponse;
 import com.petstore.statisticsservice.api.dto.response.TopPetResponse;
+import com.petstore.statisticsservice.api.dto.response.TopProductResponse;
 
 public interface StatisticsService {
     
@@ -21,6 +22,8 @@ public interface StatisticsService {
     OrderStatsResponse getOrderStats(LocalDate startDate, LocalDate endDate);
     
     Page<TopPetResponse> getTopSellingPets(int limit, LocalDate startDate, LocalDate endDate, Pageable pageable);
+    
+    Page<TopProductResponse> getTopSellingProducts(int limit, LocalDate startDate, LocalDate endDate, Pageable pageable);
     
     SalesChartResponse getSalesChartData(LocalDate startDate, LocalDate endDate);
     

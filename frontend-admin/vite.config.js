@@ -5,7 +5,17 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    allowedHosts: [
+      'dancing-prewar-wok.ngrok-free.dev',
+      '.ngrok-free.dev', // Allow all ngrok-free.dev subdomains
+    ],
     proxy: {
+      // Proxy for backend API
+      '/api': {
+        target: 'http://localhost:8090',
+        changeOrigin: true,
+        secure: false,
+      },
       // All /tripo-api/* calls are forwarded to Tripo's REST API.
       // This runs server-side, so the browser never sees the CORS preflight.
       '/tripo-api': {

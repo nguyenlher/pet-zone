@@ -245,6 +245,30 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
      * This should be called when admin changes isActive status in database
      */
     @Override
+    public void updateUserInKeycloak(String keycloakId, String firstName, String lastName) {
+        log.info("Updating Keycloak user info: keycloakId={}, firstName={}, lastName={}", keycloakId, firstName, lastName);
+        
+        try {
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+            
+            UserRepresentation user = usersResource.get(keycloakId).toRepresentation();
+            user.setFirstName(firstName);
+            user.setLastName(lastName);
+            
+            usersResource.get(keycloakId).update(user);
+            log.info("Successfully updated Keycloak user info: keycloakId={}", keycloakId);
+        } catch (Exception ex) {
+            log.error("Failed to update Keycloak user info: keycloakId={}, error={}", keycloakId, ex.getMessage());
+            throw new IdentityProviderException("Failed to update user in Keycloak: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Update user enabled status in Keycloak
+     * This should be called when admin changes isActive status in database
+     */
+    @Override
     public void updateUserEnabledStatus(String keycloakId, Boolean isActive) {
         log.info("Updating Keycloak user enabled status: keycloakId={}, enabled={}", keycloakId, isActive);
         

@@ -112,17 +112,16 @@ export function AuthProvider({ children }) {
 
   const updateProfile = useCallback(async (updates) => {
     try {
-      // Update user profile via API (you'll need to implement this endpoint)
-      // For now, just update local state
-      setUser(prev => ({ ...prev, ...updates }));
+      // Call API to update profile on backend
+      const updatedUser = await authService.updateProfile(updates);
       
-      // TODO: Call API to update profile on backend
-      // await api.put('/api/user/profile', updates);
+      // Update local state with response from server
+      setUser(updatedUser);
       
       return { success: true };
     } catch (error) {
       console.error('Update profile error:', error);
-      throw new Error('Failed to update profile');
+      throw new Error(error.response?.data?.message || 'Failed to update profile');
     }
   }, []);
 

@@ -2,6 +2,12 @@ spring:
   application:
     name: order-service
   
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8088/realms/super-petmark-3d/protocol/openid-connect/certs}
+
   config:
     import:
       - classpath:kafka-config.yml
@@ -34,3 +40,6 @@ rest:
             baseUrl: ${PET_SERVICE_URL:http://localhost:8082}
         payment-service:
             baseUrl: ${PAYMENT_SERVICE_URL:http://localhost:8085}
+
+api:
+  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}

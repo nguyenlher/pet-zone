@@ -41,7 +41,7 @@ export default function LoginPage() {
         }
         
         // Redirect to dashboard
-        navigate('/');
+        navigate('/', { replace: true });
       } else {
         setError('Invalid response from server');
       }

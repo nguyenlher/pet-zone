@@ -95,3 +95,7 @@ logging:
     liquibase: DEBUG
     liquibase.changelog: DEBUG
     liquibase.database: DEBUG
+
+api:
+  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+

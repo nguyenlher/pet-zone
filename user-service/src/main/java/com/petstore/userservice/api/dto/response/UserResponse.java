@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
@@ -18,6 +18,8 @@ public class UserResponse {
     private String email;
     private String firstName;
     private String lastName;
+    private String phone;
+    private String address;
     private String avatarUrl;
     private Boolean isActive;
     private LocalDateTime createdAt;

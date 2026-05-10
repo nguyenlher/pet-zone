@@ -5,6 +5,7 @@ import com.petstore.statisticsservice.infra.client.OrderServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -18,10 +19,13 @@ public class OrderServiceClientImpl implements OrderServiceClient {
     @Qualifier("orderRestClient")
     private final RestClient orderRestClient;
 
+    @Value("${api-key.value:default-secret-key}")
+    private String apiKey;
+
     @Override
     public OrderStatisticsDto getOrderStatistics(LocalDate startDate, LocalDate endDate, Integer topPetsLimit) {
         log.info("Calling order-service private API for statistics");
-        
+
         try {
             return orderRestClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -30,6 +34,7 @@ public class OrderServiceClientImpl implements OrderServiceClient {
                             .queryParamIfPresent("endDate", java.util.Optional.ofNullable(endDate))
                             .queryParamIfPresent("topPetsLimit", java.util.Optional.ofNullable(topPetsLimit))
                             .build())
+                    .header("X-API-KEY", apiKey)
                     .retrieve()
                     .body(OrderStatisticsDto.class);
         } catch (Exception e) {

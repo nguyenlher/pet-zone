@@ -10,10 +10,14 @@ public class RestClientConfig {
     @Value("${services.order-service.url}")
     private String orderServiceBaseUrl;
 
+    @Value("${api-key.value}")
+    private String apiKey;
+
     @Bean
     public RestClient orderRestClient() {
         return RestClient.builder()
                 .baseUrl(orderServiceBaseUrl)
+                .defaultHeader("X-API-KEY", apiKey)
                 .build();
     }
 }

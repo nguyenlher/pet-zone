@@ -30,6 +30,11 @@ export default function Pets() {
 
   const filteredPets = useMemo(() => {
     let result = [...pets];
+    
+    if (activeType !== 'all') {
+      result = result.filter(p => String(p.petTypeId) === String(activeType));
+    }
+
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(p => p.name.toLowerCase().includes(q) || (p.breedName && p.breedName.toLowerCase().includes(q)));

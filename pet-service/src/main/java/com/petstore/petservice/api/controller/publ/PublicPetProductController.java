@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,24 +25,30 @@ import org.springframework.web.bind.annotation.RestController;
 import com.petstore.petservice.api.dto.request.CreatePetProductRequest;
 import com.petstore.petservice.api.dto.request.UpdatePetProductRequest;
 import com.petstore.petservice.api.dto.response.PetProductResponse;
-import com.petstore.petservice.domain.model.PetProduct;
 import com.petstore.petservice.domain.model.PetProductImage;
+import com.petstore.petservice.domain.model.Product;
 import com.petstore.petservice.domain.model.enums.ProductCategory;
 import com.petstore.petservice.domain.model.enums.ProductStatus;
-import com.petstore.petservice.domain.service.PetProductService;
-import com.petstore.petservice.infra.mapper.PetProductMapper;
+import com.petstore.petservice.domain.service.ProductService;
+import com.petstore.petservice.infra.mapper.ProductMapper;
 import com.petstore.petservice.utils.PetApiPath;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Public Pet Product Controller
+ * Handles both public read-only and admin CRUD operations
+ */
 @RestController
 @RequestMapping(PetApiPath.PET_PRODUCT_PUBLIC_BASE)
 @RequiredArgsConstructor
 public class PublicPetProductController {
     
-    private final PetProductService petProductService;
-    private final PetProductMapper petProductMapper;
+    private final ProductService petProductService;
+    private final ProductMapper productMapper;
+    
+    // ==================== PUBLIC READ-ONLY ENDPOINTS ====================
     
     @GetMapping
     public ResponseEntity<Page<PetProductResponse>> getAllProducts(
@@ -55,22 +62,35 @@ public class PublicPetProductController {
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
         
-        Page<PetProduct> products = petProductService.getAllProducts(pageable);
-        Page<PetProductResponse> response = products.map(petProductMapper::toResponse);
+        Page<Product> products = petProductService.getAllProducts(pageable);
+        Page<PetProductResponse> response = products.map(productMapper::toResponse);
         
         return ResponseEntity.ok(response);
     }
     
     @GetMapping(PetApiPath.PET_PRODUCT_PUBLIC_BY_ID)
     public ResponseEntity<PetProductResponse> getProductById(@PathVariable UUID productId) {
-        PetProduct product = petProductService.getProductById(productId);
-        return ResponseEntity.ok(petProductMapper.toResponse(product));
+        Product product = petProductService.getProductById(productId);
+        return ResponseEntity.ok(productMapper.toResponse(product));
     }
     
-    @PostMapping(PetApiPath.PET_PRODUCT_PUBLIC_INCREMENT_VIEW)
-    public ResponseEntity<Void> incrementViewCount(@PathVariable UUID productId) {
-        petProductService.incrementViewCount(productId);
-        return ResponseEntity.ok().build();
+    @GetMapping(PetApiPath.PET_PRODUCT_PUBLIC_BY_STATUS)
+    public ResponseEntity<Page<PetProductResponse>> getProductsByStatus(
+            @PathVariable ProductStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        
+        Sort sort = sortDirection.equalsIgnoreCase("ASC") 
+                ? Sort.by(sortBy).ascending() 
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<Product> products = petProductService.getProductsByStatus(status, pageable);
+        Page<PetProductResponse> response = products.map(productMapper::toResponse);
+        
+        return ResponseEntity.ok(response);
     }
     
     @GetMapping(PetApiPath.PET_PRODUCT_PUBLIC_BY_CATEGORY)
@@ -80,8 +100,8 @@ public class PublicPetProductController {
             @RequestParam(defaultValue = "20") int size) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<PetProduct> products = petProductService.getProductsByCategory(category, pageable);
-        Page<PetProductResponse> response = products.map(petProductMapper::toResponse);
+        Page<Product> products = petProductService.getProductsByCategory(category, pageable);
+        Page<PetProductResponse> response = products.map(productMapper::toResponse);
         
         return ResponseEntity.ok(response);
     }
@@ -93,8 +113,8 @@ public class PublicPetProductController {
             @RequestParam(defaultValue = "20") int size) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<PetProduct> products = petProductService.getProductsByPetType(petTypeId, pageable);
-        Page<PetProductResponse> response = products.map(petProductMapper::toResponse);
+        Page<Product> products = petProductService.getProductsByPetType(petTypeId, pageable);
+        Page<PetProductResponse> response = products.map(productMapper::toResponse);
         
         return ResponseEntity.ok(response);
     }
@@ -106,8 +126,8 @@ public class PublicPetProductController {
             @RequestParam(defaultValue = "20") int size) {
         
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<PetProduct> products = petProductService.searchProducts(keyword, pageable);
-        Page<PetProductResponse> response = products.map(petProductMapper::toResponse);
+        Page<Product> products = petProductService.searchProducts(keyword, pageable);
+        Page<PetProductResponse> response = products.map(productMapper::toResponse);
         
         return ResponseEntity.ok(response);
     }
@@ -116,8 +136,8 @@ public class PublicPetProductController {
     public ResponseEntity<List<PetProductResponse>> getTopSellingProducts(
             @RequestParam(defaultValue = "10") int limit) {
         
-        List<PetProduct> products = petProductService.getTopSellingProducts(limit);
-        List<PetProductResponse> response = petProductMapper.toResponseList(products);
+        List<Product> products = petProductService.getTopSellingProducts(limit);
+        List<PetProductResponse> response = productMapper.toResponseList(products);
         
         return ResponseEntity.ok(response);
     }
@@ -126,19 +146,28 @@ public class PublicPetProductController {
     public ResponseEntity<List<PetProductResponse>> getTopRatedProducts(
             @RequestParam(defaultValue = "10") int limit) {
         
-        List<PetProduct> products = petProductService.getTopRatedProducts(limit);
-        List<PetProductResponse> response = petProductMapper.toResponseList(products);
+        List<Product> products = petProductService.getTopRatedProducts(limit);
+        List<PetProductResponse> response = productMapper.toResponseList(products);
         
         return ResponseEntity.ok(response);
     }
     
-    // ==================== ADMIN ENDPOINTS (Authorization via Gateway) ====================
+    // ==================== USER ACTION ENDPOINTS ====================
     
+    @GetMapping(PetApiPath.PET_PRODUCT_PUBLIC_INCREMENT_VIEW)
+    public ResponseEntity<Void> incrementViewCount(@PathVariable UUID productId) {
+        petProductService.incrementViewCount(productId);
+        return ResponseEntity.ok().build();
+    }
+    
+    // ==================== ADMIN ENDPOINTS ====================
+    
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PetProductResponse> createProduct(
             @Valid @RequestBody CreatePetProductRequest request) {
         
-        PetProduct product = petProductMapper.toDomain(request);
+        Product product = productMapper.toDomain(request);
         
         // Set default values
         product.setStockQuantity(request.getStockQuantity() != null ? request.getStockQuantity() : 0);
@@ -159,19 +188,20 @@ public class PublicPetProductController {
             product.setImages(images);
         }
         
-        PetProduct savedProduct = petProductService.createProduct(product);
-        return ResponseEntity.status(HttpStatus.CREATED).body(petProductMapper.toResponse(savedProduct));
+        Product savedProduct = petProductService.createProduct(product);
+        return ResponseEntity.status(HttpStatus.CREATED).body(productMapper.toResponse(savedProduct));
     }
     
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping(PetApiPath.PET_PRODUCT_PUBLIC_BY_ID)
     public ResponseEntity<PetProductResponse> updateProduct(
             @PathVariable UUID productId,
             @Valid @RequestBody UpdatePetProductRequest request) {
         
-        PetProduct existingProduct = petProductService.getProductById(productId);
+        Product existingProduct = petProductService.getProductById(productId);
         
         // Use mapper to update only non-null fields
-        petProductMapper.updateDomain(existingProduct, request);
+        productMapper.updateDomain(existingProduct, request);
         
         // Update images if provided
         if (request.getImageUrls() != null) {
@@ -186,10 +216,11 @@ public class PublicPetProductController {
             existingProduct.setImages(images);
         }
         
-        PetProduct updatedProduct = petProductService.updateProduct(productId, existingProduct);
-        return ResponseEntity.ok(petProductMapper.toResponse(updatedProduct));
+        Product updatedProduct = petProductService.updateProduct(productId, existingProduct);
+        return ResponseEntity.ok(productMapper.toResponse(updatedProduct));
     }
     
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping(PetApiPath.PET_PRODUCT_PUBLIC_BY_ID)
     public ResponseEntity<Void> deleteProduct(@PathVariable UUID productId) {
         petProductService.deleteProduct(productId);

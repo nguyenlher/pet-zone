@@ -45,8 +45,11 @@ export const getRolesFromToken = (token) => {
     });
   }
 
+  // Check direct roles claim (used by some auth servers)
+  const directRoles = decoded.roles || [];
+
   // Combine and deduplicate
-  return [...new Set([...realmRoles, ...clientRoles])];
+  return [...new Set([...realmRoles, ...clientRoles, ...directRoles])];
 };
 
 /**
@@ -66,7 +69,7 @@ export const hasRole = (token, role) => {
  * @returns {boolean}
  */
 export const isAdmin = (token) => {
-  return hasRole(token, 'ADMIN');
+  return hasRole(token, 'ADMIN') || hasRole(token, 'admin');
 };
 
 /**

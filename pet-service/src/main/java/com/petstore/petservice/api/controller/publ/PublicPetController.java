@@ -50,7 +50,7 @@ public class PublicPetController {
         return ResponseEntity.ok(petService.getAll(pageable));
     }
 
-    @PostMapping(PetApiPath.PET_PUBLIC_INCREMENT_VIEW)
+    @GetMapping(PetApiPath.PET_PUBLIC_INCREMENT_VIEW)
     public ResponseEntity<Void> incrementViewCount(@PathVariable UUID petId) {
         petService.incrementViewCount(petId);
         return ResponseEntity.ok().build();

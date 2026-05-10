@@ -42,6 +42,9 @@ services:
 api-key:
   value: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
 
+api:
+  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+
 vnpay:
   tmn-code: ${VNPAY_TMN_CODE:LPY4D96Y}
   hash-secret: ${VNPAY_HASH_SECRET:FV8MTUFGX90C8FHVN75FB9YX90CRGZKB}

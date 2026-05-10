@@ -1,13 +1,37 @@
 import { useState, useEffect, useMemo } from 'react';
 import { X, UploadCloud, Image as ImageIcon, Trash2, Loader2 } from 'lucide-react';
 import { useBreeds, usePetTypes } from '../hooks/usePets';
+import { petService } from '../services/petService';
 import axios from 'axios';
+
+const PET_COLORS = [
+  { id: 'Red', color: '#ff0000', label: 'Red' },
+  { id: 'Blue', color: '#0000ff', label: 'Blue' },
+  { id: 'Green', color: '#008000', label: 'Green' },
+  { id: 'Yellow', color: '#ffff00', label: 'Yellow' },
+  { id: 'Black', color: '#000000', label: 'Black' },
+  { id: 'White', color: '#ffffff', label: 'White' },
+  { id: 'Grey', color: '#808080', label: 'Grey' },
+  { id: 'Brown', color: '#8b4513', label: 'Brown' },
+  { id: 'Orange', color: '#ffa500', label: 'Orange' },
+  { id: 'Pink', color: '#ffc0cb', label: 'Pink' },
+  { id: 'Purple', color: '#800080', label: 'Purple' },
+];
 
 export default function PetModal({ isOpen, onClose, onSubmit, initialData = null, title = "Add Pet" }) {
   const { data: breedsData } = useBreeds();
   const { data: petTypesData } = usePetTypes();
-  const breeds = useMemo(() => breedsData?.content || [], [breedsData]);
-  const petTypes = useMemo(() => petTypesData?.content || [], [petTypesData]);
+  
+  // API returns array directly, not wrapped in {content: [...]}
+  const breeds = useMemo(() => {
+    if (!breedsData) return [];
+    return Array.isArray(breedsData) ? breedsData : (breedsData.content || []);
+  }, [breedsData]);
+  
+  const petTypes = useMemo(() => {
+    if (!petTypesData) return [];
+    return Array.isArray(petTypesData) ? petTypesData : (petTypesData.content || []);
+  }, [petTypesData]);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -17,8 +41,11 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
     description: '',
     status: 'AVAILABLE',
     weight: '',
-    height: '',
     birthDate: '',
+    colors: [],
+    furType: 'SHORT',
+    healthStatus: 'EXCELLENT',
+    vaccinated: false,
   });
 
   const [selectedPetType, setSelectedPetType] = useState('');
@@ -27,6 +54,27 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
   const [selectedModelFile, setSelectedModelFile] = useState(null); // Store File object
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingModel, setUploadingModel] = useState(false);
+
+  const [isNewPetType, setIsNewPetType] = useState(false);
+  const [newPetTypeName, setNewPetTypeName] = useState('');
+  
+  const [isNewBreed, setIsNewBreed] = useState(false);
+  const [newBreedName, setNewBreedName] = useState('');
+
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
+  // Compute filtered breeds - MUST be before early return to maintain hooks order
+  const filteredBreeds = useMemo(() => {
+    if (!selectedPetType) return breeds;
+    
+    // Convert selectedPetType to string for comparison
+    const selectedPetTypeStr = String(selectedPetType);
+    
+    return breeds.filter(b => {
+      const breedPetTypeId = b.petType?.id || b.petTypeId;
+      return breedPetTypeId && String(breedPetTypeId) === selectedPetTypeStr;
+    });
+  }, [selectedPetType, breeds]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -39,29 +87,26 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
         description: '',
         status: 'AVAILABLE',
         weight: '',
-        height: '',
         birthDate: '',
+        colors: [],
+        furType: 'SHORT',
+        healthStatus: 'EXCELLENT',
+        vaccinated: false,
         model3dUrl: '',
       });
       setSelectedPetType('');
       setUploadedImages([]);
       setSelectedImageFiles([]);
       setSelectedModelFile(null);
+      setIsNewPetType(false);
+      setNewPetTypeName('');
+      setIsNewBreed(false);
+      setNewBreedName('');
+      setShowColorPicker(false);
       return;
     }
 
     if (initialData) {
-      console.log('Loading initialData:', initialData); // Debug log
-      
-      // Find the breed to set the correct pet type
-      if (breeds.length > 0 && initialData.breedId) {
-        const currentBreed = breeds.find(b => b.id === initialData.breedId);
-        if (currentBreed) {
-          const petTypeId = currentBreed.petTypeId || currentBreed.petType?.id || '';
-          setSelectedPetType(petTypeId);
-        }
-      }
-
       const formattedData = {
         name: initialData.name || '',
         breedId: initialData.breedId || '',
@@ -70,13 +115,34 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
         description: initialData.description || '',
         status: initialData.status || 'AVAILABLE',
         weight: initialData.weight !== undefined && initialData.weight !== null ? String(initialData.weight) : '',
-        height: initialData.height !== undefined && initialData.height !== null ? String(initialData.height) : '',
         birthDate: initialData.birthDate ? new Date(initialData.birthDate).toISOString().split('T')[0] : '',
+        colors: initialData.colors || [],
+        furType: initialData.furType || 'SHORT',
+        healthStatus: initialData.healthStatus || 'EXCELLENT',
+        vaccinated: initialData.vaccinated || false,
         model3dUrl: initialData.model3d?.modelUrl || initialData.model3dUrl || '',
       };
       
-      console.log('Formatted formData:', formattedData); // Debug log
       setFormData(formattedData);
+
+      // Set pet type from initialData.petTypeId or from breed
+      let petTypeIdToSet = initialData.petTypeId;
+      
+      // If petTypeId is not in response, try to get it from breed
+      if (!petTypeIdToSet && initialData.breedId && breeds.length > 0) {
+        const breed = breeds.find(b => String(b.id) === String(initialData.breedId));
+        if (breed) {
+          petTypeIdToSet = breed.petTypeId;
+        }
+      }
+      
+      // Convert to string to match select value type
+      if (petTypeIdToSet) {
+        const petTypeIdStr = String(petTypeIdToSet);
+        setSelectedPetType(petTypeIdStr);
+      } else {
+        setSelectedPetType('');
+      }
 
       // Load existing images
       if (initialData.images && initialData.images.length > 0) {
@@ -91,19 +157,47 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
       setSelectedImageFiles([]);
       setSelectedModelFile(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialData, isOpen]);
+  }, [initialData, isOpen, breeds]); // Add breeds to dependencies
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const toggleColor = (colorId) => {
+    setFormData(prev => {
+      const currentColors = prev.colors || [];
+      if (currentColors.includes(colorId)) {
+        return { ...prev, colors: currentColors.filter(c => c !== colorId) };
+      } else {
+        return { ...prev, colors: [...currentColors, colorId] };
+      }
+    });
   };
 
   const handlePetTypeChange = (e) => {
-    setSelectedPetType(e.target.value);
+    const value = e.target.value;
+    if (value === 'NEW') {
+      setIsNewPetType(true);
+      setSelectedPetType('');
+    } else {
+      setIsNewPetType(false);
+      setSelectedPetType(value);
+    }
     setFormData(prev => ({ ...prev, breedId: '' })); // Reset breed when pet type changes
+  };
+
+  const handleBreedChange = (e) => {
+    const value = e.target.value;
+    if (value === 'NEW') {
+      setIsNewBreed(true);
+      setFormData(prev => ({ ...prev, breedId: '' }));
+    } else {
+      setIsNewBreed(false);
+      setFormData(prev => ({ ...prev, breedId: value }));
+    }
   };
 
   const handleImageUpload = (e) => {
@@ -150,6 +244,20 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
       
       let finalImageUrls = [...uploadedImages.filter(url => !url.startsWith('blob:'))]; // Keep existing URLs
       let finalModelUrl = formData.model3dUrl;
+
+      // Handle new Pet Type creation
+      let finalPetTypeId = selectedPetType;
+      if (isNewPetType && newPetTypeName.trim()) {
+        const newTypeData = await petService.createPetType({ name: newPetTypeName.trim(), description: '', isActive: true });
+        finalPetTypeId = newTypeData.id;
+      }
+
+      // Handle new Breed creation
+      let finalBreedId = formData.breedId;
+      if (isNewBreed && newBreedName.trim()) {
+        const newBreedData = await petService.createBreed({ name: newBreedName.trim(), description: '', petTypeId: finalPetTypeId, isActive: true });
+        finalBreedId = newBreedData.id;
+      }
       
       // Upload new images if any
       if (selectedImageFiles.length > 0) {
@@ -191,9 +299,11 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
       
       const submitData = {
         ...formData,
+        breedId: finalBreedId,
         price: formData.price ? parseFloat(formData.price) : 0,
         weight: formData.weight ? parseFloat(formData.weight) : null,
-        height: formData.height ? parseFloat(formData.height) : null,
+        colors: formData.colors || [],
+        vaccinated: formData.vaccinated === true || formData.vaccinated === 'true',
         imageUrls: finalImageUrls,
         model3dUrl: finalModelUrl,
       };
@@ -201,7 +311,6 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
       // Remove empty strings for optional numeric/date fields
       if (!submitData.birthDate) delete submitData.birthDate;
       if (submitData.weight === null) delete submitData.weight;
-      if (submitData.height === null) delete submitData.height;
       if (!submitData.model3dUrl || submitData.model3dUrl === formData.model3dUrl) delete submitData.model3dUrl;
       
       onSubmit(submitData);
@@ -213,12 +322,6 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
       setUploadingModel(false);
     }
   };
-
-  const filteredBreeds = useMemo(() => {
-    return selectedPetType 
-      ? breeds.filter(b => b.petType?.id === selectedPetType || b.petTypeId === selectedPetType)
-      : breeds;
-  }, [selectedPetType, breeds]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 overflow-y-auto">
@@ -265,30 +368,52 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Pet Type</label>
                 <select
-                  value={selectedPetType}
+                  value={isNewPetType ? 'NEW' : selectedPetType}
                   onChange={handlePetTypeChange}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
                 >
                   <option value="">Select Type</option>
                   {petTypes.map(type => (
-                    <option key={type.id} value={type.id}>{type.name}</option>
+                    <option key={type.id} value={String(type.id)}>{type.name}</option>
                   ))}
+                  <option value="NEW" className="text-emerald-600 font-semibold">+ Add New Pet Type...</option>
                 </select>
+                {isNewPetType && (
+                  <input
+                    type="text"
+                    value={newPetTypeName}
+                    onChange={e => setNewPetTypeName(e.target.value)}
+                    placeholder="Enter new pet type name..."
+                    className="mt-2 w-full px-4 py-2.5 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                    required={isNewPetType}
+                  />
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Breed *</label>
                 <select
                   name="breedId"
-                  value={formData.breedId}
-                  onChange={handleChange}
-                  required
+                  value={isNewBreed ? 'NEW' : formData.breedId}
+                  onChange={handleBreedChange}
+                  required={!isNewBreed}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
                 >
                   <option value="">Select Breed</option>
                   {filteredBreeds.map(breed => (
-                    <option key={breed.id} value={breed.id}>{breed.name}</option>
+                    <option key={breed.id} value={String(breed.id)}>{breed.name}</option>
                   ))}
+                  <option value="NEW" className="text-emerald-600 font-semibold">+ Add New Breed...</option>
                 </select>
+                {isNewBreed && (
+                  <input
+                    type="text"
+                    value={newBreedName}
+                    onChange={e => setNewBreedName(e.target.value)}
+                    placeholder="Enter new breed name..."
+                    className="mt-2 w-full px-4 py-2.5 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                    required={isNewBreed}
+                  />
+                )}
               </div>
             </div>
 
@@ -344,17 +469,108 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
                 />
               </div>
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Colors</label>
+                <button
+                  type="button"
+                  onClick={() => setShowColorPicker(!showColorPicker)}
+                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm text-left flex items-center justify-between min-h-[44px]"
+                >
+                  <div className="flex flex-wrap gap-1">
+                    {formData.colors && formData.colors.length > 0 ? (
+                      formData.colors.map(cId => {
+                        const colorDef = PET_COLORS.find(c => c.id === cId);
+                        if (!colorDef) return null;
+                        return (
+                          <span key={cId} className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full text-xs font-medium text-gray-700">
+                            <span className="w-2 h-2 rounded-full border border-gray-200 shadow-sm" style={{ background: colorDef.color }} />
+                            {colorDef.label}
+                          </span>
+                        );
+                      })
+                    ) : (
+                      <span className="text-gray-400">Select colors...</span>
+                    )}
+                  </div>
+                  <span className="text-gray-400 text-xs ml-2">▼</span>
+                </button>
+
+                {showColorPicker && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setShowColorPicker(false)}></div>
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-lg p-3 top-full left-0">
+                      <div className="flex flex-wrap gap-2">
+                        {PET_COLORS.map(color => {
+                          const isSelected = (formData.colors || []).includes(color.id);
+                          return (
+                            <button
+                              type="button"
+                              key={color.id}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleColor(color.id);
+                              }}
+                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
+                                isSelected 
+                                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500' 
+                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                              }`}
+                            >
+                              <span 
+                                className="w-3 h-3 rounded-full border border-gray-200 shadow-sm" 
+                                style={{ background: color.color }}
+                              />
+                              {color.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Height (cm)</label>
-                <input
-                  type="number"
-                  name="height"
-                  value={formData.height}
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Fur Type</label>
+                <select
+                  name="furType"
+                  value={formData.furType}
                   onChange={handleChange}
-                  step="0.1"
-                  min="1"
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
-                />
+                >
+                  <option value="SHORT">Short</option>
+                  <option value="LONG">Long</option>
+                  <option value="CURLY">Curly</option>
+                  <option value="HAIRLESS">Hairless</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">Health Status</label>
+                <select
+                  name="healthStatus"
+                  value={formData.healthStatus}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                >
+                  <option value="EXCELLENT">Excellent</option>
+                  <option value="GOOD">Good</option>
+                  <option value="FAIR">Fair</option>
+                  <option value="NEEDS_CARE">Needs Care</option>
+                </select>
+              </div>
+              <div className="flex items-center pt-7">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="vaccinated"
+                    checked={formData.vaccinated}
+                    onChange={handleChange}
+                    className="w-5 h-5 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500 cursor-pointer"
+                  />
+                  <span className="text-sm font-medium text-gray-700">Vaccinated</span>
+                </label>
               </div>
             </div>
 

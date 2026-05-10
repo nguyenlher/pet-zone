@@ -180,6 +180,8 @@ services:
       REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
       API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
       USER_SERVICE_URL: http://user-service:8081
       PET_SERVICE_URL: http://pet-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8085

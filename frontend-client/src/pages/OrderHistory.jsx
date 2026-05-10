@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, ChevronDown, ChevronUp, Search, Calendar, Eye } from 'lucide-react';
+import { Package, ChevronDown, ChevronUp, Search, Calendar, Eye, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
+import RatingModal from '../components/RatingModal';
 import '../styles/pages/OrderHistory.css';
 
 const sampleOrders = [
@@ -27,6 +28,14 @@ export default function OrderHistory() {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [ratingItem, setRatingItem] = useState(null);
+  const [ratedItems, setRatedItems] = useState({}); // Keep track of locally rated items
+
+  const handleReviewSubmit = (reviewData) => {
+    console.log('Review submitted:', reviewData);
+    // Mark item as rated locally
+    setRatedItems(prev => ({ ...prev, [reviewData.productId]: true }));
+  };
 
   const filteredOrders = sampleOrders.filter(order => {
     const matchStatus = statusFilter === 'all' || order.status === statusFilter;
@@ -106,7 +115,25 @@ export default function OrderHistory() {
                             <strong>{item.name}</strong>
                             <span>Qty: {item.quantity}</span>
                           </div>
-                          <span className="order-item-price">${item.price.toLocaleString()}</span>
+                          <div className="flex flex-col items-end gap-2">
+                            <span className="order-item-price">${item.price.toLocaleString()}</span>
+                            {order.status === 'Delivered' && !ratedItems[item.id] && (
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setRatingItem(item);
+                                }}
+                                className="flex items-center gap-1.5 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full hover:bg-amber-100 transition-colors"
+                              >
+                                <Star size={14} className="fill-current" /> Rate
+                              </button>
+                            )}
+                            {order.status === 'Delivered' && ratedItems[item.id] && (
+                              <span className="text-xs font-medium text-stone-400 flex items-center gap-1">
+                                <Star size={12} className="fill-current" /> Rated
+                              </span>
+                            )}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -137,6 +164,16 @@ export default function OrderHistory() {
           )}
         </div>
       </div>
+      
+      {/* Rating Modal */}
+      {ratingItem && (
+        <RatingModal 
+          isOpen={!!ratingItem} 
+          item={ratingItem} 
+          onClose={() => setRatingItem(null)} 
+          onSubmit={handleReviewSubmit}
+        />
+      )}
     </div>
   );
 }

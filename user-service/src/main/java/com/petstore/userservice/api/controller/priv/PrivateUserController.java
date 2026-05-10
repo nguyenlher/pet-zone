@@ -8,8 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,19 +42,6 @@ public class PrivateUserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
-
-    // ==================== USER ENDPOINTS (Authenticated) ====================
-    
-    /**
-     * Get current user's profile
-     * Accessible by: Any authenticated user
-     */
-    @GetMapping("/profile")
-    public ResponseEntity<UserResponse> getProfile(@AuthenticationPrincipal Jwt jwt) {
-        String keycloakId = jwt.getSubject();
-        log.info("Private API: Fetching profile for keycloakId: {}", keycloakId);
-        return ResponseEntity.ok(userMapper.toUserDto(userService.getProfile(keycloakId)));
-    }
 
     // ==================== ADMIN ENDPOINTS (ADMIN Role Required) ====================
     
@@ -148,13 +133,13 @@ public class PrivateUserController {
     }
 
     /**
-     * Get user statistics
+     * Get user statistics summary
      * Accessible by: ADMIN only
      */
-    @GetMapping("/statistics")
+    @GetMapping("/summary")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserStatisticsResponse> getUserStatistics() {
-        log.info("Private API: Admin fetching user statistics");
+    public ResponseEntity<UserStatisticsResponse> getUserStatisticsSummary() {
+        log.info("Private API: Admin fetching user statistics summary");
         UserStatisticsResponse statistics = userService.getUserStatistics();
         return ResponseEntity.ok(statistics);
     }

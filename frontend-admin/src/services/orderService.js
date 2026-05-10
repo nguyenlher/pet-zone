@@ -27,13 +27,13 @@ export const orderService = {
 
   // Get order by ID
   getOrderById: async (orderId) => {
-    const response = await api.get(`/api/private/orders/${orderId}`);
+    const response = await api.get(`/api/public/order/${orderId}`);
     return response.data;
   },
 
   // Get orders by user ID
   getOrdersByUserId: async (userId, page = 0, size = 20) => {
-    const response = await api.get(`/api/private/orders/user/${userId}`, {
+    const response = await api.get(`/api/public/order/user/${userId}`, {
       params: { page, size },
     });
     return response.data;
@@ -41,7 +41,7 @@ export const orderService = {
 
   // Get orders by status
   getOrdersByStatus: async (status, page = 0, size = 20) => {
-    const response = await api.get(`/api/private/orders/status/${status}`, {
+    const response = await api.get(`/api/public/order/status/${status}`, {
       params: { page, size },
     });
     return response.data;
@@ -49,7 +49,7 @@ export const orderService = {
 
   // Update order status (admin)
   updateOrderStatus: async (orderId, status) => {
-    const response = await api.patch(`/api/private/orders/${orderId}/status`, {
+    const response = await api.patch(`/api/public/order/${orderId}/status`, {
       status,
     });
     return response.data;
@@ -57,7 +57,7 @@ export const orderService = {
 
   // Delete order (admin) - Only for CANCELLED or PAYMENT_FAILED
   deleteOrder: async (orderId) => {
-    const response = await api.delete(`/api/private/orders/${orderId}`);
+    const response = await api.delete(`/api/public/order/${orderId}`);
     return response.data;
   },
 };

@@ -14,6 +14,7 @@ public interface KeycloakAuthService {
     void forgotPassword(ForgotPasswordRequest request);
     void resetPassword(String keycloakId, ResetPasswordRequest request);
     Map<String, Object> refreshToken(String refreshToken);
+    void updateUserInKeycloak(String keycloakId, String firstName, String lastName);
     void updateUserEnabledStatus(String keycloakId, Boolean isActive);
     void deleteUser(String keycloakId);
 }

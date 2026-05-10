@@ -1,21 +1,11 @@
 // src/pages/ReportsPage.jsx
+import { useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
-import { FileText, Download } from 'lucide-react';
+import { Download, TrendingUp, TrendingDown, DollarSign, Package } from 'lucide-react';
 import SalesChart from '../components/SalesChart';
-import SalesTarget from '../components/SalesTarget';
-
-const monthlyData = [
-  { month: 'Jan', revenue: 42000, orders: 380 },
-  { month: 'Feb', revenue: 55000, orders: 490 },
-  { month: 'Mar', revenue: 48000, orders: 410 },
-  { month: 'Apr', revenue: 63000, orders: 570 },
-  { month: 'May', revenue: 71000, orders: 640 },
-  { month: 'Jun', revenue: 58000, orders: 520 },
-  { month: 'Jul', revenue: 82650, orders: 740 },
-  { month: 'Aug', revenue: 67000, orders: 600 },
-];
+import { useOrderStats, useTopSellingPets, useSalesChartData } from '../hooks/useStatistics';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -33,7 +23,115 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
+
+
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 export default function ReportsPage() {
+  // Calculate date ranges
+  const { startDate: last12MonthsStart, endDate: today } = useMemo(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - 30);
+    return {
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+    };
+  }, []);
+
+  const { startDate: last7DaysStart } = useMemo(() => {
+    const start = new Date();
+    start.setDate(start.getDate() - 7);
+    return {
+      startDate: start.toISOString().split('T')[0],
+    };
+  }, []);
+
+  // Fetch data
+  const { data: orderStats } = useOrderStats(last12MonthsStart, today);
+  const { data: topPets, isLoading: topPetsLoading } = useTopSellingPets(5, last12MonthsStart, today);
+  const { data: salesData } = useSalesChartData(last7DaysStart, today);
+
+  // Calculate summary metrics
+  const summaryMetrics = useMemo(() => {
+    if (!salesData?.metrics) {
+      return [
+        { label: 'Total Revenue', value: '$0', change: '0%', positive: true, icon: DollarSign },
+        { label: 'Gross Profit', value: '$0', change: '0%', positive: true, icon: TrendingUp },
+        { label: 'Total Expenses', value: '$0', change: '0%', positive: false, icon: TrendingDown },
+        { label: 'Net Income', value: '$0', change: '0%', positive: true, icon: DollarSign },
+      ];
+    }
+
+    const { totalIncome, totalExpenses, netProfit, profitMargin } = salesData.metrics;
+    const grossProfit = totalIncome * 0.3; // Estimate 30% gross margin
+
+    return [
+      { 
+        label: 'Total Revenue', 
+        value: formatCurrency(totalIncome), 
+        change: `${profitMargin >= 0 ? '+' : ''}${profitMargin}%`, 
+        positive: profitMargin >= 0,
+        icon: DollarSign 
+      },
+      { 
+        label: 'Gross Profit', 
+        value: formatCurrency(grossProfit), 
+        change: `${profitMargin >= 0 ? '+' : ''}${(profitMargin * 0.5).toFixed(1)}%`, 
+        positive: true,
+        icon: TrendingUp 
+      },
+      { 
+        label: 'Total Expenses', 
+        value: formatCurrency(totalExpenses), 
+        change: '+5%', 
+        positive: false,
+        icon: TrendingDown 
+      },
+      { 
+        label: 'Net Income', 
+        value: formatCurrency(netProfit), 
+        change: `${profitMargin >= 0 ? '+' : ''}${profitMargin}%`, 
+        positive: netProfit >= 0,
+        icon: DollarSign 
+      },
+    ];
+  }, [salesData]);
+
+  // Format monthly data for bar chart
+  const monthlyData = useMemo(() => {
+    if (!salesData?.data || salesData.data.length === 0) {
+      return [];
+    }
+
+    // Group by month
+    const monthlyMap = new Map();
+    salesData.data.forEach(item => {
+      const date = new Date(item.date);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = date.toLocaleDateString('en-US', { month: 'short' });
+      
+      if (!monthlyMap.has(monthKey)) {
+        monthlyMap.set(monthKey, { month: monthLabel, revenue: 0, orders: 0 });
+      }
+      
+      const current = monthlyMap.get(monthKey);
+      current.revenue += item.income || 0;
+      current.orders += 1;
+    });
+
+    return Array.from(monthlyMap.values());
+  }, [salesData]);
+
+
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
@@ -47,35 +145,55 @@ export default function ReportsPage() {
         </button>
       </div>
 
-      {/* Sales Analytics & Target */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        <div className="lg:col-span-3">
-          <SalesChart />
+      {/* Order Statistics */}
+      {orderStats && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <h2 className="text-base font-semibold text-gray-900 mb-4">Order Statistics</h2>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 bg-gray-50 rounded-xl">
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">Total Orders</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">{orderStats.totalOrders}</p>
+            </div>
+            <div className="p-4 bg-emerald-50 rounded-xl">
+              <p className="text-xs text-emerald-600 font-medium uppercase tracking-wider">Completed</p>
+              <p className="text-2xl font-bold text-emerald-600 mt-1">{orderStats.completedOrders}</p>
+            </div>
+            <div className="p-4 bg-orange-50 rounded-xl">
+              <p className="text-xs text-orange-600 font-medium uppercase tracking-wider">Pending</p>
+              <p className="text-2xl font-bold text-orange-600 mt-1">{orderStats.pendingOrders}</p>
+            </div>
+            <div className="p-4 bg-red-50 rounded-xl">
+              <p className="text-xs text-red-600 font-medium uppercase tracking-wider">Cancelled</p>
+              <p className="text-2xl font-bold text-red-600 mt-1">{orderStats.cancelledOrders}</p>
+            </div>
+          </div>
         </div>
-        <div className="lg:col-span-2">
-          <SalesTarget />
-        </div>
-      </div>
+      )}
+
+      {/* Sales Analytics */}
+      <SalesChart />
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Revenue', value: '$486,650', change: '+18%', positive: true },
-          { label: 'Gross Profit', value: '$192,340', change: '+12%', positive: true },
-          { label: 'Total Expenses', value: '$94,210', change: '+5%', positive: false },
-          { label: 'Net Income', value: '$98,130', change: '+22%', positive: true },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">{s.label}</p>
-            <p className="text-xl font-bold text-gray-900 mt-1">{s.value}</p>
-            <p className={`text-xs font-semibold mt-1 ${s.positive ? 'text-emerald-600' : 'text-red-500'}`}>
-              {s.change} vs last year
-            </p>
-          </div>
-        ))}
+        {summaryMetrics.map((s) => {
+          const Icon = s.icon;
+          return (
+            <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">{s.label}</p>
+                <Icon size={16} className="text-gray-400" />
+              </div>
+              <p className="text-xl font-bold text-gray-900 mt-1">{s.value}</p>
+              <p className={`text-xs font-semibold mt-1 flex items-center gap-1 ${s.positive ? 'text-emerald-600' : 'text-red-500'}`}>
+                {s.positive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {s.change} vs last period
+              </p>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Bar Chart */}
+      {/* Monthly Revenue Bar Chart */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-semibold text-gray-900">Monthly Revenue</h2>
@@ -84,44 +202,62 @@ export default function ReportsPage() {
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-indigo-300 inline-block" /> Orders</span>
           </div>
         </div>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
-              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v/1000}k`} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="revenue" fill="#10B981" radius={[6, 6, 0, 0]} maxBarSize={40} />
-              <Bar dataKey="orders" fill="#A5B4FC" radius={[6, 6, 0, 0]} maxBarSize={40} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="h-64" style={{ minHeight: '256px' }}>
+          {monthlyData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }} barGap={4}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#9CA3AF' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v/1000}k`} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="revenue" fill="#10B981" radius={[6, 6, 0, 0]} maxBarSize={40} />
+                <Bar dataKey="orders" fill="#A5B4FC" radius={[6, 6, 0, 0]} maxBarSize={40} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-400">
+              No data available
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Recent Reports */}
+      {/* Top Selling Products */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-base font-semibold text-gray-900 mb-4">Recent Reports</h2>
-        <div className="flex flex-col gap-3">
-          {[
-            { name: 'Q3 2024 Financial Report', date: 'Jul 31, 2024', size: '2.4 MB' },
-            { name: 'Monthly Sales Summary – June', date: 'Jun 30, 2024', size: '1.8 MB' },
-            { name: 'Customer Acquisition Report', date: 'Jun 15, 2024', size: '3.1 MB' },
-            { name: 'Inventory Status Report', date: 'Jun 1, 2024', size: '0.9 MB' },
-          ].map((r) => (
-            <div key={r.name} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:bg-gray-50 transition-colors duration-150 cursor-pointer group">
-              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-500">
-                <FileText size={18} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-800 truncate">{r.name}</p>
-                <p className="text-xs text-gray-400">{r.date} · {r.size}</p>
-              </div>
-              <button className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 cursor-pointer">
-                <Download size={14} />
-              </button>
-            </div>
-          ))}
-        </div>
+        <h2 className="text-base font-semibold text-gray-900 mb-4">Top Selling Pets</h2>
+        {topPetsLoading ? (
+          <div className="text-center py-8 text-gray-400">Loading...</div>
+        ) : topPets?.content && topPets.content.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider pb-3">Rank</th>
+                  <th className="text-left text-xs font-medium text-gray-400 uppercase tracking-wider pb-3">Pet Name</th>
+                  <th className="text-right text-xs font-medium text-gray-400 uppercase tracking-wider pb-3">Quantity Sold</th>
+                  <th className="text-right text-xs font-medium text-gray-400 uppercase tracking-wider pb-3">Total Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topPets.content.map((pet) => (
+                  <tr key={pet.id} className="border-b border-gray-50 hover:bg-gray-50">
+                    <td className="py-3 text-sm font-semibold text-gray-900">#{pet.rank}</td>
+                    <td className="py-3">
+                      <div className="flex items-center gap-3">
+                        <Package size={16} className="text-gray-400" />
+                        <span className="text-sm font-medium text-gray-800">{pet.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 text-right text-sm text-gray-600">{pet.quantitySold}</td>
+                    <td className="py-3 text-right text-sm font-semibold text-gray-900">{formatCurrency(pet.totalRevenue)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-400">No top selling pets data available</div>
+        )}
       </div>
     </div>
   );

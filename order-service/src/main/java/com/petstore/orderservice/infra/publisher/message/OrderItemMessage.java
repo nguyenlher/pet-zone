@@ -2,6 +2,8 @@ package com.petstore.orderservice.infra.publisher.message;
 
 import java.util.UUID;
 
+import com.petstore.orderservice.domain.model.enums.ItemType;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,8 +16,9 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderItemMessage {
-    private UUID petId;
-    private String petName;
+    private ItemType itemType;
+    private UUID itemId;
+    private String itemName;
     private int quantity;
     private double unitPrice;
     private double subtotalAmount;

@@ -3,6 +3,7 @@ package com.petstore.orderservice.infra.client;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -19,6 +20,9 @@ public class PaymentClient {
 
     @Qualifier("paymentRestClient")
     private final RestClient paymentRestClient;
+    
+    @Value("${api.key:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}")
+    private String apiKey;
 
     public PaymentResponse createPayment(UUID orderId, String paymentMethod) {
         try {
@@ -29,6 +33,7 @@ public class PaymentClient {
 
             return paymentRestClient.post()
                     .uri("/private/payments")
+                    .header("X-API-KEY", apiKey)
                     .body(request)
                     .retrieve()
                     .body(PaymentResponse.class);

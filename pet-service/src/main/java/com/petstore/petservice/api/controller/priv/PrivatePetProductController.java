@@ -12,10 +12,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.petstore.petservice.api.dto.response.PetProductResponse;
-import com.petstore.petservice.domain.model.PetProduct;
+import com.petstore.petservice.domain.model.Product;
 import com.petstore.petservice.domain.model.enums.ProductStatus;
-import com.petstore.petservice.domain.service.PetProductService;
-import com.petstore.petservice.infra.mapper.PetProductMapper;
+import com.petstore.petservice.domain.service.ProductService;
+import com.petstore.petservice.infra.mapper.ProductMapper;
 import com.petstore.petservice.utils.PetApiPath;
 
 import lombok.RequiredArgsConstructor;
@@ -25,13 +25,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PrivatePetProductController {
     
-    private final PetProductService petProductService;
-    private final PetProductMapper petProductMapper;
+    private final ProductService petProductService;
+    private final ProductMapper productMapper;
     
     @GetMapping(PetApiPath.PET_PRODUCT_PRIVATE_BY_ID)
     public ResponseEntity<PetProductResponse> getProductById(@PathVariable UUID productId) {
-        PetProduct product = petProductService.getProductById(productId);
-        return ResponseEntity.ok(petProductMapper.toResponse(product));
+        Product product = petProductService.getProductById(productId);
+        return ResponseEntity.ok(productMapper.toResponse(product));
     }
     
     @GetMapping(PetApiPath.PET_PRODUCT_PRIVATE_CHECK_STOCK)
@@ -39,7 +39,7 @@ public class PrivatePetProductController {
             @PathVariable UUID productId,
             @RequestParam Integer quantity) {
         
-        PetProduct product = petProductService.getProductById(productId);
+        Product product = petProductService.getProductById(productId);
         boolean hasStock = product.getStockQuantity() >= quantity 
                 && product.getStatus() == ProductStatus.AVAILABLE;
         
@@ -51,8 +51,8 @@ public class PrivatePetProductController {
             @PathVariable UUID productId,
             @RequestParam Integer quantity) {
         
-        PetProduct product = petProductService.updateStock(productId, quantity);
-        return ResponseEntity.ok(petProductMapper.toResponse(product));
+        Product product = petProductService.updateStock(productId, quantity);
+        return ResponseEntity.ok(productMapper.toResponse(product));
     }
     
     @PostMapping(PetApiPath.PET_PRODUCT_PRIVATE_INCREMENT_SOLD)
@@ -60,7 +60,7 @@ public class PrivatePetProductController {
             @PathVariable UUID productId,
             @RequestParam Integer quantity) {
         
-        PetProduct product = petProductService.incrementSoldCount(productId, quantity);
-        return ResponseEntity.ok(petProductMapper.toResponse(product));
+        Product product = petProductService.incrementSoldCount(productId, quantity);
+        return ResponseEntity.ok(productMapper.toResponse(product));
     }
 }

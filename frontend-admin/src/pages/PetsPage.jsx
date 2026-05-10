@@ -25,13 +25,6 @@ export default function PetsPage() {
   const totalPages = petsData?.totalPages || 0;
   const totalElements = petsData?.totalElements || 0;
 
-  // Debug logging
-  console.log('PetsPage - isLoading:', isLoading);
-  console.log('PetsPage - isError:', isError);
-  console.log('PetsPage - error:', error);
-  console.log('PetsPage - petsData:', petsData);
-  console.log('PetsPage - pets:', pets);
-
   // Early return for debugging
   if (isError) {
     return (
@@ -68,6 +61,17 @@ export default function PetsPage() {
     try {
       // Fetch full pet details before editing
       const fullPetData = await petService.getPetById(pet.id);
+      
+      // If petTypeId is missing, fetch it from breed
+      if (!fullPetData.petTypeId && fullPetData.breedId) {
+        try {
+          const breedData = await petService.getBreedById(fullPetData.breedId);
+          fullPetData.petTypeId = breedData.petTypeId;
+        } catch (err) {
+          console.error('Failed to fetch breed details:', err);
+        }
+      }
+      
       setEditingPet(fullPetData);
       setIsModalOpen(true);
       setActiveMenuId(null);
@@ -229,6 +233,7 @@ export default function PetsPage() {
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pet</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Type</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Breed</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Status</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Price</th>
@@ -255,6 +260,7 @@ export default function PetsPage() {
                           </div>
                         </div>
                       </td>
+                      <td className="px-4 py-3.5 text-sm text-gray-700">{pet.petTypeName || 'N/A'}</td>
                       <td className="px-4 py-3.5 text-sm text-gray-700">{pet.breedName || 'N/A'}</td>
                       <td className="px-4 py-3.5">
                         <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${

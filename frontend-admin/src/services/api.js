@@ -2,11 +2,9 @@
 import axios from 'axios';
 import { isTokenExpired, isAdmin } from '../utils/jwtUtils';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8090';
-
-// Create axios instance
+// Use relative path to leverage Vite proxy (no baseURL needed)
+// This allows the app to work with both localhost and ngrok
 const api = axios.create({
-  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -15,26 +13,19 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    // Skip auth checks for public endpoints
+    const publicEndpoints = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh'];
+    const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+    
+    if (isPublicEndpoint) {
+      return config;
+    }
+
     const token = localStorage.getItem('accessToken');
-    if (token) {
-      // Check if token is expired
-      if (isTokenExpired(token)) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
-        return Promise.reject(new Error('Token expired'));
-      }
-
-      // Check if user has ADMIN role (only for admin dashboard)
-      if (!isAdmin(token)) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
-        return Promise.reject(new Error('Access denied: ADMIN role required'));
-      }
-
+    if (token && !isTokenExpired(token)) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
     return config;
   },
   (error) => {
@@ -56,40 +47,25 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem('refreshToken');
         if (refreshToken) {
           const response = await axios.post(
-            `${API_BASE_URL}/api/auth/refresh`,
+            '/api/auth/refresh',
             null,
             { params: { refreshToken } }
           );
           
           const { access_token } = response.data;
           
-          // Check if refreshed token has ADMIN role
-          if (!isAdmin(access_token)) {
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            window.location.href = '/login';
-            return Promise.reject(new Error('Access denied: ADMIN role required'));
+          if (isAdmin(access_token)) {
+            localStorage.setItem('accessToken', access_token);
+            originalRequest.headers.Authorization = `Bearer ${access_token}`;
+            return api(originalRequest);
           }
-
-          localStorage.setItem('accessToken', access_token);
-          
-          originalRequest.headers.Authorization = `Bearer ${access_token}`;
-          return api(originalRequest);
         }
       } catch (refreshError) {
-        // Refresh failed, logout user
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
-    }
-
-    // If 403, user doesn't have permission
-    if (error.response?.status === 403) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      window.location.href = '/login';
     }
 
     return Promise.reject(error);

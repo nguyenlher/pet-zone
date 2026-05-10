@@ -1,11 +1,15 @@
 import api from './api';
 
+// ============================================
+// ORDER SERVICE - All endpoints require JWT
+// ============================================
+
 const orderService = {
   /**
    * Create a new order
    * @param {Object} orderData - Order data
    * @param {string} orderData.userId - User ID (UUID)
-   * @param {Array} orderData.items - Array of {petId: UUID, quantity: number}
+   * @param {Array} orderData.items - Array of {itemType: 'PET'|'PRODUCT', itemId: UUID, quantity: number}
    * @param {Object} orderData.shipping - Shipping details {name, phone, address, city, paymentMethod}
    * @param {string} orderData.discountCode - Optional discount code
    * @returns {Promise} CreateOrderResponse
@@ -16,13 +20,13 @@ const orderService = {
   },
 
   /**
-   * Get all orders (paginated)
+   * Get user's orders (paginated)
    * @param {number} page - Page number (0-indexed)
    * @param {number} size - Page size
-   * @returns {Promise} Page of orders
+   * @returns {Promise} Page of user's orders
    */
-  async getAllOrders(page = 0, size = 10) {
-    const response = await api.get('/api/public/order', {
+  async getUserOrders(page = 0, size = 10) {
+    const response = await api.get('/api/public/order/user', {
       params: { page, size }
     });
     return response.data;
@@ -48,7 +52,7 @@ const orderService = {
    * @returns {Promise} Order details
    */
   async getOrderById(orderId) {
-    const response = await api.get(`/private/orders/${orderId}`);
+    const response = await api.get(`/api/public/order/${orderId}`);
     return response.data;
   }
 };

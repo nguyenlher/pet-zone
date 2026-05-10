@@ -32,8 +32,8 @@ public class PaymentEventConsumer {
             PaymentSucceededMessage message = objectMapper.readValue(payload, PaymentSucceededMessage.class);
             log.info("Received payment succeeded event for order: {}", message.getOrderId());
             
-            orderService.updateOrderStatusFromPayment(message.getOrderId(), OrderStatus.PENDING);
-            log.info("Order {} status updated to PENDING after successful payment", message.getOrderId());
+            orderService.updateOrderStatusFromPayment(message.getOrderId(), OrderStatus.CONFIRM);
+            log.info("Order {} status updated to CONFIRM after successful payment", message.getOrderId());
             
             acknowledgment.acknowledge();
         } catch (Exception e) {
@@ -52,8 +52,9 @@ public class PaymentEventConsumer {
             PaymentFailedMessage message = objectMapper.readValue(payload, PaymentFailedMessage.class);
             log.info("Received payment failed event for order: {}", message.getOrderId());
             
-            orderService.updateOrderStatusFromPayment(message.getOrderId(), OrderStatus.PAYMENT_FAILED);
-            log.info("Order {} status updated to PAYMENT_FAILED", message.getOrderId());
+            // Compensating transaction: Cancel order and restore inventory
+            orderService.cancelOrderDueToPaymentFailure(message.getOrderId(), message.getReason());
+            log.info("Order {} cancelled due to payment failure", message.getOrderId());
             
             acknowledgment.acknowledge();
         } catch (Exception e) {

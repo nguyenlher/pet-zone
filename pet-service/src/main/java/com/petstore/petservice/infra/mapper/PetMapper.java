@@ -3,6 +3,7 @@ package com.petstore.petservice.infra.mapper;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.UUID;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -41,10 +42,15 @@ public interface PetMapper {
     @Mapping(target = "ageInMonths", expression = "java(calculateAgeInMonths(pet.getBirthDate()))")
     @Mapping(target = "breed", ignore = true)
     @Mapping(target = "breedName", ignore = true)
+    @Mapping(target = "petTypeId", ignore = true)
+    @Mapping(target = "petTypeName", ignore = true)
     PetDetailResponse toDetailResponse(Pet pet);
     
+    @Mapping(target = "id", source = "id")
     @Mapping(target = "ageInMonths", expression = "java(calculateAgeInMonths(pet.getBirthDate()))")
     @Mapping(target = "breedName", ignore = true)
+    @Mapping(target = "petTypeId", ignore = true)
+    @Mapping(target = "petTypeName", ignore = true)
     @Mapping(target = "thumbnailUrl", expression = "java(getThumbnailUrl(pet))")
     @Mapping(target = "has3DModel", expression = "java(pet.getModel3d() != null)")
     PetResponse toResponse(Pet pet);
@@ -56,9 +62,39 @@ public interface PetMapper {
         return response;
     }
     
+    default PetDetailResponse toDetailResponseWithBreedAndType(Pet pet, String breedName, String petTypeName) {
+        PetDetailResponse response = toDetailResponse(pet);
+        response.setBreedName(breedName);
+        response.setPetTypeName(petTypeName);
+        return response;
+    }
+    
+    default PetDetailResponse toDetailResponseWithBreedAndType(Pet pet, UUID petTypeId, String breedName, String petTypeName) {
+        PetDetailResponse response = toDetailResponse(pet);
+        response.setPetTypeId(petTypeId);
+        response.setBreedName(breedName);
+        response.setPetTypeName(petTypeName);
+        return response;
+    }
+    
     default PetResponse toResponseWithBreed(Pet pet, String breedName) {
         PetResponse response = toResponse(pet);
         response.setBreedName(breedName);
+        return response;
+    }
+    
+    default PetResponse toResponseWithBreedAndType(Pet pet, String breedName, String petTypeName) {
+        PetResponse response = toResponse(pet);
+        response.setBreedName(breedName);
+        response.setPetTypeName(petTypeName);
+        return response;
+    }
+
+    default PetResponse toResponseWithBreedAndType(Pet pet, UUID petTypeId, String breedName, String petTypeName) {
+        PetResponse response = toResponse(pet);
+        response.setPetTypeId(petTypeId);
+        response.setBreedName(breedName);
+        response.setPetTypeName(petTypeName);
         return response;
     }
     

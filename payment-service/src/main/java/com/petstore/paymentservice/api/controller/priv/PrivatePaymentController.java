@@ -1,4 +1,4 @@
-package com.petstore.paymentservice.api.controller;
+package com.petstore.paymentservice.api.controller.priv;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,10 +28,10 @@ public class PrivatePaymentController {
     @PostMapping
     public ResponseEntity<PaymentResponse> createPayment(@RequestBody CreatePaymentRequest request) {
         log.info("Private API: Creating payment for order: {}", request.getOrderId());
-        
+
         // For inter-service calls, use a default IP or get from request context
         String ipAddress = "127.0.0.1"; // Internal service call
-        
+
         PaymentResponse response = paymentService.createPayment(request, ipAddress);
         return ResponseEntity.ok(response);
     }

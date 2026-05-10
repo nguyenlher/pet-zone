@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Star, Shield, Truck, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { usePets, usePetTypes } from '../hooks/usePets';
 import PetCard from '../components/PetCard';
 
@@ -16,6 +17,7 @@ const testimonials = [
 ];
 
 export default function Home() {
+  const { t } = useTranslation();
   const { pets: featuredPets, loading: petsLoading } = usePets('AVAILABLE', 0, 8);
   const { petTypes, loading: typesLoading } = usePetTypes();
 
@@ -26,20 +28,20 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
             <span className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-              <Star size={14} className="fill-amber-500 text-amber-500" /> #1 Pet Store in Town
+              <Star size={14} className="fill-amber-500 text-amber-500" /> {t('home.hero.badge')}
             </span>
             <h1 className="font-heading text-5xl lg:text-6xl font-extrabold text-stone-900 leading-tight mb-5">
-              Find Your Perfect <span className="gradient-text">Furry Friend</span> Today
+              {t('home.hero.title_normal_1')}<span className="gradient-text">{t('home.hero.title_gradient')}</span>{t('home.hero.title_normal_2')}
             </h1>
             <p className="text-lg text-stone-600 max-w-xl mb-8 leading-relaxed">
-              Discover adorable pets looking for a loving home. From playful puppies to curious kittens, your new best friend is waiting.
+              {t('home.hero.subtitle')}
             </p>
             <div className="flex flex-wrap gap-4 mb-10">
-              <Link to="/pets" className="btn btn-primary btn-lg">Browse Pets <ArrowRight size={18} /></Link>
-              <Link to="/contact" className="btn btn-secondary btn-lg">Contact Us</Link>
+              <Link to="/pets" className="btn btn-primary btn-lg">{t('home.hero.btn_browse')} <ArrowRight size={18} /></Link>
+              <Link to="/contact" className="btn btn-secondary btn-lg">{t('home.hero.btn_contact')}</Link>
             </div>
             <div className="flex items-center gap-8">
-              {[['500+', 'Happy Pets'], ['1.2k+', 'Customers'], ['4.9', 'Rating']].map(([num, label], i) => (
+              {[['500+', t('home.hero.happy_pets')], ['1.2k+', t('home.hero.customers')], ['4.9', t('home.hero.rating')]].map(([num, label], i) => (
                 <div key={i} className={`text-center ${i > 0 ? 'pl-8 border-l border-stone-200' : ''}`}>
                   <strong className="block font-heading text-2xl font-bold text-stone-900">{num}</strong>
                   <span className="text-sm text-stone-500">{label}</span>
@@ -52,7 +54,7 @@ export default function Home() {
               <img src="https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=700&fit=crop" alt="Happy dog" className="w-full h-[480px] object-cover" />
               <div className="absolute bottom-6 left-6 bg-white/90 backdrop-blur-sm rounded-2xl px-4 py-3 flex items-center gap-2 shadow-lg">
                 <Heart size={18} className="text-red-500 fill-red-500 animate-heart-pulse" />
-                <span className="font-semibold text-stone-800 text-sm">Adopt Me!</span>
+                <span className="font-semibold text-stone-800 text-sm">{t('home.hero.adopt_me')}</span>
               </div>
             </div>
           </motion.div>
@@ -63,8 +65,8 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="mb-10">
-            <h2 className="font-heading text-4xl font-bold text-stone-900 mb-3">Browse by Category</h2>
-            <p className="text-stone-500 text-lg max-w-xl">Find your perfect companion from our wide selection of pet categories</p>
+            <h2 className="font-heading text-4xl font-bold text-stone-900 mb-3">{t('home.categories.title')}</h2>
+            <p className="text-stone-500 text-lg max-w-xl">{t('home.categories.subtitle')}</p>
           </motion.div>
           {typesLoading ? (
             <div className="flex justify-center py-12"><div className="spinner" /></div>
@@ -78,7 +80,7 @@ export default function Home() {
                     </div>
                     <div className="p-4 bg-white">
                       <h3 className="font-heading font-bold text-stone-900 group-hover:text-primary transition-colors">{type.name}</h3>
-                      <span className="text-xs text-stone-500">{type.description || 'View pets'}</span>
+                      <span className="text-xs text-stone-500">{type.description || t('home.categories.view_pets')}</span>
                     </div>
                   </Link>
                 </motion.div>
@@ -93,10 +95,10 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="flex items-end justify-between mb-10">
             <div>
-              <h2 className="font-heading text-4xl font-bold text-stone-900 mb-2">Featured Pets</h2>
-              <p className="text-stone-500 text-lg">Meet our most popular and lovable companions</p>
+              <h2 className="font-heading text-4xl font-bold text-stone-900 mb-2">{t('home.featured.title')}</h2>
+              <p className="text-stone-500 text-lg">{t('home.featured.subtitle')}</p>
             </div>
-            <Link to="/pets" className="btn btn-outline hidden md:flex">View All <ArrowRight size={16} /></Link>
+            <Link to="/pets" className="btn btn-outline hidden md:flex">{t('home.featured.view_all')} <ArrowRight size={16} /></Link>
           </motion.div>
           {petsLoading ? (
             <div className="flex justify-center py-12"><div className="spinner" /></div>
@@ -116,15 +118,15 @@ export default function Home() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-12">
-            <h2 className="font-heading text-4xl font-bold text-stone-900 mb-3">Why Choose PawShop</h2>
-            <p className="text-stone-500 text-lg max-w-xl mx-auto">We make finding and welcoming your new pet a seamless experience</p>
+            <h2 className="font-heading text-4xl font-bold text-stone-900 mb-3">{t('home.why_choose_us.title')}</h2>
+            <p className="text-stone-500 text-lg max-w-xl mx-auto">{t('home.why_choose_us.subtitle')}</p>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: <Shield size={28} />, title: 'Health Guaranteed', desc: 'All pets come with health certificates and vaccination records.' },
-              { icon: <Truck size={28} />, title: 'Safe Delivery', desc: 'Careful and comfortable transportation to your doorstep.' },
-              { icon: <Heart size={28} />, title: 'Lifetime Support', desc: "Free consultation and care guidance for your pet's lifetime." },
-              { icon: <Star size={28} />, title: 'Top Quality', desc: 'Only the healthiest and happiest pets from trusted breeders.' },
+              { icon: <Shield size={28} />, title: t('home.why_choose_us.features.health_title'), desc: t('home.why_choose_us.features.health_desc') },
+              { icon: <Truck size={28} />, title: t('home.why_choose_us.features.delivery_title'), desc: t('home.why_choose_us.features.delivery_desc') },
+              { icon: <Heart size={28} />, title: t('home.why_choose_us.features.support_title'), desc: t('home.why_choose_us.features.support_desc') },
+              { icon: <Star size={28} />, title: t('home.why_choose_us.features.quality_title'), desc: t('home.why_choose_us.features.quality_desc') },
             ].map((b, i) => (
               <motion.div key={i} initial="hidden" whileInView="visible" viewport={{ once: true }} custom={i} variants={fadeInUp}
                 className="p-6 rounded-2xl bg-gradient-to-br from-amber-50 to-white border border-amber-100 hover:shadow-lg transition-all duration-300">
@@ -141,8 +143,8 @@ export default function Home() {
       <section className="py-20 bg-stone-50">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center mb-12">
-            <h2 className="font-heading text-4xl font-bold text-stone-900 mb-3">What Our Customers Say</h2>
-            <p className="text-stone-500 text-lg max-w-xl mx-auto">Hear from happy pet parents who found their perfect match</p>
+            <h2 className="font-heading text-4xl font-bold text-stone-900 mb-3">{t('home.testimonials.title')}</h2>
+            <p className="text-stone-500 text-lg max-w-xl mx-auto">{t('home.testimonials.subtitle')}</p>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
@@ -167,10 +169,10 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-r from-primary to-accent">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeInUp} className="text-center text-white">
-            <h2 className="font-heading text-4xl font-bold mb-4">Ready to Meet Your New Best Friend?</h2>
-            <p className="text-amber-100 text-lg mb-8 max-w-xl mx-auto">Browse our collection of adorable pets and find the perfect companion for your family.</p>
+            <h2 className="font-heading text-4xl font-bold mb-4">{t('home.cta.title')}</h2>
+            <p className="text-amber-100 text-lg mb-8 max-w-xl mx-auto">{t('home.cta.subtitle')}</p>
             <Link to="/pets" className="inline-flex items-center gap-2 bg-white text-amber-600 font-bold px-8 py-4 rounded-xl hover:shadow-xl transition-all hover:-translate-y-0.5">
-              Start Browsing <ArrowRight size={18} />
+              {t('home.cta.btn_start')} <ArrowRight size={18} />
             </Link>
           </motion.div>
         </div>

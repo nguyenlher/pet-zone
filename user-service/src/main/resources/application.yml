@@ -35,3 +35,6 @@ keycloak:
   realm: ${KEYCLOAK_REALM:super-petmark-3d}
   client-id: ${KEYCLOAK_CLIENT_ID:user-service}
   client-secret: ${KEYCLOAK_CLIENT_SECRET:FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
+
+api:
+  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}

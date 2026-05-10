@@ -2,7 +2,6 @@
 import { useState, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -13,6 +12,8 @@ import CustomersPage from './pages/CustomersPage';
 import ReportsPage from './pages/ReportsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import PetsPage from './pages/PetsPage';
+import ProductsPage from './pages/ProductsPage';
+import Generate3DPage from './pages/Generate3DPage';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -37,6 +38,7 @@ const PAGE_TITLES = {
   '/settings': 'Settings',
   '/items/pets': 'Pets',
   '/items/products': 'Products',
+  '/generate-3d': 'Generate 3D Model',
 };
 
 function Layout() {
@@ -66,7 +68,8 @@ function Layout() {
             <Route path="/customers" element={<CustomersPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/items/pets" element={<PetsPage />} />
-            <Route path="/items/products" element={<PlaceholderPage title="Products" />} />
+            <Route path="/items/products" element={<ProductsPage />} />
+            <Route path="/generate-3d" element={<Generate3DPage />} />
             <Route path="/statistics" element={<PlaceholderPage title="Statistics" />} />
             <Route path="/notifications" element={<PlaceholderPage title="Notifications" />} />
             <Route path="/help" element={<PlaceholderPage title="Help & Support" />} />
@@ -97,7 +100,6 @@ export default function App() {
           />
         </Routes>
       </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

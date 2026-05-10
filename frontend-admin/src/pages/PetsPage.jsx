@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { PawPrint, Plus, Search, Tag, Dog, Filter, MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { usePets, useCreatePet, useUpdatePet, useDeletePet } from '../hooks/usePets';
 import PetModal from '../components/PetModal';
+import { petService } from '../services/petService';
 
 export default function PetsPage() {
   const [page, setPage] = useState(0);
@@ -18,11 +19,36 @@ export default function PetsPage() {
   const deletePetMutation = useDeletePet();
 
   // Fetch data
-  const { data: petsData, isLoading } = usePets(page, pageSize);
+  const { data: petsData, isLoading, error, isError } = usePets(page, pageSize);
 
   const pets = petsData?.content || [];
   const totalPages = petsData?.totalPages || 0;
   const totalElements = petsData?.totalElements || 0;
+
+  // Debug logging
+  console.log('PetsPage - isLoading:', isLoading);
+  console.log('PetsPage - isError:', isError);
+  console.log('PetsPage - error:', error);
+  console.log('PetsPage - petsData:', petsData);
+  console.log('PetsPage - pets:', pets);
+
+  // Early return for debugging
+  if (isError) {
+    return (
+      <div className="p-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <h2 className="text-red-800 font-semibold mb-2">Error Loading Pets</h2>
+          <p className="text-red-600">{error?.message || 'Unknown error'}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -38,10 +64,17 @@ export default function PetsPage() {
     setIsModalOpen(true);
   };
 
-  const handleEditPet = (pet) => {
-    setEditingPet(pet);
-    setIsModalOpen(true);
-    setActiveMenuId(null);
+  const handleEditPet = async (pet) => {
+    try {
+      // Fetch full pet details before editing
+      const fullPetData = await petService.getPetById(pet.id);
+      setEditingPet(fullPetData);
+      setIsModalOpen(true);
+      setActiveMenuId(null);
+    } catch (error) {
+      console.error('Failed to fetch pet details:', error);
+      alert('Failed to load pet details');
+    }
   };
 
   const handleDeletePet = async (petId) => {
@@ -64,6 +97,7 @@ export default function PetsPage() {
         await createPetMutation.mutateAsync(data);
       }
       setIsModalOpen(false);
+      setEditingPet(null); // Reset editing pet
     } catch (error) {
       console.error('Failed to save pet:', error);
       alert('Failed to save pet');
@@ -98,6 +132,18 @@ export default function PetsPage() {
       iconColor: 'text-blue-600' 
     },
   ];
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading pets...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -160,6 +206,17 @@ export default function PetsPage() {
           <div className="flex items-center justify-center h-96">
             <div className="text-gray-500">Loading pets...</div>
           </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center h-96 gap-4">
+            <div className="text-red-500">Error loading pets</div>
+            <div className="text-sm text-gray-500">{error.message}</div>
+            <button 
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+            >
+              Retry
+            </button>
+          </div>
         ) : pets.length === 0 ? (
           <div className="flex items-center justify-center h-96">
             <div className="text-gray-500">
@@ -185,8 +242,8 @@ export default function PetsPage() {
                     <tr key={pet.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors duration-100 cursor-pointer">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          {pet.mainImageUrl ? (
-                            <img src={pet.mainImageUrl} alt={pet.name} className="w-10 h-10 rounded-xl object-cover" />
+                          {pet.thumbnailUrl ? (
+                            <img src={pet.thumbnailUrl} alt={pet.name} className="w-10 h-10 rounded-xl object-cover" />
                           ) : (
                             <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                               <PawPrint size={20} className="text-gray-400" />
@@ -194,7 +251,7 @@ export default function PetsPage() {
                           )}
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{pet.name}</p>
-                            <p className="text-xs text-gray-400">{pet.gender || 'Unknown'} • {pet.age || 0} months</p>
+                            <p className="text-xs text-gray-400">{pet.gender || 'Unknown'} • {pet.ageInMonths || 0} months</p>
                           </div>
                         </div>
                       </td>
@@ -274,7 +331,10 @@ export default function PetsPage() {
 
       <PetModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingPet(null); // Reset editing pet when closing
+        }}
         onSubmit={handleModalSubmit}
         initialData={editingPet}
         title={editingPet ? "Edit Pet" : "Add Pet"}

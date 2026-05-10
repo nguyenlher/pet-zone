@@ -10,9 +10,18 @@ public class UserApiPath {
     public static final String AUTH_RESET_PASSWORD = "/reset-password/{keycloakId}";
     public static final String AUTH_REFRESH = "/refresh";
 
-    // User
+    // Public User APIs (no authentication required)
+    public static final String PUBLIC_USER_BASE = "/api/public/users";
+
+    // Private User APIs (authentication required)
+    public static final String PRIVATE_USER_BASE = "/api/private/users";
+
+    // Legacy User paths (deprecated - use PUBLIC or PRIVATE instead)
+    @Deprecated
     public static final String USER_BASE = "/api/user";
+    @Deprecated
     public static final String USER_PROFILE = "/profile";
+    @Deprecated
     public static final String USER_BY_ID = "/{userId}";
 
     // Shipping Info

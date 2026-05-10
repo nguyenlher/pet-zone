@@ -4,13 +4,13 @@ import api from './api';
 export const orderService = {
   // Create order
   createOrder: async (orderData) => {
-    const response = await api.post('/api/order/create', orderData);
+    const response = await api.post('/api/public/order/create', orderData);
     return response.data;
   },
 
   // Cancel order
   cancelOrder: async (orderId, reason) => {
-    const response = await api.post('/api/order/cancel', {
+    const response = await api.post('/api/public/order/cancel', {
       orderId,
       reason,
     });
@@ -19,7 +19,7 @@ export const orderService = {
 
   // Get all orders (admin endpoint - needs to be implemented in backend)
   getAllOrders: async (page = 0, size = 20, sort = 'createdAt,desc') => {
-    const response = await api.get('/api/order', {
+    const response = await api.get('/api/public/order', {
       params: { page, size, sort },
     });
     return response.data;
@@ -52,6 +52,12 @@ export const orderService = {
     const response = await api.patch(`/api/private/orders/${orderId}/status`, {
       status,
     });
+    return response.data;
+  },
+
+  // Delete order (admin) - Only for CANCELLED or PAYMENT_FAILED
+  deleteOrder: async (orderId) => {
+    const response = await api.delete(`/api/private/orders/${orderId}`);
     return response.data;
   },
 };

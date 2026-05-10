@@ -120,4 +120,14 @@ export const petService = {
     const response = await api.delete(`/api/private/breeds/${id}`);
     return response.data;
   },
+
+  // Save 3D model for pet
+  save3DModel: async (petId, modelUrl, sourceImageUrl) => {
+    const response = await api.post('/api/public/pets/3d-model', {
+      petId,
+      modelUrl,
+      sourceImageUrl,
+    });
+    return response.data;
+  },
 };

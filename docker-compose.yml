@@ -152,6 +152,9 @@ services:
       KEYCLOAK_REALM: super-petmark-3d
       KEYCLOAK_CLIENT_ID: user-service
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dehn8lwxv}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-542266824543342}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-Vv569xph8xMwjWdMYDOsLm384bE}
     depends_on:
       - postgres
       - redis
@@ -240,6 +243,35 @@ services:
       - super-petmark-3d-network
     restart: on-failure
 
+  statistics-service:
+    build:
+      context: ./statistics-service
+      dockerfile: Dockerfile
+    container_name: statistics-service
+    ports:
+      - "8087:8087"
+    environment:
+      SERVER_PORT: 8087
+      ORDER_SERVICE_URL: http://order-service:8084
+      PAYMENT_SERVICE_URL: http://payment-service:8085
+      PET_SERVICE_URL: http://pet-service:8082
+      USER_SERVICE_URL: http://user-service:8081
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
+    depends_on:
+      - redis
+      - keycloak
+      - order-service
+      - payment-service
+      - pet-service
+      - user-service
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
   api-gateway:
     build:
       context: ./api-gateway
@@ -259,6 +291,7 @@ services:
       - order-service
       - payment-service
       - notification-service
+      - statistics-service
     networks:
       - super-petmark-3d-network
     restart: on-failure

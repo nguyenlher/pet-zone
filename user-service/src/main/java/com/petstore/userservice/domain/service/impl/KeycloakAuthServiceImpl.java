@@ -10,6 +10,7 @@ import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -28,12 +29,10 @@ import com.petstore.userservice.exception.IdentityProviderException;
 import com.petstore.userservice.exception.ResourceNotFoundException;
 
 import jakarta.ws.rs.core.Response;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
     private final Keycloak keycloak;
@@ -51,6 +50,13 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
     @Value("${keycloak.client-secret}")
     private String clientSecret;
+
+    // Constructor with @Lazy to break circular dependency
+    public KeycloakAuthServiceImpl(Keycloak keycloak, RestClient restClient, @Lazy UserService userService) {
+        this.keycloak = keycloak;
+        this.restClient = restClient;
+        this.userService = userService;
+    }
 
     @Override
     public void register(RegisterRequest request) {
@@ -231,6 +237,56 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
         } catch (Exception ex) {
             log.error("Unexpected error during token refresh. Error: {}", ex.getMessage());
             throw new AuthenticationException("Token refresh failed due to server error");
+        }
+    }
+
+    /**
+     * Update user enabled/disabled status in Keycloak
+     * This should be called when admin changes isActive status in database
+     */
+    @Override
+    public void updateUserEnabledStatus(String keycloakId, Boolean isActive) {
+        log.info("Updating Keycloak user enabled status: keycloakId={}, enabled={}", keycloakId, isActive);
+        
+        try {
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+            
+            UserRepresentation user = usersResource.get(keycloakId).toRepresentation();
+            user.setEnabled(isActive);
+            
+            usersResource.get(keycloakId).update(user);
+            log.info("Successfully updated Keycloak user enabled status: keycloakId={}, enabled={}", keycloakId, isActive);
+        } catch (Exception ex) {
+            log.error("Failed to update Keycloak user enabled status: keycloakId={}, error={}", keycloakId, ex.getMessage());
+            throw new IdentityProviderException("Failed to update user status in Keycloak: " + ex.getMessage());
+        }
+    }
+
+    /**
+     * Delete user from Keycloak
+     * This should be called when admin deletes user from database
+     */
+    @Override
+    public void deleteUser(String keycloakId) {
+        log.info("Deleting user from Keycloak: keycloakId={}", keycloakId);
+        
+        try {
+            RealmResource realmResource = keycloak.realm(realm);
+            UsersResource usersResource = realmResource.users();
+            
+            Response response = usersResource.delete(keycloakId);
+            
+            if (response.getStatus() == 204) {
+                log.info("Successfully deleted user from Keycloak: keycloakId={}", keycloakId);
+            } else {
+                String errorMsg = response.readEntity(String.class);
+                log.error("Failed to delete user from Keycloak. Status: {}, Error: {}", response.getStatus(), errorMsg);
+                throw new IdentityProviderException("Failed to delete user from Keycloak: " + errorMsg);
+            }
+        } catch (Exception ex) {
+            log.error("Failed to delete user from Keycloak: keycloakId={}, error={}", keycloakId, ex.getMessage());
+            throw new IdentityProviderException("Failed to delete user from Keycloak: " + ex.getMessage());
         }
     }
 }

@@ -69,10 +69,30 @@ spring:
                 '[redis-rate-limiter.burstCapacity]': 20
                 '[redis-rate-limiter.requestedTokens]': 1
 
+        - id: pet-service-public-products
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/public/products/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
+                '[redis-rate-limiter.requestedTokens]': 1
+
         - id: pet-service-private-pets
           uri: http://pet-service:8082
           predicates:
             - Path=/api/private/pets/**
+          filters:
+            - StripPrefix=1
+
+        - id: pet-service-private-products
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/products/**
           filters:
             - StripPrefix=1
 
@@ -90,16 +110,16 @@ spring:
           filters:
             - StripPrefix=1
 
+        - id: pet-service-media
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/media/**
+
         # order-service routes
         - id: order-service-public
           uri: http://order-service:8084
           predicates:
-            - Path=/api/public/orders/**
-
-        - id: order-service-base
-          uri: http://order-service:8084
-          predicates:
-            - Path=/api/order/**
+            - Path=/api/public/order/**
 
         - id: order-service-private
           uri: http://order-service:8084
@@ -127,6 +147,12 @@ spring:
           uri: http://notification-service:8086
           predicates:
             - Path=/api/private/notifications/**
+
+        # statistics-service routes
+        - id: statistics-service
+          uri: http://statistics-service:8087
+          predicates:
+            - Path=/api/statistics/**
 
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE

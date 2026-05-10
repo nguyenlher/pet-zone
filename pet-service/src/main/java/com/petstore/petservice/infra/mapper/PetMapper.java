@@ -49,6 +49,19 @@ public interface PetMapper {
     @Mapping(target = "has3DModel", expression = "java(pet.getModel3d() != null)")
     PetResponse toResponse(Pet pet);
     
+    // Overloaded methods with breedName parameter
+    default PetDetailResponse toDetailResponseWithBreed(Pet pet, String breedName) {
+        PetDetailResponse response = toDetailResponse(pet);
+        response.setBreedName(breedName);
+        return response;
+    }
+    
+    default PetResponse toResponseWithBreed(Pet pet, String breedName) {
+        PetResponse response = toResponse(pet);
+        response.setBreedName(breedName);
+        return response;
+    }
+    
     default Integer calculateAgeInMonths(LocalDate birthDate) {
         if (birthDate == null) {
             return null;

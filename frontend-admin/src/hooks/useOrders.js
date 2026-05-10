@@ -67,3 +67,14 @@ export const useUpdateOrderStatus = () => {
     },
   });
 };
+
+export const useDeleteOrder = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (orderId) => orderService.deleteOrder(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['orders']);
+    },
+  });
+};

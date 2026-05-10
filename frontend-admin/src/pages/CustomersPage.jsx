@@ -11,6 +11,7 @@ export default function CustomersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [activeMenuId, setActiveMenuId] = useState(null);
+  const [togglingUserId, setTogglingUserId] = useState(null);
   const pageSize = 20;
 
   // Mutations
@@ -48,6 +49,31 @@ export default function CustomersPage() {
     setEditingUser(user);
     setIsModalOpen(true);
     setActiveMenuId(null);
+  };
+
+  const handleToggleActive = async (userId, currentStatus) => {
+    // Prevent double click
+    if (togglingUserId === userId) {
+      console.log('Already toggling, ignoring click');
+      return;
+    }
+    
+    console.log('Toggle clicked for user:', userId, 'Current status:', currentStatus, 'Will change to:', !currentStatus);
+    setTogglingUserId(userId);
+    try {
+      const result = await updateUserMutation.mutateAsync({ 
+        userId, 
+        data: { isActive: !currentStatus } 
+      });
+      console.log('Toggle success! API response:', result);
+      console.log('New isActive value from API:', result?.isActive);
+    } catch (error) {
+      console.error('Failed to toggle user status:', error);
+      console.error('Error details:', error.response?.data);
+      alert(`Failed to update user status: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setTogglingUserId(null);
+    }
   };
 
   const handleDeleteCustomer = async (userId) => {
@@ -181,10 +207,10 @@ export default function CustomersPage() {
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <th className="text-left px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Customer</th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Phone</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Orders</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Spent</th>
                   <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Joined</th>
+                  <th className="text-left px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Active</th>
                   <th className="text-right px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -212,13 +238,36 @@ export default function CustomersPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3.5 text-sm text-gray-700">{user.phoneNumber || 'N/A'}</td>
                       <td className="px-4 py-3.5 text-sm text-gray-700 font-medium">{user.totalOrders || 0}</td>
                       <td className="px-4 py-3.5 text-sm font-semibold text-gray-900">
                         ${(user.totalSpent || 0).toFixed(2)}
                       </td>
                       <td className="px-4 py-3.5 text-sm text-gray-600">
                         {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <button
+                          type="button"
+                          disabled={togglingUserId === user.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Toggle clicked for user:', user.id, 'Current status:', user.isActive);
+                            handleToggleActive(user.id, user.isActive);
+                          }}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
+                            togglingUserId === user.id 
+                              ? 'opacity-50 cursor-not-allowed' 
+                              : 'cursor-pointer'
+                          } ${
+                            user.isActive ? 'bg-emerald-500' : 'bg-gray-300'
+                          }`}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              user.isActive ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
                       </td>
                       <td className="px-4 py-3.5 text-right relative">
                         <button

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -13,8 +14,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
-import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -22,34 +21,45 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    /**
+     * Security filter chain for public endpoints
+     * No OAuth2 authentication required
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    @Order(1)
+    public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/api/public/**", "/api/auth/**")
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .anyRequest().permitAll()
+                );
+        return http.build();
+    }
+
+    /**
+     * Security filter chain for private/authenticated endpoints
+     * OAuth2 JWT authentication required
+     */
+    @Bean
+    @Order(2)
+    public SecurityFilterChain privateFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/api/oauth2/**").permitAll()
+                        // Private APIs - authentication handled by @PreAuthorize in controllers
+                        .requestMatchers("/api/private/**").permitAll()
+                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .bearerTokenResolver(bearerTokenResolver())
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter()))
                 );
         return http.build();
-    }
-
-    @Bean
-    public BearerTokenResolver bearerTokenResolver() {
-        DefaultBearerTokenResolver resolver = new DefaultBearerTokenResolver();
-        resolver.setAllowUriQueryParameter(false);
-        return request -> {
-            try {
-                return resolver.resolve(request);
-            } catch (Exception e) {
-                return null;
-            }
-        };
     }
 
     @Bean

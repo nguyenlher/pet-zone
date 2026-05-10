@@ -10,15 +10,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.petstore.petservice.api.dto.request.Pet3DModelSaveRequest;
+import com.petstore.petservice.api.dto.response.Pet3DModelResponse;
 import com.petstore.petservice.api.dto.response.PetDetailResponse;
 import com.petstore.petservice.api.dto.response.PetResponse;
 import com.petstore.petservice.domain.model.enums.PetStatus;
 import com.petstore.petservice.domain.service.PetService;
 import com.petstore.petservice.utils.PetApiPath;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -50,5 +54,10 @@ public class PublicPetController {
     public ResponseEntity<Void> incrementViewCount(@PathVariable UUID petId) {
         petService.incrementViewCount(petId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/3d-model")
+    public ResponseEntity<Pet3DModelResponse> save3DModel(@Valid @RequestBody Pet3DModelSaveRequest request) {
+        return ResponseEntity.ok(petService.save3DModel(request));
     }
 }

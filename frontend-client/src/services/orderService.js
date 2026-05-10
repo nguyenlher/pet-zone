@@ -11,7 +11,7 @@ const orderService = {
    * @returns {Promise} CreateOrderResponse
    */
   async createOrder(orderData) {
-    const response = await api.post('/api/order/create', orderData);
+    const response = await api.post('/api/public/order/create', orderData);
     return response.data;
   },
 
@@ -22,7 +22,7 @@ const orderService = {
    * @returns {Promise} Page of orders
    */
   async getAllOrders(page = 0, size = 10) {
-    const response = await api.get('/api/order', {
+    const response = await api.get('/api/public/order', {
       params: { page, size }
     });
     return response.data;
@@ -35,7 +35,7 @@ const orderService = {
    * @returns {Promise} CancelOrderResponse
    */
   async cancelOrder(orderId, reason = '') {
-    const response = await api.post('/api/order/cancel', {
+    const response = await api.post('/api/public/order/cancel', {
       orderId,
       reason
     });

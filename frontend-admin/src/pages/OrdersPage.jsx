@@ -2,18 +2,58 @@
 import { useState } from 'react';
 import OrdersTable from '../components/OrdersTable';
 import OrderDetailPanel from '../components/OrderDetailPanel';
-import { useOrders } from '../hooks/useOrders';
+import UpdateStatusModal from '../components/UpdateStatusModal';
+import { useOrders, useUpdateOrderStatus, useDeleteOrder } from '../hooks/useOrders';
 
 export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderToUpdate, setOrderToUpdate] = useState(null);
   const [page, setPage] = useState(0);
   const pageSize = 20;
 
   const { data: ordersData, isLoading, error } = useOrders(page, pageSize);
+  const updateStatusMutation = useUpdateOrderStatus();
+  const deleteOrderMutation = useDeleteOrder();
 
   const handleExportCSV = () => {
     // TODO: Implement CSV export functionality
     console.log('Exporting orders to CSV...');
+  };
+
+  const handleUpdateStatus = (order) => {
+    setOrderToUpdate(order);
+  };
+
+  const handleStatusSubmit = async (newStatus) => {
+    if (!orderToUpdate) return;
+    
+    try {
+      await updateStatusMutation.mutateAsync({
+        orderId: orderToUpdate.orderId,
+        status: newStatus,
+      });
+      setOrderToUpdate(null);
+      // Close detail panel if it's the same order
+      if (selectedOrder?.orderId === orderToUpdate.orderId) {
+        setSelectedOrder(null);
+      }
+    } catch (error) {
+      console.error('Failed to update order status:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      await deleteOrderMutation.mutateAsync(orderId);
+      // Close detail panel if it's the deleted order
+      if (selectedOrder?.orderId === orderId) {
+        setSelectedOrder(null);
+      }
+    } catch (error) {
+      console.error('Failed to delete order:', error);
+      alert(error.response?.data?.message || 'Failed to delete order');
+    }
   };
 
   if (error) {
@@ -44,11 +84,26 @@ export default function OrdersPage() {
         totalPages={ordersData?.totalPages || 0}
         currentPage={page}
         onPageChange={setPage}
-        onRowClick={setSelectedOrder} 
+        onRowClick={setSelectedOrder}
+        onUpdateStatus={handleUpdateStatus}
+        onDeleteOrder={handleDeleteOrder}
       />
 
       {selectedOrder && (
-        <OrderDetailPanel order={selectedOrder} onClose={() => setSelectedOrder(null)} />
+        <OrderDetailPanel 
+          order={selectedOrder} 
+          onClose={() => setSelectedOrder(null)}
+          onUpdateStatus={handleUpdateStatus}
+          onDelete={handleDeleteOrder}
+        />
+      )}
+
+      {orderToUpdate && (
+        <UpdateStatusModal
+          order={orderToUpdate}
+          onClose={() => setOrderToUpdate(null)}
+          onSubmit={handleStatusSubmit}
+        />
       )}
     </div>
   );

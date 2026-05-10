@@ -4,13 +4,12 @@ import java.util.List;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
-import org.mapstruct.NullValuePropertyMappingStrategy;
 
 import com.petstore.userservice.api.dto.response.UserResponse;
 import com.petstore.userservice.domain.model.User;
 import com.petstore.userservice.infra.entity.UserEntity;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
     UserEntity toEntity(User user);
 

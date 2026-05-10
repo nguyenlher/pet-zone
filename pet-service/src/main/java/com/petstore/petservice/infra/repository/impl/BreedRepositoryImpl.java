@@ -1,13 +1,15 @@
 package com.petstore.petservice.infra.repository.impl;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 
-import com.petstore.petservice.infra.mapper.BreedMapper;
 import com.petstore.petservice.domain.model.Breed;
 import com.petstore.petservice.domain.repository.BreedRepository;
+import com.petstore.petservice.infra.mapper.BreedMapper;
 import com.petstore.petservice.infra.repository.jpa.JpaBreedRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -28,5 +30,15 @@ public class BreedRepositoryImpl implements BreedRepository {
     @Override
     public boolean existsById(UUID id) {
         return jpaBreedRepository.existsById(id);
+    }
+
+    @Override
+    public List<Breed> findAllByIdIn(List<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return jpaBreedRepository.findAllById(ids).stream()
+                .map(breedMapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

@@ -3,6 +3,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { FileText, Download } from 'lucide-react';
+import SalesChart from '../components/SalesChart';
+import SalesTarget from '../components/SalesTarget';
 
 const monthlyData = [
   { month: 'Jan', revenue: 42000, orders: 380 },
@@ -35,11 +37,24 @@ export default function ReportsPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">Financial performance overview</p>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
+          <p className="text-sm text-gray-500 mt-1">Financial performance and statistical overview</p>
+        </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 transition-colors duration-150 cursor-pointer">
           <Download size={14} />
           Export PDF
         </button>
+      </div>
+
+      {/* Sales Analytics & Target */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-3">
+          <SalesChart />
+        </div>
+        <div className="lg:col-span-2">
+          <SalesTarget />
+        </div>
       </div>
 
       {/* Summary cards */}

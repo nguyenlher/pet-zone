@@ -1,16 +1,16 @@
 // src/components/Sidebar.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, ShoppingCart, CreditCard, Users, BarChart2,
   TrendingUp, Bell, HelpCircle, Settings, LogOut, PawPrint, ChevronRight,
-  ChevronDown, Package, ShoppingBag,
+  ChevronDown, Package, ShoppingBag, Box,
 } from 'lucide-react';
 import { navItems } from '../data/mockData';
 
 const iconMap = {
   LayoutDashboard, ShoppingCart, CreditCard, Users, BarChart2,
-  TrendingUp, Bell, HelpCircle, Settings, Package, PawPrint, ShoppingBag,
+  TrendingUp, Bell, HelpCircle, Settings, Package, PawPrint, ShoppingBag, Box,
 };
 
 export default function Sidebar({ collapsed, onToggle }) {
@@ -18,15 +18,27 @@ export default function Sidebar({ collapsed, onToggle }) {
   const navigate = useNavigate();
   const [openDropdowns, setOpenDropdowns] = useState({});
 
+  // Auto-open dropdown if a child is active
+  const isChildActive = (children) => {
+    return children?.some(child => location.pathname === child.path);
+  };
+
+  // Initialize open dropdowns based on active children
+  useEffect(() => {
+    const initialOpenDropdowns = {};
+    navItems.forEach(item => {
+      if (item.hasDropdown && item.children && isChildActive(item.children)) {
+        initialOpenDropdowns[item.id] = true;
+      }
+    });
+    setOpenDropdowns(initialOpenDropdowns);
+  }, [location.pathname]);
+
   const toggleDropdown = (itemId) => {
     setOpenDropdowns(prev => ({
       ...prev,
       [itemId]: !prev[itemId]
     }));
-  };
-
-  const isChildActive = (children) => {
-    return children?.some(child => location.pathname === child.path);
   };
 
   const handleLogout = () => {

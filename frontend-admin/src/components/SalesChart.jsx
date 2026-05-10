@@ -1,10 +1,10 @@
 // src/components/SalesChart.jsx
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { ChevronDown, TrendingUp } from 'lucide-react';
-import { salesChartData, salesMetrics } from '../data/mockData';
+import { useSalesChartData } from '../hooks/useStatistics';
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -15,7 +15,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           <p key={entry.name} className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full inline-block" style={{ background: entry.color }} />
             <span className="text-gray-300 capitalize">{entry.name}:</span>
-            <span className="font-semibold">${entry.value.toLocaleString()}</span>
+            <span className="font-semibold">${entry.value?.toLocaleString()}</span>
           </p>
         ))}
       </div>
@@ -29,11 +29,103 @@ const formatYAxis = (value) => {
   return value;
 };
 
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 export default function SalesChart() {
   const [range, setRange] = useState('This Week');
   const [showDropdown, setShowDropdown] = useState(false);
 
   const ranges = ['This Week', 'This Month', 'This Quarter', 'This Year'];
+
+  // Calculate date range based on selection
+  const { startDate, endDate } = useMemo(() => {
+    const today = new Date();
+    let start, end;
+
+    switch (range) {
+      case 'This Week':
+        start = new Date(today);
+        start.setDate(today.getDate() - 7);
+        end = today;
+        break;
+      case 'This Month':
+        start = new Date(today.getFullYear(), today.getMonth(), 1);
+        end = today;
+        break;
+      case 'This Quarter':
+        const quarter = Math.floor(today.getMonth() / 3);
+        start = new Date(today.getFullYear(), quarter * 3, 1);
+        end = today;
+        break;
+      case 'This Year':
+        start = new Date(today.getFullYear(), 0, 1);
+        end = today;
+        break;
+      default:
+        start = new Date(today);
+        start.setDate(today.getDate() - 7);
+        end = today;
+    }
+
+    return {
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+    };
+  }, [range]);
+
+  const { data: salesData, isLoading } = useSalesChartData(startDate, endDate);
+
+  // Format chart data
+  const chartData = useMemo(() => {
+    if (!salesData?.data) return [];
+    return salesData.data.map(item => ({
+      date: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      income: item.income,
+      expenses: item.expenses,
+    }));
+  }, [salesData]);
+
+  // Calculate metrics
+  const metrics = useMemo(() => {
+    if (!salesData?.metrics) return [];
+    const { totalIncome, totalExpenses, netProfit, profitMargin } = salesData.metrics;
+    
+    return [
+      { 
+        label: 'Income', 
+        value: formatCurrency(totalIncome), 
+        change: `${profitMargin >= 0 ? '+' : ''}${profitMargin}%`, 
+        positive: profitMargin >= 0 
+      },
+      { 
+        label: 'Expenses', 
+        value: formatCurrency(totalExpenses), 
+        change: '+0.00%', 
+        positive: true 
+      },
+      { 
+        label: 'Net Profit', 
+        value: formatCurrency(netProfit), 
+        change: `${profitMargin >= 0 ? '+' : ''}${profitMargin}%`, 
+        positive: netProfit >= 0 
+      },
+    ];
+  }, [salesData]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-center h-96">
+        <div className="text-gray-500">Loading sales data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-5">
@@ -66,7 +158,7 @@ export default function SalesChart() {
 
       {/* Metrics Row */}
       <div className="flex items-center gap-6 flex-wrap">
-        {salesMetrics.map((metric) => (
+        {metrics.map((metric) => (
           <div key={metric.label} className="flex flex-col gap-0.5">
             <span className="text-xs text-gray-400 font-medium">{metric.label}</span>
             <div className="flex items-center gap-1.5">
@@ -83,7 +175,7 @@ export default function SalesChart() {
       {/* Chart */}
       <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={salesChartData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -10, bottom: 0 }}>
             <defs>
               <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#10B981" stopOpacity={0.25} />

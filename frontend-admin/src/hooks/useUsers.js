@@ -64,9 +64,68 @@ export const useUpdateUser = () => {
 
   return useMutation({
     mutationFn: ({ userId, data }) => userService.updateUser(userId, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries(['users']);
-      queryClient.invalidateQueries(['users', variables.userId]);
+    onMutate: async ({ userId, data }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['users'] });
+      
+      // Snapshot the previous value
+      const previousUsers = queryClient.getQueriesData({ queryKey: ['users'] });
+      
+      // Optimistically update to the new value
+      queryClient.setQueriesData({ queryKey: ['users'] }, (old) => {
+        if (!old) return old;
+        
+        // Handle paginated data
+        if (old.content && Array.isArray(old.content)) {
+          return {
+            ...old,
+            content: old.content.map(user => 
+              user.id === userId ? { ...user, ...data } : user
+            )
+          };
+        }
+        
+        return old;
+      });
+      
+      // Return a context object with the snapshotted value
+      return { previousUsers };
+    },
+    onError: (err, variables, context) => {
+      console.error('Update user mutation failed, rolling back...', err);
+      // If the mutation fails, use the context returned from onMutate to roll back
+      if (context?.previousUsers) {
+        context.previousUsers.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+    },
+    onSuccess: (serverData, variables) => {
+      console.log('Update user mutation succeeded:', serverData);
+      
+      // Update all user queries with the server response
+      queryClient.setQueriesData({ queryKey: ['users'] }, (old) => {
+        if (!old) return old;
+        
+        // Handle paginated data
+        if (old.content && Array.isArray(old.content)) {
+          return {
+            ...old,
+            content: old.content.map(user => 
+              user.id === variables.userId ? serverData : user
+            )
+          };
+        }
+        
+        return old;
+      });
+      
+      // Update the specific user query if it exists
+      queryClient.setQueryData(['users', variables.userId], serverData);
+    },
+    onSettled: () => {
+      // Always refetch after error or success to ensure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['users'] });
     },
   });
 };

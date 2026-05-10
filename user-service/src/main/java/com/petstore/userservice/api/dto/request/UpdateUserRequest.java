@@ -15,4 +15,5 @@ public class UpdateUserRequest {
     String firstName;
     String lastName;
     String avatarUrl;
+    Boolean isActive;
 }

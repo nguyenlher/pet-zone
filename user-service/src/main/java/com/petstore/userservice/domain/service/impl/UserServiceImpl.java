@@ -12,6 +12,7 @@ import com.petstore.userservice.api.dto.request.UpdateUserRequest;
 import com.petstore.userservice.api.dto.response.UserStatisticsResponse;
 import com.petstore.userservice.domain.model.User;
 import com.petstore.userservice.domain.repository.UserRepository;
+import com.petstore.userservice.domain.service.KeycloakAuthService;
 import com.petstore.userservice.domain.service.UserService;
 import com.petstore.userservice.exception.ResourceNotFoundException;
 
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+    private final KeycloakAuthService keycloakAuthService;
 
     @Override
     public User createUser(String keycloakId, RegisterRequest request) {
@@ -94,15 +96,39 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUserById(UUID userId, UpdateUserRequest request) {
         log.info("Updating user by ID: {}", userId);
+        log.info("Request data - firstName: {}, lastName: {}, avatarUrl: {}, isActive: {}", 
+                request.getFirstName(), request.getLastName(), request.getAvatarUrl(), request.getIsActive());
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
         
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setAvatarUrl(request.getAvatarUrl());
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
+        if (request.getAvatarUrl() != null) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+        if (request.getIsActive() != null) {
+            log.info("Updating isActive from {} to {}", user.getIsActive(), request.getIsActive());
+            user.setIsActive(request.getIsActive());
+            
+            // Sync with Keycloak: update enabled status
+            try {
+                keycloakAuthService.updateUserEnabledStatus(user.getKeycloakId(), request.getIsActive());
+                log.info("Successfully synced isActive status to Keycloak for user: {}", userId);
+            } catch (Exception ex) {
+                log.error("Failed to sync isActive status to Keycloak for user: {}. Error: {}", userId, ex.getMessage());
+                // Continue with database update even if Keycloak sync fails
+                // Admin can manually fix Keycloak status later
+            }
+        }
         user.setUpdatedAt(LocalDateTime.now());
         
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        log.info("User updated successfully. New isActive: {}", savedUser.getIsActive());
+        return savedUser;
     }
 
     @Override
@@ -110,8 +136,21 @@ public class UserServiceImpl implements UserService {
         log.info("Deleting user by ID: {}", userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+        
+        // Delete from Keycloak first
+        try {
+            keycloakAuthService.deleteUser(user.getKeycloakId());
+            log.info("Successfully deleted user from Keycloak: {}", userId);
+        } catch (Exception ex) {
+            log.error("Failed to delete user from Keycloak: {}. Error: {}", userId, ex.getMessage());
+            // If Keycloak deletion fails, we should not proceed with database deletion
+            // to maintain consistency between Keycloak and database
+            throw ex;
+        }
+        
+        // Delete from database after successful Keycloak deletion
         userRepository.delete(user);
-        log.info("User deleted successfully: {}", userId);
+        log.info("User deleted successfully from database: {}", userId);
     }
 
     @Override

@@ -1,25 +1,25 @@
 # Super Pet Mark 3D - E-commerce Platform
 
-## Tổng Quan
+## Overview
 
-Super Pet Mark 3D là một nền tảng thương mại điện tử hiện đại cho cửa hàng thú cưng, được xây dựng với kiến trúc microservices. Hệ thống bao gồm giao diện 3D tương tác cho khách hàng và bảng điều khiển quản trị toàn diện.
+Super Pet Mark 3D is a modern e-commerce platform for pet stores, built using a microservices architecture. The system includes an interactive 3D interface for customers and a comprehensive admin dashboard.
 
-### Tính Năng Chính
+### Key Features
 
-- **Giao diện 3D tương tác** - Trải nghiệm mua sắm thú cưng với công nghệ Tripo API và Three.js
-- **Quản lý người dùng** - Xác thực và phân quyền với Keycloak
-- **Quản lý thú cưng** - CRUD đầy đủ cho sản phẩm thú cưng
-- **Hệ thống đặt hàng** - Quản lý đơn hàng và giỏ hàng
-- **Thanh toán** - Tích hợp xử lý thanh toán
-- **Thông báo** - Gửi email và thông báo realtime
-- **Thống kê** - Dashboard phân tích và báo cáo
-- **Quản lý media** - Upload và quản lý hình ảnh và model với Cloudinary
+- **Interactive 3D Interface** - Pet shopping experience with Tripo API and Three.js technology
+- **User Management** - Authentication and authorization with Keycloak
+- **Pet Management** - Full CRUD for pet products
+- **Order System** - Order and shopping cart management
+- **Payment** - Integrated payment processing
+- **Notifications** - Realtime notifications and email delivery
+- **Statistics** - Analytics and reporting dashboard
+- **Media Management** - Upload and manage images and 3D models with Cloudinary
 
-## Kiến Trúc Hệ Thống
+## System Architecture
 
 ### Backend Services (Spring Boot + Java)
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      API Gateway (8090)                      │
 │                    Spring Cloud Gateway                      │
@@ -49,8 +49,8 @@ Super Pet Mark 3D là một nền tảng thương mại điện tử hiện đ�
 
 ### Frontend Applications (React + Vite)
 
-- **Frontend Client** - Giao diện khách hàng với Three.js 3D
-- **Frontend Admin** - Bảng điều khiển quản trị với Recharts
+- **Frontend Client** - Customer interface with Three.js 3D
+- **Frontend Admin** - Admin dashboard with Recharts
 
 ### Infrastructure Services
 
@@ -58,7 +58,7 @@ Super Pet Mark 3D là một nền tảng thương mại điện tử hiện đ�
 - **Kafka UI** (8080) - Kafka monitoring
 - **Zookeeper** (2181) - Kafka coordination
 
-## Công Nghệ Sử Dụng
+## Technologies Used
 
 ### Backend
 - **Framework**: Spring Boot 3.x
@@ -83,9 +83,9 @@ Super Pet Mark 3D là một nền tảng thương mại điện tử hiện đ�
 - **Containerization**: Docker & Docker Compose
 - **Cloud Storage**: Cloudinary
 
-## Cấu Trúc Project
+## Project Structure
 
-```
+```text
 pet-3d-store/
 ├── api-gateway/              # API Gateway service
 ├── user-service/             # User management service
@@ -101,7 +101,7 @@ pet-3d-store/
 └── .env                      # Environment variables
 ```
 
-## Hướng Dẫn Setup
+## Setup Guide
 
 ### 1. Clone Repository
 
@@ -110,20 +110,26 @@ git clone <repository-url>
 cd pet-3d-store
 ```
 
-### 2. Cấu Hình Environment Variables
+### 2. Configure Environment Variables
 
-File `.env` đã được cấu hình sẵn với các giá trị mặc định. Bạn có thể tùy chỉnh:
+The `.env` file requires some configuration. You can copy the template provided:
+
+```bash
+cp .env.example .env
+```
+
+Here is an example `.env`:
 
 ```env
 # JWT Configuration
-JWT_SECRET=bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u
+JWT_SECRET=your_jwt_secret
 JWT_EXPIRATION=86400000
 
 # API Key
-API_KEY=HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp
+API_KEY=your_internal_api_key
 
 # Keycloak
-KEYCLOAK_CLIENT_SECRET=FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC
+KEYCLOAK_CLIENT_SECRET=your_keycloak_client_secret
 
 # Cloudinary (Optional - for media upload)
 CLOUDINARY_CLOUD_NAME=your_cloud_name
@@ -137,15 +143,15 @@ MAIL_USERNAME=your_email@gmail.com
 MAIL_PASSWORD=your_app_password
 ```
 
-### 3. Khởi Tạo Database
+### 3. Initialize Database
 
-Tạo thư mục `postgres-init` và thêm script khởi tạo database:
+Create a `postgres-init` directory and add the database initialization script:
 
 ```bash
 mkdir -p postgres-init
 ```
 
-Tạo file `postgres-init/init.sql`:
+Create the `postgres-init/init.sql` file:
 
 ```sql
 -- Create databases for each service
@@ -165,38 +171,37 @@ GRANT ALL PRIVILEGES ON DATABASE notification_db TO postgres;
 GRANT ALL PRIVILEGES ON DATABASE keycloak_db TO postgres;
 ```
 
-## Chạy Project
+## Running the Project
 
-### Option 1: Chạy Toàn Bộ Hệ Thống với Docker Compose (Khuyến Nghị)
+### Option 1: Run Entire System with Docker Compose (Recommended)
 
-#### Khởi động tất cả services:
+#### Start all services:
 
 ```bash
 docker-compose up -d
 ```
 
-
-#### Dừng services:
+#### Stop services:
 
 ```bash
 docker-compose down
 ```
 
-#### Dừng và xóa volumes (reset database):
+#### Stop and remove volumes (reset database):
 
 ```bash
 docker-compose down -v
 ```
 
-### Option 2: Chạy Backend Services Riêng Lẻ
+### Option 2: Run Backend Services Individually
 
-#### Khởi động infrastructure services trước:
+#### Start infrastructure services first:
 
 ```bash
 docker-compose up -d postgres redis kafka zookeeper keycloak
 ```
 
-### Option 3: Chạy Frontend Local
+### Option 3: Run Frontend Locally
 
 #### Frontend Admin:
 
@@ -206,7 +211,7 @@ npm install
 npm run dev
 ```
 
-Truy cập: http://localhost:5173
+Access: http://localhost:5173
 
 #### Frontend Client:
 
@@ -216,7 +221,7 @@ npm install
 npm run dev
 ```
 
-Truy cập: http://localhost:5174
+Access: http://localhost:5174
 
 ## Endpoints & Ports
 
@@ -252,20 +257,20 @@ Truy cập: http://localhost:5174
 
 ### API Gateway Routes
 
-Tất cả requests đi qua API Gateway tại `http://localhost:8090`
+All requests go through the API Gateway at `http://localhost:8090`
 
-#### Public Endpoints (Không cần authentication)
+#### Public Endpoints (No authentication required)
 
-```
+```http
 POST   /api/auth/login
 POST   /api/auth/register
 GET    /api/pets
 GET    /api/pets/{id}
 ```
 
-#### Protected Endpoints (Cần JWT token)
+#### Protected Endpoints (JWT token required)
 
-```
+```http
 # User Management
 GET    /api/users/profile
 PUT    /api/users/profile

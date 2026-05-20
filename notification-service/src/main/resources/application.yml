@@ -43,4 +43,4 @@ rest:
       baseUrl: ${USER_SERVICE_URL:http://localhost:8081}
 
 api-key:
-  value: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+  value: ${API_KEY}

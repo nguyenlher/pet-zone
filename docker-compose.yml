@@ -114,13 +114,13 @@ services:
       REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
-      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
       KEYCLOAK_SERVER_URL: http://keycloak:8080
       KEYCLOAK_REALM: super-petmark-3d
       KEYCLOAK_CLIENT_ID: user-service
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
     depends_on:
       - postgres
       - redis
@@ -145,16 +145,16 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
-      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
       KEYCLOAK_SERVER_URL: http://keycloak:8080
       KEYCLOAK_REALM: super-petmark-3d
       KEYCLOAK_CLIENT_ID: user-service
-      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
-      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dehn8lwxv}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-542266824543342}
-      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-Vv569xph8xMwjWdMYDOsLm384bE}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
     depends_on:
       - postgres
       - redis
@@ -179,7 +179,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
-      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
       USER_SERVICE_URL: http://user-service:8081
@@ -207,7 +207,7 @@ services:
       DB_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
-      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      API_KEY: ${API_KEY}
       ORDER_SERVICE_URL: http://order-service:8084
     depends_on:
       - postgres
@@ -231,7 +231,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
-      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      API_KEY: ${API_KEY}
       USER_SERVICE_URL: http://user-service:8081
       MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
       MAIL_PORT: ${MAIL_PORT:-587}

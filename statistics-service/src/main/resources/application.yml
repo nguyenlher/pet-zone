@@ -64,4 +64,4 @@ management:
       show-details: always
 
 api:
-  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+  key: ${API_KEY}

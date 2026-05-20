@@ -42,4 +42,4 @@ rest:
             baseUrl: ${PAYMENT_SERVICE_URL:http://localhost:8085}
 
 api:
-  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+  key: ${API_KEY}

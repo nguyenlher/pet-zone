@@ -1,0 +1,82 @@
+package com.petstore.paymentservice.domain.service.strategy;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
+import com.petstore.paymentservice.api.dto.request.CreatePaymentRequest;
+import com.petstore.paymentservice.api.dto.response.PaymentCallbackResponse;
+import com.petstore.paymentservice.api.dto.response.PaymentResponse;
+import com.petstore.paymentservice.domain.client.OrderClient;
+import com.petstore.paymentservice.domain.client.OrderInfo;
+import com.petstore.paymentservice.domain.model.Payment;
+import com.petstore.paymentservice.domain.model.enums.PaymentMethod;
+import com.petstore.paymentservice.domain.model.enums.PaymentStatus;
+import com.petstore.paymentservice.infra.repository.PaymentRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CodPaymentServiceImpl implements PaymentStrategy {
+
+    private final PaymentRepository paymentRepository;
+    private final OrderClient orderClient;
+
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return PaymentMethod.COD;
+    }
+
+    @Override
+    public PaymentResponse createPayment(CreatePaymentRequest request, String ipAddress) {
+        Optional<Payment> existing = paymentRepository.findByOrderId(request.getOrderId());
+        if (existing.isPresent()) {
+            return PaymentResponse.builder()
+                    .id(existing.get().getId())
+                    .orderId(existing.get().getOrderId())
+                    .paymentUrl(null)
+                    .status(existing.get().getStatus())
+                    .build();
+        }
+
+        OrderInfo order = orderClient.getOrder(request.getOrderId());
+
+        Payment payment = Payment.builder()
+                .orderId(order.orderId())
+                .userId(order.userId())
+                .transactionId("COD-" + UUID.randomUUID().toString().substring(0, 8)) 
+                .amount(order.totalAmount())
+                .paymentMethod(PaymentMethod.COD)
+                .status(PaymentStatus.PENDING) 
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        Payment saved = paymentRepository.save(payment);
+
+        log.info("Created COD payment with id: {} for order: {}", saved.getId(), order.orderId());
+
+        return PaymentResponse.builder()
+                .id(saved.getId())
+                .orderId(order.orderId())
+                .paymentUrl(null)
+                .status(PaymentStatus.PENDING)
+                .build();
+    }
+
+    @Override
+    public PaymentCallbackResponse handleReturn(Map<String, String> params) {
+        log.warn("COD does not support automatic return callbacks. Params received: {}", params);
+        
+        return PaymentCallbackResponse.builder()
+                .code("00")
+                .message("COD payment does not use standard callback.")
+                .status(PaymentStatus.PENDING.name())
+                .build();
+    }
+}

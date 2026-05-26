@@ -1,0 +1,64 @@
+{
+  "navbar": {
+    "home": "Home",
+    "pets": "Pets",
+    "all_pets": "🐾 All Pets",
+    "products": "Products",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "store_3d": "3D Store ✨",
+    "my_profile": "My Profile",
+    "favorite_list": "Favorite List",
+    "order_history": "Order History",
+    "logout": "Logout",
+    "sign_in": "Sign In"
+  },
+  "home": {
+    "hero": {
+      "badge": "#1 Pet Store in Town",
+      "title_normal_1": "Find Your Perfect ",
+      "title_gradient": "Furry Friend",
+      "title_normal_2": " Today",
+      "subtitle": "Discover adorable pets looking for a loving home. From playful puppies to curious kittens, your new best friend is waiting.",
+      "btn_browse": "Browse Pets",
+      "btn_contact": "Contact Us",
+      "happy_pets": "Happy Pets",
+      "customers": "Customers",
+      "rating": "Rating",
+      "adopt_me": "Adopt Me!"
+    },
+    "categories": {
+      "title": "Browse by Category",
+      "subtitle": "Find your perfect companion from our wide selection of pet categories",
+      "view_pets": "View pets"
+    },
+    "featured": {
+      "title": "Featured Pets",
+      "subtitle": "Meet our most popular and lovable companions",
+      "view_all": "View All"
+    },
+    "why_choose_us": {
+      "title": "Why Choose PawShop",
+      "subtitle": "We make finding and welcoming your new pet a seamless experience",
+      "features": {
+        "health_title": "Health Guaranteed",
+        "health_desc": "All pets come with health certificates and vaccination records.",
+        "delivery_title": "Safe Delivery",
+        "delivery_desc": "Careful and comfortable transportation to your doorstep.",
+        "support_title": "Lifetime Support",
+        "support_desc": "Free consultation and care guidance for your pet's lifetime.",
+        "quality_title": "Top Quality",
+        "quality_desc": "Only the healthiest and happiest pets from trusted breeders."
+      }
+    },
+    "testimonials": {
+      "title": "What Our Customers Say",
+      "subtitle": "Hear from happy pet parents who found their perfect match"
+    },
+    "cta": {
+      "title": "Ready to Meet Your New Best Friend?",
+      "subtitle": "Browse our collection of adorable pets and find the perfect companion for your family.",
+      "btn_start": "Start Browsing"
+    }
+  }
+}

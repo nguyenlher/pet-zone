@@ -1,3 +1,197 @@
+server:
+  port: 8090
+
 spring:
   application:
     name: api-gateway
+
+  cloud:
+    gateway:
+      routes:
+        # user-service routes
+        - id: user-service-auth
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=1
+
+        - id: user-service-me
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/me/**
+          filters:
+            - StripPrefix=1
+
+        - id: user-service-public
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/public/users/**
+          filters:
+            - StripPrefix=1
+
+        - id: user-service-private
+          uri: http://user-service:8081
+          predicates:
+            - Path=/api/private/users/**
+          filters:
+            - StripPrefix=1
+
+        # pet-service routes
+        - id: pet-service-public-pet-types
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/public/pet-types/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
+                '[redis-rate-limiter.requestedTokens]': 1
+
+        - id: pet-service-public-breeds
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/public/breeds/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
+                '[redis-rate-limiter.requestedTokens]': 1
+
+        - id: pet-service-public-pets
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/public/pets/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
+                '[redis-rate-limiter.requestedTokens]': 1
+
+        - id: pet-service-public-products
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/public/products/**
+          filters:
+            - StripPrefix=1
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                '[redis-rate-limiter.replenishRate]': 10
+                '[redis-rate-limiter.burstCapacity]': 20
+                '[redis-rate-limiter.requestedTokens]': 1
+
+        - id: pet-service-private-pets
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/pets/**
+          filters:
+            - StripPrefix=1
+
+        - id: pet-service-private-products
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/products/**
+          filters:
+            - StripPrefix=1
+
+        - id: pet-service-private-pet-types
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/pet-types/**
+          filters:
+            - StripPrefix=1
+
+        - id: pet-service-private-breeds
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/private/breeds/**
+          filters:
+            - StripPrefix=1
+
+        - id: pet-service-media
+          uri: http://pet-service:8082
+          predicates:
+            - Path=/api/media/**
+          filters:
+            - StripPrefix=1
+
+        # order-service routes
+        - id: order-service-public
+          uri: http://order-service:8084
+          predicates:
+            - Path=/api/public/order/**
+          filters:
+            - StripPrefix=1
+
+        - id: order-service-private
+          uri: http://order-service:8084
+          predicates:
+            - Path=/api/private/orders/**
+          filters:
+            - StripPrefix=1
+
+        # payment-service routes
+        - id: payment-service-public
+          uri: http://payment-service:8085
+          predicates:
+            - Path=/api/public/payments/**
+          filters:
+            - StripPrefix=1
+
+        - id: payment-service-private
+          uri: http://payment-service:8085
+          predicates:
+            - Path=/api/private/payments/**
+          filters:
+            - StripPrefix=1
+
+        # notification-service routes
+        - id: notification-service-public
+          uri: http://notification-service:8086
+          predicates:
+            - Path=/api/public/notifications/**
+          filters:
+            - StripPrefix=1
+
+        - id: notification-service-private
+          uri: http://notification-service:8086
+          predicates:
+            - Path=/api/private/notifications/**
+          filters:
+            - StripPrefix=1
+
+        # statistics-service routes
+        - id: statistics-service
+          uri: http://statistics-service:8087
+          predicates:
+            - Path=/api/statistics/**
+          filters:
+            - StripPrefix=1
+
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 60000
+      connect-timeout: 10000
+
+jwt:
+  secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+
+logging:
+  level:
+    '[org.springframework.cloud.gateway]': DEBUG
+    '[reactor.netty]': DEBUG

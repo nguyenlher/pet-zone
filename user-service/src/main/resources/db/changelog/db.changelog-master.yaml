@@ -1,8 +1,24 @@
 databaseChangeLog:
   - changeSet:
       id: 001_create_users
-      author: Nguyen LH
+      author: user-service
       changes:
         - sqlFile:
             path: changes/001_create_users.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 002_create_user_shipping_infos
+      author: user-service
+      changes:
+        - sqlFile:
+            path: changes/002_create_user_shipping_infos.sql
+            relativeToChangelogFile: true
+
+  - changeSet:
+      id: 003_create_user_favorites
+      author: user-service
+      changes:
+        - sqlFile:
+            path: changes/003_create_user_favorites.sql
             relativeToChangelogFile: true

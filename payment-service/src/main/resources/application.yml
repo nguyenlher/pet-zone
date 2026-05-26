@@ -1,3 +1,70 @@
 spring:
   application:
     name: payment-service
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5436/payment_db?TimeZone=Asia/Ho_Chi_Minh}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  liquibase:
+    enabled: true
+    changelog: classpath:db/changelog/db.changelog-master.yaml
+    default-schema: public
+    drop-first: false
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:payment-service-group}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    concurrency: ${KAFKA_CONCURRENCY:3}
+
+server:
+  port: ${SERVER_PORT:8085}
+
+services:
+  order-service:
+    url: ${ORDER_SERVICE_URL:http://localhost:8083}
+
+api-key:
+  value: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+
+api:
+  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+
+vnpay:
+  tmn-code: ${VNPAY_TMN_CODE:LPY4D96Y}
+  hash-secret: ${VNPAY_HASH_SECRET:FV8MTUFGX90C8FHVN75FB9YX90CRGZKB}
+  pay-url: ${VNPAY_PAY_URL:https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+  return-url: ${VNPAY_RETURN_URL:http://localhost:5173/payment/callback}
+  ipn-url: ${VNPAY_IPN_URL:http://localhost:8085/public/payments/callback/VNPAY}
+  currency: VND
+  version: 2.1.0
+  command: pay
+  order-type: other
+
+app:
+  kafka:
+    topics:
+      payment:
+        succeeded: ${KAFKA_TOPIC_PAYMENT_SUCCEEDED:payment.succeeded}
+        failed: ${KAFKA_TOPIC_PAYMENT_FAILED:payment.failed}
+        canceled: ${KAFKA_TOPIC_PAYMENT_CANCELED:payment.canceled}
+
+logging:
+  level:
+    com.petstore.paymentservice: DEBUG
+    org.springframework.web: INFO

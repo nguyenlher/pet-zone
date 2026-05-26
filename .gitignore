@@ -65,4 +65,3 @@ Thumbs.db
 
 # Docker volumes
 **/volumes/
-**/data/

@@ -1,0 +1,36 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      retries: Integer.MAX_VALUE
+      enable-idempotence: true
+      properties:
+        spring.json.add.type.headers: false
+    consumer:
+      enable-auto-commit: false
+      auto-offset-reset: latest
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:order-service-group}
+      properties:
+        spring.json.trusted.packages: "*"
+        spring.json.use.type.headers: false
+    concurrency: ${KAFKA_CONCURRENCY:1}
+
+app:
+  kafka:
+    topics:
+      # PUBLISH TOPICS
+      order:
+        created: ${KAFKA_TOPIC_ORDER_CREATED:order.created}
+        confirmed: ${KAFKA_TOPIC_ORDER_CONFIRMED:order.confirmed}
+        canceled: ${KAFKA_TOPIC_ORDER_CANCELED:order.canceled}
+
+      # CONSUME TOPICS
+      inventory:
+        reservation-failed: ${KAFKA_TOPIC_INVENTORY_RESERVATION_FAILED:inventory.reservation.failed}
+        released: ${KAFKA_TOPIC_INVENTORY_RELEASED:inventory.released}
+
+      payment:
+        succeeded: ${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_SUCCEEDED:payment.succeeded}
+        failed: ${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_FAILED:payment.failed}
+        canceled: ${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_CANCELED:payment.canceled}

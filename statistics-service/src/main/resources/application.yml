@@ -1,0 +1,67 @@
+server:
+  port: ${SERVER_PORT:8087}
+
+spring:
+  application:
+    name: statistics-service
+
+  # Exclude JPA auto-configuration since we don't use database
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+
+  # Redis cache
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 60000
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000 # 10 minutes default
+
+  # Security
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8088/realms/super-petmark-3d/protocol/openid-connect/certs}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8088/realms/super-petmark-3d}
+
+# Service URLs for inter-service communication
+services:
+  order-service:
+    url: ${ORDER_SERVICE_URL:http://localhost:8084}
+  payment-service:
+    url: ${PAYMENT_SERVICE_URL:http://localhost:8085}
+  pet-service:
+    url: ${PET_SERVICE_URL:http://localhost:8082}
+  user-service:
+    url: ${USER_SERVICE_URL:http://localhost:8081}
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.petstore.statisticsservice: DEBUG
+    org.springframework.cache: DEBUG
+    org.springframework.web.client: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+api:
+  key: ${API_KEY:HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}

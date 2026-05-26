@@ -1,77 +1,18 @@
 services:
-  keycloak-db:
-    image: postgres:14
-    container_name: keycloak-db
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
     environment:
-      POSTGRES_DB: keycloak
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - keycloak-db-data:/var/lib/postgresql/data
-    networks:
-      - petstore-network
-    restart: unless-stopped
-
-  user-db:
-    image: postgres:14
-    container_name: user-db
-    environment:
-      POSTGRES_DB: user_service_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     ports:
       - "5433:5432"
     volumes:
-      - user-db-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
-      - petstore-network
-    restart: unless-stopped
-
-  pet-db:
-    image: postgres:14
-    container_name: pet-db
-    environment:
-      POSTGRES_DB: pet_service_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5434:5432"
-    volumes:
-      - pet-db-data:/var/lib/postgresql/data
-    networks:
-      - petstore-network
-    restart: unless-stopped
-
-  order-db:
-    image: postgres:14
-    container_name: order-db
-    environment:
-      POSTGRES_DB: order_service_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5435:5432"
-    volumes:
-      - order-db-data:/var/lib/postgresql/data
-    networks:
-      - petstore-network
-    restart: unless-stopped
-
-  payment-db:
-    image: postgres:14
-    container_name: payment-db
-    environment:
-      POSTGRES_DB: payment_service_db
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5436:5432"
-    volumes:
-      - payment-db-data:/var/lib/postgresql/data
-    networks:
-      - petstore-network
+      - super-petmark-3d-network
     restart: unless-stopped
 
   redis:
@@ -80,7 +21,7 @@ services:
     ports:
       - "6379:6379"
     networks:
-      - petstore-network
+      - super-petmark-3d-network
     restart: unless-stopped
 
   zookeeper:
@@ -92,7 +33,7 @@ services:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
     networks:
-      - petstore-network
+      - super-petmark-3d-network
     restart: unless-stopped
 
   kafka:
@@ -119,7 +60,7 @@ services:
     depends_on:
       - zookeeper
     networks:
-      - petstore-network
+      - super-petmark-3d-network
     restart: unless-stopped
 
   kafka-ui:
@@ -135,7 +76,7 @@ services:
       - kafka
       - zookeeper
     networks:
-      - petstore-network
+      - super-petmark-3d-network
     restart: unless-stopped
 
   keycloak:
@@ -145,25 +86,221 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db?TimeZone=Asia/Ho_Chi_Minh
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: postgres
     command: start-dev
     ports:
       - "8088:8080"
     depends_on:
-      - keycloak-db
+      - postgres
     networks:
-      - petstore-network
+      - super-petmark-3d-network
     restart: unless-stopped
 
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      DB_URL: jdbc:postgresql://postgres:5432/user_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: super-petmark-3d
+      KEYCLOAK_CLIENT_ID: user-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - keycloak
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
+  pet-service:
+    build:
+      context: ./pet-service
+      dockerfile: Dockerfile
+    container_name: pet-service
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      DB_URL: jdbc:postgresql://postgres:5432/pet_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: super-petmark-3d
+      KEYCLOAK_CLIENT_ID: user-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-dehn8lwxv}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-542266824543342}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-Vv569xph8xMwjWdMYDOsLm384bE}
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - keycloak
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8084:8084"
+    environment:
+      SERVER_PORT: 8084
+      DB_URL: jdbc:postgresql://postgres:5432/order_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
+      USER_SERVICE_URL: http://user-service:8081
+      PET_SERVICE_URL: http://pet-service:8082
+      PAYMENT_SERVICE_URL: http://payment-service:8085
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    ports:
+      - "8085:8085"
+    environment:
+      SERVER_PORT: 8085
+      DB_URL: jdbc:postgresql://postgres:5432/payment_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      ORDER_SERVICE_URL: http://order-service:8084
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    ports:
+      - "8086:8086"
+    environment:
+      SERVER_PORT: 8086
+      DB_URL: jdbc:postgresql://postgres:5432/notification_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      API_KEY: ${API_KEY:-HmYCvFBJKWzhJlVH498UjNAdCKC8vwhp}
+      USER_SERVICE_URL: http://user-service:8081
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
+  statistics-service:
+    build:
+      context: ./statistics-service
+      dockerfile: Dockerfile
+    container_name: statistics-service
+    ports:
+      - "8087:8087"
+    environment:
+      SERVER_PORT: 8087
+      ORDER_SERVICE_URL: http://order-service:8084
+      PAYMENT_SERVICE_URL: http://payment-service:8085
+      PET_SERVICE_URL: http://pet-service:8082
+      USER_SERVICE_URL: http://user-service:8081
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
+    depends_on:
+      - redis
+      - keycloak
+      - order-service
+      - payment-service
+      - pet-service
+      - user-service
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      SERVER_PORT: 8090
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
+    depends_on:
+      - redis
+      - user-service
+      - pet-service
+      - order-service
+      - payment-service
+      - notification-service
+      - statistics-service
+    networks:
+      - super-petmark-3d-network
+    restart: on-failure
+
 networks:
-  petstore-network:
+  super-petmark-3d-network:
     driver: bridge
 
 volumes:
-  keycloak-db-data:
-  user-db-data:
-  pet-db-data:
-  order-db-data:
-  payment-db-data:
+  postgres-data:

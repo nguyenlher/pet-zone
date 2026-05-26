@@ -1,0 +1,28 @@
+package com.petstore.userservice.domain.model;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.FieldDefaults;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = lombok.AccessLevel.PRIVATE)
+public class UserShippingInfo {
+    UUID id;
+    UUID userId;
+    String phoneNumber;
+    String address;
+    String city;
+    boolean isDefault;
+    LocalDateTime createdAt;
+    LocalDateTime updatedAt;
+}

@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001_create_payments
+      author: payment-service
+      changes:
+        - sqlFile:
+            path: changes/001_create_payments.sql
+            relativeToChangelogFile: true

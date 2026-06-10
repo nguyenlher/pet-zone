@@ -63,5 +63,9 @@ Thumbs.db
 *.tar.gz
 *.rar
 
+# Agent
+.agent/
+.agents/
+
 # Docker volumes
 **/volumes/

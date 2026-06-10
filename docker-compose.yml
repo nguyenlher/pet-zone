@@ -261,6 +261,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET:-bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+      API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
       KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/super-petmark-3d
     depends_on:

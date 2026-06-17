@@ -57,7 +57,7 @@ export const Navbar: React.FC = () => {
               Pet Zone<span className="text-[#FF5E3A]">.</span>
             </span>
             <span className="text-[10px] font-semibold text-stone-400 tracking-wider uppercase mt-0.5">
-              Organic & Design
+              Pet Store & 3D
             </span>
           </div>
         </Link>

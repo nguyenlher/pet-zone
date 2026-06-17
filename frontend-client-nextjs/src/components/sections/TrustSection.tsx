@@ -1,9 +1,75 @@
 'use client';
 
 import React from 'react';
-import { STATS, TESTIMONIALS } from '../../data/mockData';
-import { Star, CheckCircle2, HeartHandshake, ShieldCheck, Truck, Sparkles } from 'lucide-react';
+import { Star, CheckCircle2, HeartHandshake, ShieldCheck, Truck } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { StatItem, Testimonial } from '@/types';
+
+const STATS: StatItem[] = [
+  {
+    value: '150,000+',
+    label: 'Thú Cưng Đồng Hành',
+    sublabel: 'Trên khắp các tỉnh thành cả nước',
+    highlight: 'Hạnh phúc',
+  },
+  {
+    value: '99.8%',
+    label: 'Đánh Giá 5 Sao',
+    sublabel: 'Dựa trên hơn 24,000 phản hồi thật',
+    highlight: 'Tin cậy',
+  },
+  {
+    value: '100%',
+    label: 'Chuẩn Kiểm Định',
+    sublabel: 'Không chất độc hại & an toàn sinh học',
+    highlight: 'Chứng nhận',
+  },
+  {
+    value: '60 Phút',
+    label: 'Giao Nhanh Thần Tốc',
+    sublabel: 'Đơn hoả tốc nội thành Hà Nội & TP.HCM',
+    highlight: 'Hỏa tốc',
+  },
+];
+
+const TESTIMONIALS: Testimonial[] = [
+  {
+    id: 'test-1',
+    author: 'Trang Hoàng',
+    petName: 'Bơ & Đậu',
+    petBreed: 'Mèo Anh Lông Ngắn',
+    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+    petAvatar: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&auto=format&fit=crop&q=80',
+    comment: 'Bát sứ nung bảo vệ chiếc cằm của 2 bé mèo nhà mình khỏi mụn đen. Độ dốc 15 độ thấy rõ các bé ăn thoải mái hơn nhiều, không còn bị nôn trớ sau khi ăn no. Đóng gói hộp rất cao cấp!',
+    rating: 5,
+    verified: true,
+    date: '3 ngày trước',
+  },
+  {
+    id: 'test-2',
+    author: 'Minh Đăng',
+    petName: 'Milo',
+    petBreed: 'Corgi Pembroke 2 tuổi',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
+    petAvatar: 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=200&auto=format&fit=crop&q=80',
+    comment: 'Vòng cổ gắn AirTag cực kỳ an toàn mỗi khi dẫn Milo đi công viên. Chất da mềm êm không siết lông, khoá bấm rất chắc chắn. 10/10 xứng đáng!',
+    rating: 5,
+    verified: true,
+    date: '1 tuần trước',
+  },
+  {
+    id: 'test-3',
+    author: 'Khánh Linh',
+    petName: 'Mochi',
+    petBreed: 'Poodle Toy',
+    avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80',
+    petAvatar: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=200&auto=format&fit=crop&q=80',
+    comment: 'Thức ăn dinh dưỡng rất thơm ngon, Mochi kén ăn số 1 mà giờ cứ đến giờ ăn là ngoan ngoãn ngồi chờ. Đội ngũ bác sĩ tư vấn khẩu phần rất có tâm.',
+    rating: 5,
+    verified: true,
+    date: '2 tuần trước',
+  },
+];
 
 export const TrustSection: React.FC = () => {
   return (
@@ -47,7 +113,7 @@ export const TrustSection: React.FC = () => {
           <div>
             <h3 className="text-lg font-bold text-stone-900">Chứng Nhận Kiểm Nghiệm</h3>
             <p className="text-xs text-stone-500 mt-1.5 leading-relaxed">
-              100% thức ăn và phụ kiện đều vượt qua kiểm định vi sinh, không chứa chất gây dị ứng cho da lông thú cưng.
+              100% thức ăn và phụ kiện đều vượt qua kiểm định an toàn, không chứa chất gây dị ứng cho da lông thú cưng.
             </p>
           </div>
         </div>

@@ -1,21 +1,32 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
+const getKeycloakIssuer = () => {
+  const envIssuer = process.env.KEYCLOAK_ISSUER;
+  if (envIssuer && !envIssuer.includes(':8080')) {
+    return envIssuer;
+  }
+  return 'http://localhost:8088/realms/super-petmark-3d';
+};
+
+const getKeycloakClientSecret = () => {
+  const envSecret = process.env.KEYCLOAK_CLIENT_SECRET;
+  if (envSecret && envSecret !== 'user-service-secret') {
+    return envSecret;
+  }
+  return 'FGMD5FRv6U68WA9yOYSAqaTTBquZHoGC';
+};
+
 async function refreshAccessToken(token: any) {
   try {
-    const issuer =
-      process.env.KEYCLOAK_ISSUER ||
-      'http://localhost:8080/realms/super-petmark-3d';
+    const issuer = getKeycloakIssuer();
 
     const bodyParams: Record<string, string> = {
       client_id: process.env.KEYCLOAK_CLIENT_ID || 'user-service',
       grant_type: 'refresh_token',
       refresh_token: token.refreshToken,
+      client_secret: getKeycloakClientSecret(),
     };
-
-    if (process.env.KEYCLOAK_CLIENT_SECRET) {
-      bodyParams.client_secret = process.env.KEYCLOAK_CLIENT_SECRET;
-    }
 
     const response = await fetch(`${issuer}/protocol/openid-connect/token`, {
       method: 'POST',
@@ -45,6 +56,8 @@ async function refreshAccessToken(token: any) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET || 'petzone_super_secret_session_token_key_2026_dev_keycloak',
+  trustHost: true,
   providers: [
     Credentials({
       id: 'keycloak-credentials',
@@ -58,11 +71,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const issuer =
-          process.env.KEYCLOAK_ISSUER ||
-          'http://localhost:8080/realms/super-petmark-3d';
+        const issuer = getKeycloakIssuer();
         const clientId = process.env.KEYCLOAK_CLIENT_ID || 'user-service';
-        const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET || '';
+        const clientSecret = getKeycloakClientSecret();
 
         try {
           // Send Direct Grant OIDC request to Keycloak token endpoint
@@ -72,11 +83,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             username: credentials.username as string,
             password: credentials.password as string,
             scope: 'openid profile email',
+            client_secret: clientSecret,
           };
-
-          if (clientSecret) {
-            bodyParams.client_secret = clientSecret;
-          }
 
           const response = await fetch(`${issuer}/protocol/openid-connect/token`, {
             method: 'POST',
@@ -88,7 +96,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
           if (!response.ok || !data.access_token) {
             console.warn('Keycloak Direct Grant authentication failed:', data);
-            throw new Error(data.error_description || 'Sai tên đăng nhập hoặc mật khẩu.');
+            return null;
           }
 
           // Fetch user profile from Keycloak userinfo endpoint via OIDC
@@ -132,8 +140,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             expiresAt: Math.floor(Date.now() / 1000 + (data.expires_in || 300)),
           };
         } catch (err: any) {
-          console.error('Keycloak OIDC login error:', err.message);
-          throw new Error(err.message || 'Lỗi xác thực OpenID Connect Keycloak.');
+          console.error('Keycloak OIDC login error:', err?.message || err);
+          return null;
         }
       },
     }),

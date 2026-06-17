@@ -1,5 +1,6 @@
 package com.petstore.petservice.infra.repository.impl;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,59 +23,67 @@ import lombok.RequiredArgsConstructor;
 @Repository
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepository {
-    
+
     private final JpaProductRepository jpaRepository;
     private final ProductMapper mapper;
-    
+
     @Override
     public Product save(Product petProduct) {
         var entity = mapper.toEntity(petProduct);
         var savedEntity = jpaRepository.save(entity);
         return mapper.toDomain(savedEntity);
     }
-    
+
     @Override
     public Optional<Product> findById(UUID id) {
         return jpaRepository.findById(id)
                 .map(mapper::toDomain);
     }
-    
+
     @Override
     public Page<Product> findAll(Pageable pageable) {
         return jpaRepository.findAll(pageable)
                 .map(mapper::toDomain);
     }
-    
+
     @Override
     public Page<Product> findByStatus(ProductStatus status, Pageable pageable) {
         return jpaRepository.findByStatus(status, pageable)
                 .map(mapper::toDomain);
     }
-    
+
     @Override
     public Page<Product> findByCategory(ProductCategory category, Pageable pageable) {
         return jpaRepository.findByCategory(category, pageable)
                 .map(mapper::toDomain);
     }
-    
+
     @Override
     public Page<Product> findByCategoryAndStatus(ProductCategory category, ProductStatus status, Pageable pageable) {
         return jpaRepository.findByCategoryAndStatus(category, status, pageable)
                 .map(mapper::toDomain);
     }
-    
+
     @Override
     public Page<Product> findByPetTypeId(UUID petTypeId, Pageable pageable) {
         return jpaRepository.findByPetTypeId(petTypeId, pageable)
                 .map(mapper::toDomain);
     }
-    
+
     @Override
     public Page<Product> searchByKeyword(String keyword, Pageable pageable) {
         return jpaRepository.searchByKeyword(keyword, pageable)
                 .map(mapper::toDomain);
     }
-    
+
+    @Override
+    public Page<Product> findWithFilters(ProductCategory category, BigDecimal minPrice, BigDecimal maxPrice,
+            ProductStatus status, String keyword, Pageable pageable) {
+        return jpaRepository.findWithFilters(
+                category, minPrice, maxPrice, status, keyword, pageable)
+                .map(mapper::toDomain);
+    }
+
     @Override
     public List<Product> findTopSellingProducts(int limit) {
         return jpaRepository.findTopSellingProducts(ProductStatus.AVAILABLE, PageRequest.of(0, limit))
@@ -82,7 +91,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public List<Product> findTopRatedProducts(int limit) {
         return jpaRepository.findTopRatedProducts(ProductStatus.AVAILABLE, PageRequest.of(0, limit))
@@ -90,12 +99,12 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .map(mapper::toDomain)
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     public void deleteById(UUID id) {
         jpaRepository.deleteById(id);
     }
-    
+
     @Override
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);

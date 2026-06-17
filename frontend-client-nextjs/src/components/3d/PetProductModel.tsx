@@ -110,19 +110,18 @@ export const PetProductModel: React.FC<PetProductModelProps> = ({
               />
             </mesh>
 
-            {/* Organic Kibbles / Treats in Bowl */}
             <group ref={foodRef} position={[0, 0.05, 0]}>
-              {/* Healthy Salmon Kibbles */}
-              <mesh position={[0, -0.1, 0]} rotation={[-0.1, 0, 0]}>
-                <cylinderGeometry args={[1.22, 1.05, 0.3, 32]} />
-                <meshStandardMaterial
-                  color="#634735"
-                  roughness={0.9}
-                  metalness={0.0}
-                />
-              </mesh>
+              {/* Kibbles / Treats in Bowl */}
+            <mesh position={[0, 0.45, 0]}>
+              <cylinderGeometry args={[0.9, 0.6, 0.35, 32]} />
+              <meshStandardMaterial
+                color="#5C3826"
+                roughness={0.9}
+                bumpScale={0.05}
+              />
+            </mesh>
 
-              {/* Scattered Crispy Organic Treats on Top */}
+            {/* Scattered Crispy Treats on Top */}
               {[
                 { x: -0.4, y: 0.12, z: 0.2, r: 0.14, c: '#E29578' },
                 { x: 0.3, y: 0.14, z: -0.3, r: 0.16, c: '#8D6E63' },

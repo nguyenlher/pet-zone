@@ -1,5 +1,6 @@
 package com.petstore.petservice.api.controller.publ;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -49,6 +50,29 @@ public class PublicPetProductController {
     private final ProductMapper productMapper;
     
     // ==================== PUBLIC READ-ONLY ENDPOINTS ====================
+    
+    @GetMapping("/filter")
+    public ResponseEntity<Page<PetProductResponse>> getProductsWithFilters(
+            @RequestParam(required = false) ProductCategory category,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) ProductStatus status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        
+        Sort sort = sortDirection.equalsIgnoreCase("ASC") 
+                ? Sort.by(sortBy).ascending() 
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        
+        Page<Product> products = petProductService.getProductsWithFilters(category, minPrice, maxPrice, status, keyword, pageable);
+        Page<PetProductResponse> response = products.map(productMapper::toResponse);
+        
+        return ResponseEntity.ok(response);
+    }
     
     @GetMapping
     public ResponseEntity<Page<PetProductResponse>> getAllProducts(

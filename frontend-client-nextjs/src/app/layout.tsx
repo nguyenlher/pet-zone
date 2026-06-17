@@ -3,6 +3,8 @@ import { Plus_Jakarta_Sans, Outfit } from 'next/font/google';
 import './globals.css';
 import { CartProvider } from '@/context/CartContext';
 import { AuthProvider } from '@/components/providers/AuthProvider';
+import { ApiStatusProvider } from '@/components/providers/ApiStatusProvider';
+import { FallbackBanner } from '@/components/ui/FallbackBanner';
 import { CartDrawer } from '@/components/ui/CartDrawer';
 import { QuickViewModal } from '@/components/ui/QuickViewModal';
 import { ToastNotification } from '@/components/ui/ToastNotification';
@@ -39,16 +41,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${plusJakarta.variable} ${outfit.variable}`}>
+    <html lang="vi" data-scroll-behavior="smooth" className={`${plusJakarta.variable} ${outfit.variable}`}>
       <body className="min-h-screen bg-[#FAFAF8] text-[#121316] font-sans antialiased selection:bg-[#D4F442] selection:text-black">
-        <AuthProvider>
-          <CartProvider>
-            <CartDrawer />
-            <QuickViewModal />
-            <ToastNotification />
-            {children}
-          </CartProvider>
-        </AuthProvider>
+        <ApiStatusProvider>
+          <FallbackBanner />
+          <AuthProvider>
+            <CartProvider>
+              <CartDrawer />
+              <QuickViewModal />
+              <ToastNotification />
+              {children}
+            </CartProvider>
+          </AuthProvider>
+        </ApiStatusProvider>
       </body>
     </html>
   );

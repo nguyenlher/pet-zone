@@ -7,7 +7,29 @@ import * as THREE from 'three';
 import { Rotate3d, ZoomIn, ShieldCheck, Award, Heart } from 'lucide-react';
 import { MagneticButton } from '../ui/MagneticButton';
 import { useCart } from '../../context/CartContext';
-import { PRODUCTS } from '../../data/mockData';
+import { Product } from '@/types';
+
+const SHOWCASE_PRODUCT: Product = {
+  id: 'e91592a6-171d-468c-8fb4-eec68b2e2b58',
+  name: 'Vòng Cổ Da Cao Cấp Luna Collar Pro',
+  category: 'Phụ Kiện',
+  categorySlug: 'phu-kien',
+  price: 320000,
+  rating: 5.0,
+  reviewsCount: 38,
+  badge: 'Mô hình 3D',
+  image: 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?w=700&auto=format&fit=crop&q=80',
+  hoverImage: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=700&auto=format&fit=crop&q=80',
+  description: 'Vòng cổ da thật bền đẹp, tích hợp định vị AirTag với chốt khoá kim loại cao cấp.',
+  tags: ['Phụ Kiện', 'Vòng cổ da', '3D Studio'],
+  inStock: true,
+  colors: [
+    { name: 'Terracotta', hex: '#D9654B' },
+    { name: 'Forest Green', hex: '#2D4A3E' },
+    { name: 'Amber Gold', hex: '#D4AF37' },
+    { name: 'Onyx Black', hex: '#2A2A2A' },
+  ],
+};
 
 export const InteractiveShowroom3D: React.FC = () => {
   const [isClient, setIsClient] = useState(false);
@@ -19,7 +41,7 @@ export const InteractiveShowroom3D: React.FC = () => {
     setIsClient(true);
   }, []);
 
-  const showcaseProduct = PRODUCTS[2]; // Luna Collar Pro / Collar 3D showcase
+  const showcaseProduct = SHOWCASE_PRODUCT;
 
   return (
     <div className="w-full bg-[#141517] text-white rounded-3xl p-6 sm:p-10 lg:p-12 overflow-hidden relative shadow-2xl border border-white/10">

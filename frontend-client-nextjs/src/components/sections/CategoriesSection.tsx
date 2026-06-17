@@ -1,12 +1,28 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CATEGORIES } from '../../data/mockData';
+import { STORE_CATEGORIES } from '@/constants/categories';
+import { fetchStoreCategories } from '@/services/storeService';
+import { Category } from '@/types';
 import { ArrowUpRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const CategoriesSection: React.FC = () => {
+  const [categories, setCategories] = useState<Category[]>(STORE_CATEGORIES);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchStoreCategories().then((liveCategories) => {
+      if (isMounted && liveCategories) {
+        setCategories(liveCategories);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <section id="categories" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Header */}
@@ -27,7 +43,7 @@ export const CategoriesSection: React.FC = () => {
 
       {/* Grid: 3 columns per row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {CATEGORIES.map((cat, index) => (
+        {categories.map((cat, index) => (
           <Link
             key={cat.id}
             href={`/category/${cat.slug}`}

@@ -9,9 +9,9 @@ import {
   CheckCircle2,
   ShieldCheck,
   AlertCircle,
-  ExternalLink,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { authService } from '@/services/authService';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -19,14 +19,7 @@ export default function ForgotPasswordPage() {
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const keycloakResetUrl = `${
-    process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER ||
-    'http://localhost:8080/realms/super-petmark-3d'
-  }/login-actions/reset-credentials?client_id=${
-    process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || 'user-service'
-  }`;
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !email.includes('@')) {
       setErrorMsg('Vui lòng nhập một địa chỉ email hợp lệ.');
@@ -36,11 +29,19 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setErrorMsg(null);
 
-    // Simulate sending recovery email
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await authService.forgotPassword(email.trim());
       setSubmitted(true);
-    }, 900);
+    } catch (err: unknown) {
+      console.error('[forgot-password] Lỗi gửi yêu cầu:', err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : 'Không thể gửi yêu cầu đặt lại mật khẩu. Vui lòng kiểm tra lại địa chỉ email hoặc thử lại sau.';
+      setErrorMsg(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -129,19 +130,6 @@ export default function ForgotPasswordPage() {
               >
                 {loading ? 'Đang xử lý...' : 'Gửi Liên Kết Đặt Lại Mật Khẩu'}
               </button>
-
-              {/* Direct Keycloak Reset Portal */}
-              <div className="pt-2 border-t border-stone-100 text-center">
-                <a
-                  href={keycloakResetUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-black transition-colors"
-                >
-                  <span>Đặt lại trực tiếp trên cổng Keycloak IAM</span>
-                  <ExternalLink className="w-3.5 h-3.5 text-stone-400" />
-                </a>
-              </div>
             </form>
           ) : (
             <motion.div
@@ -186,7 +174,7 @@ export default function ForgotPasswordPage() {
 
       {/* Footer */}
       <footer className="p-6 text-center text-xs text-stone-400">
-        © {new Date().getFullYear()} Pet Zone. Keycloak Self-Service Password Reset.
+        © {new Date().getFullYear()} Pet Zone. Bảo mật & An toàn.
       </footer>
     </div>
   );

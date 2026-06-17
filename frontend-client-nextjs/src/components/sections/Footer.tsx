@@ -67,7 +67,7 @@ export const Footer: React.FC = () => {
           <h4 className="font-bold text-stone-900 text-sm">Về Pet Zone</h4>
           <ul className="space-y-2 text-xs">
             <li><a href="#" className="hover:text-black transition-colors">Câu chuyện thương hiệu</a></li>
-            <li><a href="#" className="hover:text-black transition-colors">Tiêu chuẩn kiểm nghiệm Organic</a></li>
+            <li><a href="#" className="hover:text-black transition-colors">Tiêu chuẩn kiểm định chất lượng</a></li>
             <li><a href="#" className="hover:text-black transition-colors">Trải nghiệm 3D Showroom</a></li>
             <li><a href="#" className="hover:text-black transition-colors">Hệ thống showroom đối tác</a></li>
             <li><a href="#" className="hover:text-black transition-colors">Liên hệ hợp tác</a></li>

@@ -1,14 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, CartItem } from '../types';
+import React, { useEffect, useState } from 'react';
+import { useCartStore } from '@/store/useCartStore';
+import { Product, CartItem } from '@/types';
 
-interface CartContextType {
+export interface CartContextType {
   cart: CartItem[];
   addToCart: (product: Product, quantity?: number, selectedColor?: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, delta: number) => void;
   clearCart: () => void;
+  restoreCart: (items: CartItem[]) => void;
   totalItems: number;
   subtotal: number;
   isCartOpen: boolean;
@@ -17,113 +19,44 @@ interface CartContextType {
   setQuickViewProduct: (product: Product | null) => void;
   toastMessage: string | null;
   setToastMessage: (msg: string | null) => void;
+  isHydrated?: boolean;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+export const useCart = (): CartContextType => {
+  const store = useCartStore();
+  const [isHydrated, setIsHydrated] = useState(false);
 
-export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Load cart from localStorage if available
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('petzone_cart') || localStorage.getItem('petmart_cart');
-      if (saved) {
-        setCart(JSON.parse(saved));
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
+    setIsHydrated(true);
   }, []);
 
-  // Save cart to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem('petzone_cart', JSON.stringify(cart));
-    } catch {
-      // Ignore
-    }
-  }, [cart]);
-
-  // Auto clear toast
-  useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(null), 3500);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
-
-  const addToCart = (product: Product, quantity = 1, selectedColor?: string) => {
-    setCart((prev) => {
-      const existingIndex = prev.findIndex(
-        (item) => item.product.id === product.id && item.selectedColor === selectedColor
-      );
-      if (existingIndex > -1) {
-        const next = [...prev];
-        next[existingIndex].quantity += quantity;
-        return next;
-      }
-      return [...prev, { product, quantity, selectedColor }];
-    });
-
-    setToastMessage(`Đã thêm "${product.name}" vào giỏ hàng! 🐾`);
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart((prev) => prev.filter((item) => item.product.id !== productId));
-  };
-
-  const updateQuantity = (productId: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
-  };
-
-  const clearCart = () => {
-    setCart([]);
-  };
-
+  // During SSR or before client hydration finishes, provide safe defaults to avoid mismatch, then switch to hydrated cart
+  const cart = isHydrated ? store.cart : [];
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        totalItems,
-        subtotal,
-        isCartOpen,
-        setIsCartOpen,
-        quickViewProduct,
-        setQuickViewProduct,
-        toastMessage,
-        setToastMessage,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
+  return {
+    cart,
+    addToCart: store.addToCart,
+    removeFromCart: store.removeFromCart,
+    updateQuantity: store.updateQuantity,
+    clearCart: store.clearCart,
+    restoreCart: store.restoreCart,
+    totalItems,
+    subtotal,
+    isCartOpen: store.isCartOpen,
+    setIsCartOpen: store.setIsCartOpen,
+    quickViewProduct: store.quickViewProduct,
+    setQuickViewProduct: store.setQuickViewProduct,
+    toastMessage: store.toastMessage,
+    setToastMessage: store.setToastMessage,
+    isHydrated,
+  };
 };
 
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
+/**
+ * Pass-through CartProvider to ensure layout compatibility without breaking any wrappers
+ */
+export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return <>{children}</>;
 };

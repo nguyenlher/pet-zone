@@ -1,5 +1,6 @@
 package com.petstore.petservice.infra.repository.jpa;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,6 +30,21 @@ public interface JpaProductRepository extends JpaRepository<ProductEntity, UUID>
     
     @Query("SELECT p FROM ProductEntity p WHERE p.name LIKE %:keyword% OR p.brand LIKE %:keyword%")
     Page<ProductEntity> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+    
+    @Query("SELECT p FROM ProductEntity p WHERE " +
+           "(:category IS NULL OR p.category = :category) AND " +
+           "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
+           "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
+           "(:status IS NULL OR p.status = :status) AND " +
+           "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')) OR LOWER(p.brand) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')))")
+    Page<ProductEntity> findWithFilters(
+            @Param("category") ProductCategory category,
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("status") ProductStatus status,
+            @Param("keyword") String keyword,
+            Pageable pageable);
+
     
     @Query("SELECT p FROM ProductEntity p WHERE p.status = :status ORDER BY p.soldCount DESC")
     List<ProductEntity> findTopSellingProducts(@Param("status") ProductStatus status, Pageable pageable);

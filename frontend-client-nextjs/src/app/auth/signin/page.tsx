@@ -50,9 +50,11 @@ function SignInContent() {
 
       if (result?.error) {
         setFormError(
-          result.error === 'CredentialsSignin'
+          result.error === 'CredentialsSignin' ||
+          result.error === 'Configuration' ||
+          result.error === 'CallbackRouteError'
             ? 'Tên đăng nhập hoặc mật khẩu không chính xác.'
-            : result.error
+            : 'Đăng nhập không thành công. Vui lòng kiểm tra lại thông tin tài khoản.'
         );
         setLoading(false);
       } else {
@@ -148,7 +150,7 @@ function SignInContent() {
             {/* Username / Email Field */}
             <div className="space-y-1">
               <label className="text-xs font-bold text-stone-700 block">
-                Tên đăng nhập hoặc Email
+                Tên đăng nhập / Email
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
@@ -165,15 +167,7 @@ function SignInContent() {
 
             {/* Password Field */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-stone-700">Mật khẩu</label>
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-xs text-stone-500 hover:text-black font-semibold"
-                >
-                  Quên mật khẩu?
-                </Link>
-              </div>
+              <label className="text-xs font-bold text-stone-700 block">Mật khẩu</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
@@ -186,6 +180,7 @@ function SignInContent() {
                 />
                 <button
                   type="button"
+                  tabIndex={-1}
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
                 >
@@ -198,17 +193,26 @@ function SignInContent() {
               </div>
             </div>
 
-            {/* Remember Me */}
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                id="remember"
-                type="checkbox"
-                defaultChecked
-                className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black accent-black cursor-pointer"
-              />
-              <label htmlFor="remember" className="text-xs text-stone-600 cursor-pointer">
-                Ghi nhớ đăng nhập trên thiết bị này
-              </label>
+            {/* Remember Me & Forgot Password Row */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex items-center gap-2">
+                <input
+                  id="remember"
+                  type="checkbox"
+                  defaultChecked
+                  className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black accent-black cursor-pointer"
+                />
+                <label htmlFor="remember" className="text-xs text-stone-600 cursor-pointer">
+                  Ghi nhớ đăng nhập
+                </label>
+              </div>
+
+              <Link
+                href="/auth/forgot-password"
+                className="text-xs text-stone-500 hover:text-black font-semibold transition-colors"
+              >
+                Quên mật khẩu?
+              </Link>
             </div>
 
             {/* Submit Button */}

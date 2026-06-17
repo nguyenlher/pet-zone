@@ -60,11 +60,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {product.badge}
           </span>
         )}
-        {product.isOrganic && (
-          <span className="px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase bg-[#D4F442] text-black shadow-sm">
-            100% Organic
-          </span>
-        )}
       </div>
 
       {/* Quick View Button on Top Right */}

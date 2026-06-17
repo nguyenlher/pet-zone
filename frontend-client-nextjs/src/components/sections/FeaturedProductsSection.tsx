@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
-import { PRODUCTS } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { fetchStoreProducts } from '@/services/storeService';
+import { Product } from '@/types';
 import { ProductCard } from '../ui/ProductCard';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -16,11 +17,31 @@ const FILTER_TABS = [
 
 export const FeaturedProductsSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState('all');
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    fetchStoreProducts('all')
+      .then((liveProducts) => {
+        if (isMounted && liveProducts) {
+          setAllProducts(liveProducts);
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredProducts =
     activeTab === 'all'
-      ? PRODUCTS
-      : PRODUCTS.filter((p) => p.categorySlug === activeTab);
+      ? allProducts
+      : allProducts.filter((p) => p.categorySlug === activeTab);
 
   return (
     <section id="products" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -62,23 +83,38 @@ export const FeaturedProductsSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Filtered Grid with Animated Layout */}
-      <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <AnimatePresence mode="popLayout">
-          {filteredProducts.map((product) => (
-            <motion.div
-              key={product.id}
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
+      {/* Filtered Grid with Animated Layout / Loading Skeletons */}
+      {loading && allProducts.length === 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div
+              key={i}
+              className="bg-white rounded-3xl border border-stone-200/80 p-4 space-y-4 animate-pulse"
             >
-              <ProductCard product={product} />
-            </motion.div>
+              <div className="aspect-square bg-stone-100 rounded-2xl" />
+              <div className="h-4 bg-stone-100 rounded w-3/4" />
+              <div className="h-4 bg-stone-100 rounded w-1/2" />
+            </div>
           ))}
-        </AnimatePresence>
-      </motion.div>
+        </div>
+      ) : (
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <AnimatePresence mode="popLayout">
+            {filteredProducts.map((product) => (
+              <motion.div
+                key={product.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.35, ease: 'easeOut' }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      )}
     </section>
   );
 };

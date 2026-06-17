@@ -6,7 +6,10 @@ import { X, Plus, Minus, Trash2, ShoppingBag, ArrowRight, Truck } from 'lucide-r
 import { useCart } from '../../context/CartContext';
 import confetti from 'canvas-confetti';
 
+import { useRouter } from 'next/navigation';
+
 export const CartDrawer: React.FC = () => {
+  const router = useRouter();
   const {
     cart,
     isCartOpen,
@@ -33,15 +36,8 @@ export const CartDrawer: React.FC = () => {
   }).format(remainingForFreeShipping);
 
   const handleCheckout = () => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#D4F442', '#FF6B4A', '#2D4A3E'],
-    });
-    alert(`🎉 Cảm ơn bạn! Đơn hàng thử nghiệm của bạn đã được ghi nhận với tổng tiền: ${formattedSubtotal}`);
-    clearCart();
     setIsCartOpen(false);
+    router.push('/checkout');
   };
 
   return (
@@ -93,7 +89,7 @@ export const CartDrawer: React.FC = () => {
                   </span>
                 ) : (
                   <span className="text-emerald-700 font-bold">
-                    🎉 Bạn đã đủ điều kiện nhận Miễn Phí Vận Chuyển!
+                    Bạn đã đủ điều kiện nhận Miễn Phí Vận Chuyển!
                   </span>
                 )}
               </div>
@@ -109,8 +105,8 @@ export const CartDrawer: React.FC = () => {
             <div className="flex-1 overflow-y-auto p-5 space-y-4">
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-stone-200/60 flex items-center justify-center text-3xl">
-                    🐾
+                  <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+                    <ShoppingBag className="w-7 h-7" />
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-bold text-stone-900 text-base">Giỏ hàng đang trống</h3>

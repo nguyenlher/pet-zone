@@ -13,6 +13,7 @@ import com.petstore.orderservice.domain.model.OrderShippingDetail;
 public interface OrderService {
     Order createOrder(UUID userId, List<OrderItem> items, OrderShippingDetail shippingDetail, String discountCode);
     Order cancelOrder(UUID orderId, String reason);
+    Order getOrderById(UUID orderId);
     Page<Order> getUserOrders(UUID userId, Pageable pageable);
     Page<Order> getAllOrders(Pageable pageable);
 }

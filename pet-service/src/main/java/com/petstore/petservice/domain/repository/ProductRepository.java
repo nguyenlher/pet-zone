@@ -1,5 +1,6 @@
 package com.petstore.petservice.domain.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,6 +29,8 @@ public interface ProductRepository {
     Page<Product> findByPetTypeId(UUID petTypeId, Pageable pageable);
     
     Page<Product> searchByKeyword(String keyword, Pageable pageable);
+    
+    Page<Product> findWithFilters(ProductCategory category, BigDecimal minPrice, BigDecimal maxPrice, ProductStatus status, String keyword, Pageable pageable);
     
     List<Product> findTopSellingProducts(int limit);
     

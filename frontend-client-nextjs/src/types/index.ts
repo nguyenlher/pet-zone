@@ -1,5 +1,13 @@
 export type CategorySlug = 'thu-cung' | 'thuc-an' | 'quan-ao' | 'nha-chuong' | 'phu-kien' | 'all' | string;
 
+export interface PaginatedResult<T> {
+  items: T[];
+  totalElements: number;
+  totalPages: number;
+  page: number; // 0-based từ server
+  size: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -11,7 +19,6 @@ export interface Product {
   reviewsCount: number;
   badge?: string;
   isNew?: boolean;
-  isOrganic?: boolean;
   image: string;
   hoverImage: string;
   description: string;
@@ -58,3 +65,57 @@ export interface StatItem {
   sublabel: string;
   highlight?: string;
 }
+
+export interface ShippingDetail {
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  paymentMethod: 'COD' | 'VNPAY' | string;
+}
+
+export interface OrderItem {
+  id: string;
+  itemType: 'PRODUCT' | 'PET' | string;
+  name: string;
+  quantity: number;
+  price: number;
+  subtotalPrice: number;
+}
+
+export type OrderStatus =
+  | 'PENDING'
+  | 'PENDING_PAYMENT'
+  | 'PROCESSING'
+  | 'CONFIRMED'
+  | 'DELIVERING'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | string;
+
+export interface Order {
+  orderId: string;
+  userId?: string | null;
+  subtotalAmount: number;
+  discountAmount: number;
+  shippingFee: number;
+  totalAmount: number;
+  orderStatus: OrderStatus;
+  items: OrderItem[];
+  shipping?: ShippingDetail;
+  paymentUrl?: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateOrderPayload {
+  userId?: string | null;
+  discountCode?: string;
+  items: {
+    itemType: 'PRODUCT' | 'PET' | string;
+    itemId: string;
+    quantity: number;
+  }[];
+  shipping: ShippingDetail;
+}
+

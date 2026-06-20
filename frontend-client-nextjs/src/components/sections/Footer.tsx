@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Heart, ArrowUp } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   const scrollToTop = () => {
@@ -68,7 +68,7 @@ export const Footer: React.FC = () => {
           <ul className="space-y-2 text-xs">
             <li><a href="#" className="hover:text-black transition-colors">Câu chuyện thương hiệu</a></li>
             <li><a href="#" className="hover:text-black transition-colors">Tiêu chuẩn kiểm định chất lượng</a></li>
-            <li><a href="#" className="hover:text-black transition-colors">Trải nghiệm 3D Showroom</a></li>
+            <li><Link href="/studio-3d" className="hover:text-black transition-colors">Trải nghiệm 3D Studio</Link></li>
             <li><a href="#" className="hover:text-black transition-colors">Hệ thống showroom đối tác</a></li>
             <li><a href="#" className="hover:text-black transition-colors">Liên hệ hợp tác</a></li>
           </ul>

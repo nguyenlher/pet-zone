@@ -5,7 +5,7 @@ import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { MagneticButton } from '../ui/MagneticButton';
-import { ArrowUpRight, Star, Heart, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Star } from 'lucide-react';
 
 // Dynamic import with SSR false for R3F Canvas
 const PetModelViewer = dynamic(
@@ -35,18 +35,13 @@ export const HeroSection: React.FC = () => {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="lg:col-span-6 space-y-6 sm:space-y-8"
         >
-          {/* Pet Zone Pill Tag */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-100 border border-stone-200/80 text-xs font-bold text-stone-800 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-[#FF5E3A] animate-ping" />
-            <span>Bộ sưu tập 2026 cho Thú Cưng Đô Thị</span>
-          </div>
 
           {/* Punchy Headline with Personality */}
           <div className="space-y-2">
             <h1 className="text-4xl sm:text-6xl lg:text-[68px] font-black tracking-tight text-stone-900 leading-[1.08]">
-              Dinh dưỡng <br />
+              Tất cả vì <br />
               <span className="relative inline-block">
-                chuẩn mực
+                Boss
                 {/* Minimal Accent Scribble Underline */}
                 <svg
                   className="absolute -bottom-2 left-0 w-full text-[#D4F442] -z-10"
@@ -64,13 +59,13 @@ export const HeroSection: React.FC = () => {
                 </svg>
               </span>
               . <br />
-              Hạnh phúc trọn vẹn.
+              Hạnh phúc cho Sen.
             </h1>
           </div>
 
           {/* Subtitle */}
           <p className="text-stone-600 text-base sm:text-lg max-w-lg leading-relaxed font-normal">
-            Pet Zone tiên phong mang đến thức ăn hữu cơ sấy lạnh, bát gốm công thái học và phụ kiện thông minh giúp người bạn bốn chân luôn khỏe mạnh và an vui.
+            Điểm hẹn mua sắm thú cưng đáng tin cậy với ngàn sản phẩm tuyển chọn, giống pet thuần chủng và trải nghiệm quan sát 3D chân thực.
           </p>
 
           {/* CTAs with Magnetic Effect */}
@@ -83,16 +78,6 @@ export const HeroSection: React.FC = () => {
                 <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </MagneticButton>
             </Link>
-
-            <MagneticButton
-              onClick={() => {
-                document.getElementById('showroom')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="px-7 py-4 rounded-full bg-white hover:bg-stone-50 text-stone-900 font-bold text-sm sm:text-base border border-stone-200 shadow-sm"
-            >
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>Phòng Thử Đồ 3D</span>
-            </MagneticButton>
           </div>
 
           {/* Social Proof Mini Card */}

@@ -28,13 +28,8 @@ export default function OrderLookupPage() {
 
         {/* Hero title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-stone-100 text-stone-700 text-xs font-bold mb-4 border border-stone-200/80 shadow-sm">
-            <Package className="w-3.5 h-3.5 text-stone-900" />
-            <span>Hành Trình Vận Chuyển</span>
-          </div>
-
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">
-            Tra Cứu Đơn Hàng
+            TRA CỨU ĐƠN HÀNG
           </h1>
           <p className="text-stone-500 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
             Dành cho khách hàng chưa đăng nhập. Nhập mã đơn và số điện thoại nhận hàng để kiểm tra tiến trình chuẩn bị và vận chuyển.

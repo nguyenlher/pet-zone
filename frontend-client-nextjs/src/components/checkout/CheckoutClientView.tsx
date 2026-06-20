@@ -22,7 +22,6 @@ import {
   Truck,
   ShieldCheck,
   RotateCcw,
-  Sparkles,
   ChevronRight,
   AlertTriangle,
   Package,
@@ -40,19 +39,40 @@ interface CheckoutClientViewProps {
 }
 
 const VIETNAM_CITIES = [
-  'Hồ Chí Minh',
-  'Hà Nội',
-  'Đà Nẵng',
-  'Hải Phòng',
+  'An Giang',
+  'Bắc Ninh',
+  'Cà Mau',
+  'Cao Bằng',
   'Cần Thơ',
-  'Bình Dương',
+  'Đà Nẵng',
+  'Đắk Lắk',
+  'Điện Biên',
   'Đồng Nai',
-  'Khánh Hòa',
-  'Bà Rịa - Vũng Tàu',
-  'Quảng Ninh',
+  'Đồng Tháp',
+  'Gia Lai',
+  'Hà Nội',
+  'Hà Tĩnh',
+  'Hải Phòng',
+  'Hồ Chí Minh',
+  'Hưng Yên',
   'Huế',
+  'Khánh Hòa',
+  'Lai Châu',
+  'Lạng Sơn',
+  'Lào Cai',
   'Lâm Đồng',
-  'Tỉnh thành khác',
+  'Nghệ An',
+  'Ninh Bình',
+  'Phú Thọ',
+  'Quảng Ngãi',
+  'Quảng Ninh',
+  'Quảng Trị',
+  'Sơn La',
+  'Tây Ninh',
+  'Thái Nguyên',
+  'Thanh Hóa',
+  'Tuyên Quang',
+  'Vĩnh Long',
 ];
 
 export default function CheckoutClientView({ initialUser, accessToken }: CheckoutClientViewProps) {
@@ -298,14 +318,8 @@ export default function CheckoutClientView({ initialUser, accessToken }: Checkou
         <div className="mb-8 p-5 md:p-6 rounded-3xl bg-stone-900 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-5 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-2xl pointer-events-none" />
           <div className="flex items-center gap-4 relative z-10">
-            <div className="w-11 h-11 rounded-2xl bg-white/10 flex items-center justify-center shrink-0 text-[#D4F442]">
-              <Sparkles className="w-6 h-6" />
-            </div>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-[#D4F442] text-black uppercase tracking-wider">
-                  Khách vãng lai
-                </span>
                 <h3 className="font-bold text-sm sm:text-base text-white">
                   Bạn đang đặt hàng không cần tài khoản
                 </h3>
@@ -343,7 +357,7 @@ export default function CheckoutClientView({ initialUser, accessToken }: Checkou
                 </div>
                 <div>
                   <h2 className="text-lg font-extrabold text-stone-900 tracking-tight">
-                    Thông tin người nhận & Địa chỉ giao hàng
+                    Thông tin đặt hàng
                   </h2>
                   <p className="text-xs text-stone-500">
                     Vui lòng cung cấp chính xác để shipper liên hệ giao hàng tận nơi
@@ -513,12 +527,9 @@ export default function CheckoutClientView({ initialUser, accessToken }: Checkou
                       <span className="font-extrabold text-stone-900 text-sm">
                         Thanh toán khi nhận hàng (COD)
                       </span>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                        An tâm kiểm tra
-                      </span>
                     </div>
                     <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                      Kiểm tra toàn bộ kiện hàng khi shipper giao đến rồi mới thanh toán tiền mặt trực tiếp.
+                      Kiểm tra hàng khi nhận và thanh toán tiền mặt trực tiếp cho shipper.
                     </p>
                   </div>
                   <div className="w-10 h-10 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700 shrink-0">
@@ -549,12 +560,9 @@ export default function CheckoutClientView({ initialUser, accessToken }: Checkou
                       <span className="font-extrabold text-stone-900 text-sm">
                         Cổng thanh toán điện tử VNPay
                       </span>
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                        Sandbox Thử nghiệm
-                      </span>
                     </div>
                     <p className="text-xs text-stone-500 mt-1 leading-relaxed">
-                      Hỗ trợ quét mã VNPAY-QR, thẻ ATM nội địa 40+ ngân hàng Việt Nam và thẻ quốc tế. (Nếu cổng thử nghiệm báo lỗi 71, bạn có thể chọn COD).
+                      Hỗ trợ VNPay-QR, thẻ ATM nội địa và thẻ quốc tế.
                     </p>
                     <div className="flex items-center gap-2 mt-2.5">
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-stone-100 text-stone-600 font-semibold">

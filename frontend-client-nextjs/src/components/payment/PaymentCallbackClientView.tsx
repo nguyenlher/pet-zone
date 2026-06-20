@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import { CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertTriangle, Package, PhoneCall } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, RotateCcw, AlertTriangle, Package } from 'lucide-react';
 
 interface PaymentCallbackClientViewProps {
   result: {

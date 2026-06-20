@@ -33,6 +33,13 @@ export const UserMenu: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // If session expired or refresh failed, silently clean up session cookie
+  useEffect(() => {
+    if ((session as any)?.error === 'RefreshAccessTokenError') {
+      signOut({ redirect: false });
+    }
+  }, [session]);
+
   const user = session?.user;
 
   return (

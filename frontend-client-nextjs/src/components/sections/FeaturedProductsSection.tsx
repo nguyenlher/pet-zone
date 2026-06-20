@@ -52,7 +52,7 @@ export const FeaturedProductsSection: React.FC = () => {
             Tuyển Tập Nổi Bật
           </span>
           <h2 className="text-3xl sm:text-5xl font-black tracking-tight text-stone-900">
-            Thiết kế vì sức khỏe <br className="hidden sm:block" />
+            Sức khỏe <br className="hidden sm:block" />
             và niềm vui của Boss.
           </h2>
         </div>

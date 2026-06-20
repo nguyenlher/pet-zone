@@ -6,7 +6,7 @@ import { HeroSection } from '@/components/sections/HeroSection';
 import { CategoriesSection } from '@/components/sections/CategoriesSection';
 import { FeaturedProductsSection } from '@/components/sections/FeaturedProductsSection';
 import { ShowroomSection } from '@/components/sections/ShowroomSection';
-import { TrustSection } from '@/components/sections/TrustSection';
+import { ContactSection } from '@/components/sections/ContactSection';
 import { NewsletterSection } from '@/components/sections/NewsletterSection';
 import { Footer } from '@/components/sections/Footer';
 
@@ -18,7 +18,7 @@ export default function Home() {
       <CategoriesSection />
       <FeaturedProductsSection />
       <ShowroomSection />
-      <TrustSection />
+      <ContactSection />
       <NewsletterSection />
       <Footer />
     </main>

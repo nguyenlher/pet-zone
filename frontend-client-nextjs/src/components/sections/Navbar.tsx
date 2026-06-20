@@ -1,16 +1,53 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Search, Menu, X, Heart, Sparkles } from 'lucide-react';
+import {
+  ShoppingBag,
+  Menu,
+  X,
+  ChevronDown,
+  Dog,
+  Utensils,
+  Shirt,
+  Home,
+  Package,
+  Sparkles,
+} from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UserMenu } from '../ui/UserMenu';
+import { STORE_CATEGORIES } from '@/constants/categories';
+
+interface NavLinkItem {
+  name: string;
+  href: string;
+  hasDropdown?: boolean;
+}
+
+const NAV_LINKS: NavLinkItem[] = [
+  { name: 'Trang Chủ', href: '/' },
+  { name: 'Sản Phẩm', href: '/category/all' },
+  { name: 'Danh Mục', href: '/#categories', hasDropdown: true },
+  { name: 'Liên Hệ', href: '/#contact' },
+  { name: '3D Studio', href: '/studio-3d' },
+];
+
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  'thu-cung': <Dog className="w-3.5 h-3.5 text-stone-400 group-hover/item:text-stone-900 transition-colors shrink-0" />,
+  'thuc-an': <Utensils className="w-3.5 h-3.5 text-stone-400 group-hover/item:text-stone-900 transition-colors shrink-0" />,
+  'quan-ao': <Shirt className="w-3.5 h-3.5 text-stone-400 group-hover/item:text-stone-900 transition-colors shrink-0" />,
+  'nha-chuong': <Home className="w-3.5 h-3.5 text-stone-400 group-hover/item:text-stone-900 transition-colors shrink-0" />,
+  'phu-kien': <Package className="w-3.5 h-3.5 text-stone-400 group-hover/item:text-stone-900 transition-colors shrink-0" />,
+};
 
 export const Navbar: React.FC = () => {
   const { totalItems, setIsCartOpen } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,13 +57,16 @@ export const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Sản Phẩm', href: '/category/all' },
-    { name: 'Danh Mục', href: '/#categories' },
-    { name: '3D Studio', href: '/#showroom' },
-    { name: 'Về Pet Zone', href: '/#trust' },
-    { name: 'Đánh Giá', href: '/#reviews' },
-  ];
+  const handleMouseEnter = () => {
+    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    setCategoryDropdownOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setCategoryDropdownOpen(false);
+    }, 150);
+  };
 
   return (
     <header className="fixed top-0 inset-x-0 z-40 px-4 sm:px-6 lg:px-8 pt-4 transition-all duration-300">
@@ -64,29 +104,77 @@ export const Navbar: React.FC = () => {
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              className="text-sm font-semibold text-stone-700 hover:text-black transition-colors relative py-1 group"
-            >
-              {link.name}
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full rounded-full" />
-            </a>
-          ))}
+          {NAV_LINKS.map((link) =>
+            link.hasDropdown ? (
+              <div
+                key={link.name}
+                className="relative py-1"
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              >
+                <Link
+                  href={link.href}
+                  className="text-sm font-semibold text-stone-700 hover:text-black transition-colors relative py-1 flex items-center gap-1.5 group"
+                >
+                  <span>{link.name}</span>
+                  <ChevronDown
+                    className={`w-3.5 h-3.5 text-stone-400 transition-transform duration-200 ${
+                      categoryDropdownOpen ? 'rotate-180 text-black' : 'group-hover:text-black'
+                    }`}
+                  />
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full rounded-full" />
+                </Link>
+
+                <AnimatePresence>
+                  {categoryDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 6 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 pointer-events-auto"
+                    >
+                      <div className="w-52 rounded-2xl bg-white/95 backdrop-blur-md border border-stone-200/80 shadow-xl p-1.5 space-y-0.5">
+                        {STORE_CATEGORIES.map((cat) => (
+                          <Link
+                            key={cat.id}
+                            href={`/category/${cat.slug}`}
+                            onClick={() => setCategoryDropdownOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 hover:text-black hover:bg-stone-100 transition-colors text-left group/item"
+                          >
+                            {CATEGORY_ICONS[cat.slug] || <Package className="w-3.5 h-3.5 text-stone-400 shrink-0" />}
+                            <span>{cat.name}</span>
+                          </Link>
+                        ))}
+                        <div className="border-t border-stone-100 my-1" />
+                        <Link
+                          href="/category/all"
+                          onClick={() => setCategoryDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-500 hover:text-black hover:bg-stone-100 transition-colors text-left group/item"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-stone-400 group-hover/item:text-amber-500 transition-colors shrink-0" />
+                          <span>Tất cả sản phẩm</span>
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="text-sm font-semibold text-stone-700 hover:text-black transition-colors relative py-1 group"
+              >
+                {link.name}
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-300 group-hover:w-full rounded-full" />
+              </Link>
+            )
+          )}
         </nav>
 
         {/* Right Actions */}
         <div className="flex items-center gap-3">
-          {/* Quick 3D Tag */}
-          <a
-            href="#showroom"
-            className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-stone-100 hover:bg-stone-200 text-xs font-bold text-stone-800 transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            Showroom 3D
-          </a>
-
           {/* Cart Trigger */}
           <button
             onClick={() => setIsCartOpen(true)}
@@ -101,7 +189,7 @@ export const Navbar: React.FC = () => {
             )}
           </button>
 
-          {/* User Section (Right of Cart) */}
+          {/* User Section */}
           <UserMenu />
 
           {/* Mobile Menu Button */}
@@ -124,24 +212,75 @@ export const Navbar: React.FC = () => {
             exit={{ opacity: 0, y: -20 }}
             className="md:hidden mt-2 p-6 rounded-3xl bg-white/95 backdrop-blur-xl border border-stone-200 shadow-2xl max-w-sm mx-auto"
           >
-            <nav className="flex flex-col gap-4 text-center">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-base font-bold text-stone-800 hover:text-black py-2 border-b border-stone-100"
-                >
-                  {link.name}
-                </a>
-              ))}
-              <div className="pt-2">
+            <nav className="flex flex-col gap-3 text-center">
+              {NAV_LINKS.map((link) =>
+                link.hasDropdown ? (
+                  <div key={link.name} className="border-b border-stone-100 pb-2">
+                    <div className="flex items-center justify-between py-2">
+                      <Link
+                        href={link.href}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-base font-bold text-stone-800 hover:text-black text-left flex-1"
+                      >
+                        {link.name}
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setMobileCategoryOpen(!mobileCategoryOpen)}
+                        className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500"
+                        aria-label="Mở danh mục con"
+                      >
+                        <ChevronDown
+                          className={`w-4 h-4 transition-transform duration-200 ${
+                            mobileCategoryOpen ? 'rotate-180 text-black' : ''
+                          }`}
+                        />
+                      </button>
+                    </div>
+
+                    {mobileCategoryOpen && (
+                      <div className="flex flex-col gap-1 pt-1 pb-2 pl-4">
+                        {STORE_CATEGORIES.map((cat) => (
+                          <Link
+                            key={cat.id}
+                            href={`/category/${cat.slug}`}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="flex items-center gap-2 text-xs font-medium text-stone-600 hover:text-black py-1.5 text-left group"
+                          >
+                            {CATEGORY_ICONS[cat.slug] || <Package className="w-3.5 h-3.5 text-stone-400 shrink-0" />}
+                            <span>{cat.name}</span>
+                          </Link>
+                        ))}
+                        <Link
+                          href="/category/all"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="flex items-center gap-2 text-xs font-semibold text-stone-900 hover:text-black py-1.5 text-left border-t border-stone-100 mt-1"
+                        >
+                          <Sparkles className="w-3.5 h-3.5 text-stone-400" />
+                          <span>Tất cả sản phẩm</span>
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="text-base font-bold text-stone-800 hover:text-black py-2 border-b border-stone-100"
+                  >
+                    {link.name}
+                  </Link>
+                )
+              )}
+
+              <div className="pt-3">
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     setIsCartOpen(true);
                   }}
-                  className="w-full py-3 rounded-full bg-black text-white font-bold text-sm flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-full bg-black text-white font-bold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md"
                 >
                   <ShoppingBag className="w-4 h-4" />
                   Giỏ Hàng ({totalItems})

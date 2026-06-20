@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { MagneticButton } from '../ui/MagneticButton';
-import { ArrowRight, Sparkles, Check, Gift } from 'lucide-react';
+import { ArrowRight, Check, Gift } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion } from 'framer-motion';
 

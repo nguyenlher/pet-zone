@@ -22,7 +22,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: 'Pet Zone — Đồ Thú Cưng Thiết Kế & Hữu Cơ Cao Cấp',
+  title: 'Pet Zone | Cửa hàng thú cưng',
   description:
     'Nền tảng thương mại điện tử chuyên cung cấp thức ăn hữu cơ sấy lạnh, bát gốm sứ công thái học 3D và phụ kiện cao cấp cho thú cưng hiện đại.',
   keywords: [

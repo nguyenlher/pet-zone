@@ -114,10 +114,10 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
             <CheckCircle2 className="w-10 h-10" />
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-900 mb-2 tracking-tight">
-            Đặt Hàng Thành Công!
+            ĐẶT HÀNG THÀNH CÔNG!
           </h1>
           <p className="text-stone-500 text-xs sm:text-sm max-w-lg mx-auto mb-5 leading-relaxed">
-            Cảm ơn bạn đã lựa chọn Pet Zone 3D. Đơn hàng của bạn đã được ghi nhận và đang trong quá trình chuẩn bị đóng gói cẩn thận.
+            Cảm ơn bạn đã lựa chọn Pet Zone. Đơn hàng của bạn đã được ghi nhận và đang trong quá trình chuẩn bị đóng gói cẩn thận.
           </p>
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-stone-100 text-xs font-mono text-stone-700 border border-stone-200/60">
             <span className="text-stone-400">Mã đơn:</span>
@@ -159,7 +159,7 @@ export default async function OrderDetailPage({ params }: OrderDetailPageProps) 
               <div className="flex justify-between">
                 <dt className="text-stone-500">Loại tài khoản:</dt>
                 <dd className="text-stone-700 font-semibold">
-                  {order.userId ? 'Thành viên Pet Zone' : 'Khách vãng lai (Guest)'}
+                  {order.userId ? 'Thành viên Pet Zone' : 'Khách (Guest)'}
                 </dd>
               </div>
             </dl>

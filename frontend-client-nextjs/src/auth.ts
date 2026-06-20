@@ -45,11 +45,15 @@ async function refreshAccessToken(token: any) {
       accessToken: refreshedTokens.access_token,
       expiresAt: Math.floor(Date.now() / 1000 + refreshedTokens.expires_in),
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+      error: undefined,
     };
   } catch (error) {
-    console.error('Error refreshing access token from Keycloak:', error);
+    console.warn('Keycloak session expired or refresh token inactive:', error);
     return {
       ...token,
+      accessToken: undefined,
+      refreshToken: undefined,
+      expiresAt: 0,
       error: 'RefreshAccessTokenError',
     };
   }
@@ -160,6 +164,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
         };
+        token.error = undefined;
+        return token;
+      }
+
+      // If already encountered a refresh error, do not call Keycloak again
+      if (token.error === 'RefreshAccessTokenError') {
         return token;
       }
 
@@ -176,6 +186,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
+      if (token.error === 'RefreshAccessTokenError') {
+        return {
+          ...session,
+          user: undefined,
+          accessToken: undefined,
+          error: 'RefreshAccessTokenError',
+        } as any;
+      }
+
       (session as any).accessToken = token.accessToken as string;
       if (token.user) {
         session.user = {

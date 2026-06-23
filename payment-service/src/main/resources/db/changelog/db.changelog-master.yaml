@@ -6,3 +6,10 @@ databaseChangeLog:
         - sqlFile:
             path: changes/001_create_payments.sql
             relativeToChangelogFile: true
+  - changeSet:
+      id: 002_allow_guest_payments
+      author: payment-service
+      changes:
+        - sqlFile:
+            path: changes/002_allow_guest_payments.sql
+            relativeToChangelogFile: true

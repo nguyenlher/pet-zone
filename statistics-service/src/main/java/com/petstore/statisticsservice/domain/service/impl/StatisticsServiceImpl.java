@@ -112,8 +112,7 @@ public class StatisticsServiceImpl implements StatisticsService {
             // Wait for all to complete
             CompletableFuture.allOf(
                     paymentStatsFuture, orderStatsFuture, userStatsFuture,
-                    lastMonthPaymentFuture, lastMonthOrderFuture, lastMonthUserFuture
-            ).join();
+                    lastMonthPaymentFuture, lastMonthOrderFuture, lastMonthUserFuture).join();
 
             // Get results with null safety
             PaymentStatisticsDto paymentStats = paymentStatsFuture.join();
@@ -135,16 +134,15 @@ public class StatisticsServiceImpl implements StatisticsService {
             // Calculate changes with null safety
             Double revenueChange = calculatePercentageChange(
                     paymentStats.getTotalRevenue() != null ? paymentStats.getTotalRevenue() : 0.0,
-                    lastMonthPayment.getTotalRevenue() != null ? lastMonthPayment.getTotalRevenue() : 0.0
-            );
+                    lastMonthPayment.getTotalRevenue() != null ? lastMonthPayment.getTotalRevenue() : 0.0);
             Double ordersChange = calculatePercentageChange(
                     orderStats.getCompletedOrders() != null ? orderStats.getCompletedOrders().doubleValue() : 0.0,
-                    lastMonthOrder.getCompletedOrders() != null ? lastMonthOrder.getCompletedOrders().doubleValue() : 0.0
-            );
+                    lastMonthOrder.getCompletedOrders() != null ? lastMonthOrder.getCompletedOrders().doubleValue()
+                            : 0.0);
             Double customersChange = calculatePercentageChange(
                     userStats.getTotalUsers() != null ? userStats.getTotalUsers().doubleValue() : 0.0,
-                    lastMonthUser.getNewUsersInPeriod() != null ? lastMonthUser.getNewUsersInPeriod().doubleValue() : 0.0
-            );
+                    lastMonthUser.getNewUsersInPeriod() != null ? lastMonthUser.getNewUsersInPeriod().doubleValue()
+                            : 0.0);
 
             // Build stat cards
             List<DashboardStatsResponse.StatCard> stats = new ArrayList<>();
@@ -153,7 +151,8 @@ public class StatisticsServiceImpl implements StatisticsService {
                     .id("total-revenue")
                     .label("Total Revenue")
                     .value(paymentStats.getTotalRevenue() != null ? paymentStats.getTotalRevenue().longValue() : 0L)
-                    .formatted(formatCurrency(paymentStats.getTotalRevenue() != null ? paymentStats.getTotalRevenue() : 0.0))
+                    .formatted(formatCurrency(
+                            paymentStats.getTotalRevenue() != null ? paymentStats.getTotalRevenue() : 0.0))
                     .change(revenueChange)
                     .positive(revenueChange >= 0)
                     .icon("DollarSign")
@@ -165,7 +164,8 @@ public class StatisticsServiceImpl implements StatisticsService {
                     .id("total-orders")
                     .label("Total Orders")
                     .value(orderStats.getCompletedOrders() != null ? orderStats.getCompletedOrders() : 0L)
-                    .formatted(formatNumber(orderStats.getCompletedOrders() != null ? orderStats.getCompletedOrders() : 0L))
+                    .formatted(formatNumber(
+                            orderStats.getCompletedOrders() != null ? orderStats.getCompletedOrders() : 0L))
                     .change(ordersChange)
                     .positive(ordersChange >= 0)
                     .icon("ShoppingBag")
@@ -215,11 +215,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         PaymentStatisticsDto paymentStats = paymentServiceClient.getPaymentStatistics(startDate, endDate);
 
-        // For now, return simplified data
-        // In the future, you can enhance payment-service to return grouped data
         List<RevenueStatsResponse.RevenueDataPoint> dataPoints = new ArrayList<>();
-        
-        // Create a single data point with total revenue
+
         if (paymentStats.getTotalRevenue() != null) {
             dataPoints.add(RevenueStatsResponse.RevenueDataPoint.builder()
                     .date(endDate != null ? endDate : LocalDate.now())
@@ -255,8 +252,9 @@ public class StatisticsServiceImpl implements StatisticsService {
             }
 
             List<OrderStatsResponse.OrderStatusDistribution> distribution = new ArrayList<>();
-            
-            if (orderStats.getStatusDistribution() != null && orderStats.getTotalOrders() != null && orderStats.getTotalOrders() > 0) {
+
+            if (orderStats.getStatusDistribution() != null && orderStats.getTotalOrders() != null
+                    && orderStats.getTotalOrders() > 0) {
                 orderStats.getStatusDistribution().forEach((status, count) -> {
                     Double percentage = (count.doubleValue() / orderStats.getTotalOrders()) * 100;
                     distribution.add(OrderStatsResponse.OrderStatusDistribution.builder()
@@ -288,7 +286,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     @Cacheable(value = "top:pets", unless = "#result == null")
-    public Page<TopPetResponse> getTopSellingPets(int limit, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<TopPetResponse> getTopSellingPets(int limit, LocalDate startDate, LocalDate endDate,
+            Pageable pageable) {
         log.info("Fetching top {} selling pets", limit);
 
         OrderStatisticsDto orderStats = orderServiceClient.getOrderStatistics(startDate, endDate, limit);
@@ -297,21 +296,18 @@ public class StatisticsServiceImpl implements StatisticsService {
         int rank = 1;
         if (orderStats.getTopSellingPets() != null) {
             for (OrderStatisticsDto.TopSellingPetDto pet : orderStats.getTopSellingPets()) {
-                // Get pet details from pet-service
                 PetStatisticsDto petStats = petServiceClient.getPetStatistics(1);
                 String imageUrl = "";
                 Double price = 0.0;
-                
+
                 if (petStats.getTopViewedPets() != null && !petStats.getTopViewedPets().isEmpty()) {
-                    // Find matching pet by ID
                     petStats.getTopViewedPets().stream()
                             .filter(p -> p.getId().equals(pet.getPetId()))
                             .findFirst()
                             .ifPresent(p -> {
-                                // Use local variables to capture values
                             });
                 }
-                
+
                 topPets.add(TopPetResponse.builder()
                         .id(java.util.UUID.fromString(pet.getPetId()))
                         .name(pet.getPetName())
@@ -334,9 +330,11 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         try {
             PaymentStatisticsDto paymentStats = paymentServiceClient.getPaymentStatistics(startDate, endDate);
-            
+
             List<SalesChartResponse.SalesDataPoint> dataPoints = new ArrayList<>();
-            double totalIncome = (paymentStats != null && paymentStats.getTotalRevenue() != null) ? paymentStats.getTotalRevenue() : 0.0;
+            double totalIncome = (paymentStats != null && paymentStats.getTotalRevenue() != null)
+                    ? paymentStats.getTotalRevenue()
+                    : 0.0;
             // For now, expenses are estimated as 70% of income (you can adjust this logic)
             double totalExpenses = totalIncome * 0.7;
 
@@ -346,7 +344,7 @@ public class StatisticsServiceImpl implements StatisticsService {
                 long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(startDate, endDate);
                 double dailyIncome = daysBetween > 0 ? totalIncome / daysBetween : totalIncome;
                 double dailyExpenses = daysBetween > 0 ? totalExpenses / daysBetween : totalExpenses;
-                
+
                 while (!currentDate.isAfter(endDate)) {
                     dataPoints.add(SalesChartResponse.SalesDataPoint.builder()
                             .date(currentDate)
@@ -404,7 +402,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
         if (paymentStats.getPaymentMethodDistribution() != null) {
             paymentStats.getPaymentMethodDistribution().forEach((method, count) -> {
-                // Estimate amount per method (in real scenario, payment-service should provide this)
+                // Estimate amount per method (in real scenario, payment-service should provide
+                // this)
                 Double amount = (count.doubleValue() / paymentStats.getTotalPayments()) * totalAmount;
                 Double percentage = (amount / totalAmount) * 100;
 
@@ -425,7 +424,8 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     @Override
     @Cacheable(value = "top:products", unless = "#result == null")
-    public Page<TopProductResponse> getTopSellingProducts(int limit, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<TopProductResponse> getTopSellingProducts(int limit, LocalDate startDate, LocalDate endDate,
+            Pageable pageable) {
         log.info("Fetching top {} selling products", limit);
 
         try {

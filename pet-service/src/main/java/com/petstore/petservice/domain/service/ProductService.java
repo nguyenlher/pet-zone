@@ -32,6 +32,8 @@ public interface ProductService {
     
     Page<Product> searchProducts(String keyword, Pageable pageable);
     
+    Page<Product> getProductsWithFilters(ProductCategory category, java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice, ProductStatus status, String keyword, Pageable pageable);
+    
     List<Product> getTopSellingProducts(int limit);
     
     List<Product> getTopRatedProducts(int limit);

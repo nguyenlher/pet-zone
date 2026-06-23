@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    port: 5173,
+    strictPort: true,
+    host: true,
     allowedHosts: [
       'dancing-prewar-wok.ngrok-free.dev',
       '.ngrok-free.dev', // Allow all ngrok-free.dev subdomains
@@ -26,4 +29,25 @@ export default defineConfig({
       },
     },
   },
-})
+  build: {
+    outDir: 'dist',
+    minify: 'esbuild',
+    sourcemap: false,
+    rollupOptions: {
+      external: [],
+    },
+  },
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  },
+  optimizeDeps: {
+    exclude: ['@headlessui/react'],
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.js'],
+  },
+});

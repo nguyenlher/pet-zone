@@ -1,5 +1,6 @@
 package com.petstore.petservice.domain.service.impl;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -106,6 +107,13 @@ public class PetServiceImpl implements PetService {
     @Transactional(readOnly = true)
     public Page<PetResponse> getAll(Pageable pageable) {
         Page<Pet> pets = petRepository.findAll(pageable);
+        return mapPetsToResponseWithBreeds(pets);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PetResponse> getPetsWithFilters(BigDecimal minPrice, BigDecimal maxPrice, PetStatus status, String keyword, Pageable pageable) {
+        Page<Pet> pets = petRepository.findWithFilters(minPrice, maxPrice, status, keyword, pageable);
         return mapPetsToResponseWithBreeds(pets);
     }
     

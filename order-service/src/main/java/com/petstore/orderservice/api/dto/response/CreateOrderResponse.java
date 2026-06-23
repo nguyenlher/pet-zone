@@ -31,6 +31,7 @@ public class CreateOrderResponse {
     double totalAmount;
     OrderStatus orderStatus;
     List<OrderItemResponse> items;
+    ShippingDetailResponse shipping;
     String paymentUrl;  // URL thanh toán VNPay (nếu có)
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

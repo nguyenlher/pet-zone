@@ -1,8 +1,10 @@
 package com.petstore.petservice.api.controller.publ;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.petstore.petservice.api.dto.request.Pet3DModelSaveRequest;
@@ -31,6 +34,24 @@ import lombok.RequiredArgsConstructor;
 public class PublicPetController {
 
     private final PetService petService;
+
+    @GetMapping("/filter")
+    public ResponseEntity<Page<PetResponse>> getPetsWithFilters(
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) PetStatus status,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDirection) {
+        
+        Sort sort = sortDirection.equalsIgnoreCase("ASC") 
+                ? Sort.by(sortBy).ascending() 
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(petService.getPetsWithFilters(minPrice, maxPrice, status, keyword, pageable));
+    }
 
     @GetMapping(PetApiPath.PET_PUBLIC_BY_ID)
     public ResponseEntity<PetDetailResponse> getPetById(@PathVariable UUID petId) {

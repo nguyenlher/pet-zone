@@ -1,5 +1,6 @@
 package com.petstore.petservice.domain.service;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -19,6 +20,7 @@ public interface PetService {
     PetDetailResponse getById(UUID id);
     Page<PetResponse> getAll(Pageable pageable);
     Page<PetResponse> getByStatus(PetStatus status, Pageable pageable);
+    Page<PetResponse> getPetsWithFilters(BigDecimal minPrice, BigDecimal maxPrice, PetStatus status, String keyword, Pageable pageable);
     void incrementViewCount(UUID id);
     void updateStatus(UUID id, PetStatus status);
     boolean checkAvailability(UUID id);

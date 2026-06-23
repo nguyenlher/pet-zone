@@ -92,6 +92,12 @@ public class ProductServiceImpl implements ProductService {
     
     @Override
     @Transactional(readOnly = true)
+    public Page<Product> getProductsWithFilters(ProductCategory category, java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice, ProductStatus status, String keyword, Pageable pageable) {
+        return petProductRepository.findWithFilters(category, minPrice, maxPrice, status, keyword, pageable);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
     public List<Product> getTopSellingProducts(int limit) {
         return petProductRepository.findTopSellingProducts(limit);
     }

@@ -38,7 +38,7 @@ public class PaymentEntity {
     @Column(name = "order_id", nullable = false)
     UUID orderId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id")
     UUID userId;
 
     @Column(name = "transaction_id", unique = true)

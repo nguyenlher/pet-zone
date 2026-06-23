@@ -211,6 +211,11 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public Order getOrderById(UUID orderId) {
+        return orderRepository.findById(orderId).orElse(null);
+    }
+
+    @Override
     public Page<Order> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable);
     }

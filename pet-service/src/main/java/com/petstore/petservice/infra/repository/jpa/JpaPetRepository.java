@@ -1,5 +1,6 @@
 package com.petstore.petservice.infra.repository.jpa;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,6 +25,24 @@ public interface JpaPetRepository extends JpaRepository<PetEntity, UUID> {
     Page<PetEntity> findByStatusWithImages(@Param("status") PetStatus status, Pageable pageable);
     
     Page<PetEntity> findByStatus(PetStatus status, Pageable pageable);
+    
+    @Query(value = "SELECT DISTINCT p FROM PetEntity p " +
+           "LEFT JOIN FETCH p.images " +
+           "WHERE (:minPrice IS NULL OR p.price >= :minPrice) AND " +
+           "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
+           "(:status IS NULL OR p.status = :status) AND " +
+           "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')))",
+           countQuery = "SELECT count(DISTINCT p) FROM PetEntity p " +
+           "WHERE (:minPrice IS NULL OR p.price >= :minPrice) AND " +
+           "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
+           "(:status IS NULL OR p.status = :status) AND " +
+           "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')))")
+    Page<PetEntity> findWithFilters(
+            @Param("minPrice") BigDecimal minPrice,
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("status") PetStatus status,
+            @Param("keyword") String keyword,
+            Pageable pageable);
     
     @Query("SELECT p FROM PetEntity p " +
            "LEFT JOIN FETCH p.images " +

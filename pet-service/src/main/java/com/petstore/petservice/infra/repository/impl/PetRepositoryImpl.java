@@ -1,5 +1,6 @@
 package com.petstore.petservice.infra.repository.impl;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -44,6 +45,12 @@ public class PetRepositoryImpl implements PetRepository {
     @Override
     public Page<Pet> findAll(Pageable pageable) {
         return jpaPetRepository.findAll(pageable)
+                .map(petMapper::toDomain);
+    }
+
+    @Override
+    public Page<Pet> findWithFilters(BigDecimal minPrice, BigDecimal maxPrice, PetStatus status, String keyword, Pageable pageable) {
+        return jpaPetRepository.findWithFilters(minPrice, maxPrice, status, keyword, pageable)
                 .map(petMapper::toDomain);
     }
 

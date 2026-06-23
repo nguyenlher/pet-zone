@@ -55,7 +55,7 @@ public class FilterConfig extends OncePerRequestFilter {
         String method = request.getMethod();
         log.debug("FilterConfig - Processing request: {} {}", method, path);
 
-        // 1. User endpoints - JWT Token required (orders are always user-specific)
+        // 1. User endpoints - JWT Token required (orders are always user-specific, unless guest checkout/lookup)
         if (path.startsWith("/public")) {
             String authHeader = request.getHeader("Authorization");
             log.debug("FilterConfig - User endpoint, Authorization: {}", 
@@ -93,6 +93,13 @@ public class FilterConfig extends OncePerRequestFilter {
                 }
             }
 
+            // Allow guest checkout and order tracking by UUID without requiring login
+            if (isGuestAllowed(path)) {
+                log.debug("FilterConfig - Guest access permitted for path: {}", path);
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             log.warn("FilterConfig - Missing JWT token for order endpoint: {} {}", method, path);
             sendError(response, HttpStatus.UNAUTHORIZED, "Authentication required");
             return;
@@ -118,6 +125,10 @@ public class FilterConfig extends OncePerRequestFilter {
         // 3. Reject unmatched paths
         log.warn("FilterConfig - Unmatched path, returning 403: {} {}", method, path);
         sendError(response, HttpStatus.FORBIDDEN, "Access to the resource is prohibited");
+    }
+
+    private boolean isGuestAllowed(String path) {
+        return path.equals("/public/order/create") || path.matches("^/public/order/[a-f0-9\\-]+$");
     }
 
     private void sendError(HttpServletResponse response, HttpStatus status, String message) 

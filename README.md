@@ -95,7 +95,7 @@ pet-3d-store/
 ├── notification-service/     # Email & notification service
 ├── statistics-service/       # Analytics & reporting service
 ├── frontend-admin/           # Admin dashboard (React)
-├── frontend-client/          # Customer frontend (React + Three.js)
+├── frontend-client-nextjs/    # Customer frontend (Next.js 15 App Router + Three.js)
 ├── postgres-init/            # Database initialization scripts
 ├── docker-compose.yml        # Docker orchestration
 └── .env                      # Environment variables
@@ -213,15 +213,15 @@ npm run dev
 
 Access: http://localhost:5173
 
-#### Frontend Client:
+#### Frontend Client (Next.js):
 
 ```bash
-cd frontend-client
+cd frontend-client-nextjs
 npm install
 npm run dev
 ```
 
-Access: http://localhost:5174
+Access: http://localhost:3000
 
 ## Endpoints & Ports
 

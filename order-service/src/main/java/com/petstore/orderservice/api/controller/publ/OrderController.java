@@ -122,7 +122,7 @@ public class OrderController {
                 .orderId(order.getId())
                 .orderStatus(order.getStatus())
                 .updatedAt(order.getUpdatedAt())
-                .message("Order canceled successfully")
+                .message("Order cancelled successfully")
                 .build();
 
         return ResponseEntity.ok(response);

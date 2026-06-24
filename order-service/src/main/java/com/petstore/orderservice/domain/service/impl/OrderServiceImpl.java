@@ -1,6 +1,7 @@
 package com.petstore.orderservice.domain.service.impl;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,12 +10,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestClient;
 
 import com.petstore.orderservice.api.dto.PetDTO;
 import com.petstore.orderservice.api.dto.ProductDTO;
@@ -26,122 +25,69 @@ import com.petstore.orderservice.domain.model.enums.OrderStatus;
 import com.petstore.orderservice.domain.publisher.OrderPublisher;
 import com.petstore.orderservice.domain.repository.OrderRepository;
 import com.petstore.orderservice.domain.service.OrderService;
+import com.petstore.orderservice.infra.client.PetServiceClient;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    private final RestClient petRestClient;
+    private final PetServiceClient petServiceClient;
     private final OrderRepository orderRepository;
     private final OrderPublisher orderPublisher;
 
-    public OrderServiceImpl(
-            @Qualifier("petRestClient") RestClient petRestClient,
-            OrderRepository orderRepository,
-            OrderPublisher orderPublisher) {
-        this.petRestClient = petRestClient;
-        this.orderRepository = orderRepository;
-        this.orderPublisher = orderPublisher;
-    }
-
     @Override
+    @Transactional
     public Order createOrder(UUID userId, List<OrderItem> items, OrderShippingDetail shippingDetail, String discountCode) {
 
-        // Validate items
+        // 1. Validate items
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("Order must contain at least one item");
         }
         
-        for (OrderItem item : items) {
-            if (item.getItemType() == null) {
-                throw new IllegalArgumentException("Item type is required");
-            }
-            if (item.getItemId() == null) {
-                throw new IllegalArgumentException("Item ID is required");
-            }
-            if (item.getQuantity() <= 0) {
-                throw new IllegalArgumentException("Item quantity must be greater than 0");
-            }
-        }
-
-        // Separate pets and products
+        validateOrderItems(items);
+        
+        // 2. Separate pets and products
         Set<UUID> petIds = items.stream()
                 .filter(item -> item.getItemType() == ItemType.PET)
                 .map(OrderItem::getItemId)
-                .filter(id -> id != null)  // Extra safety check
+                .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
         Set<UUID> productIds = items.stream()
                 .filter(item -> item.getItemType() == ItemType.PRODUCT)
                 .map(OrderItem::getItemId)
-                .filter(id -> id != null)  // Extra safety check
+                .filter(id -> id != null)
                 .collect(Collectors.toSet());
 
-        // Fetch pets data
-        Map<UUID, PetDTO> petDTOMap = new ConcurrentHashMap<>();
-        petIds.parallelStream().forEach(petId -> {
-            if (petId == null) return;
-            try {
-                PetDTO pet = petRestClient.get()
-                        .uri("/private/pets/{petId}", petId)
-                        .retrieve()
-                        .body(PetDTO.class);
-                if (pet != null) petDTOMap.put(petId, pet);
-            } catch (Exception e) {
-                log.error("Failed to fetch pet: {}", petId, e);
+        // 3. Fetch data from pet-service
+        Map<UUID, PetDTO> petDTOMap = fetchPetsData(petIds);
+        Map<UUID, ProductDTO> productDTOMap = fetchProductsData(productIds);
+
+        // 4. RESERVE STOCK FIRST (with rollback on failure)
+        List<UUID> reservedProductIds = new ArrayList<>();
+        try {
+            for (OrderItem item : items) {
+                if (item.getItemType() == ItemType.PRODUCT) {
+                    petServiceClient.reserveStock(item.getItemId(), item.getQuantity());
+                    reservedProductIds.add(item.getItemId());
+                    log.info("Reserved {} units of product: {}", item.getQuantity(), item.getItemId());
+                }
             }
-        });
+        } catch (Exception e) {
+            // Rollback: restore already reserved stock
+            log.error("Failed to reserve stock, rolling back reservations...", e);
+            rollbackStockReservation(items, reservedProductIds);
+            throw e;
+        }
 
-        // Fetch products data
-        Map<UUID, ProductDTO> productDTOMap = new ConcurrentHashMap<>();
-        productIds.parallelStream().forEach(productId -> {
-            if (productId == null) return;
-            try {
-                ProductDTO product = petRestClient.get()
-                        .uri("/private/products/{productId}", productId)
-                        .retrieve()
-                        .body(ProductDTO.class);
-                if (product != null) productDTOMap.put(productId, product);
-            } catch (Exception e) {
-                log.error("Failed to fetch product: {}", productId, e);
-            }
-        });
+        // 5. Enrich items with data
+        List<OrderItem> enrichedItems = enrichOrderItems(items, petDTOMap, productDTOMap);
 
-        // Enrich items with data
-        List<OrderItem> enrichedItems = items.stream()
-                .map(item -> {
-                    if (item.getItemType() == ItemType.PET) {
-                        PetDTO pet = petDTOMap.get(item.getItemId());
-                        if (pet == null) {
-                            throw new IllegalArgumentException("Pet not found or unavailable: " + item.getItemId() + ". Please remove this item from your cart and try again.");
-                        }
-                        return OrderItem.builder()
-                                .itemType(ItemType.PET)
-                                .itemId(pet.getId())
-                                .itemName(pet.getName())
-                                .unitPrice(pet.getPrice())
-                                .quantity(item.getQuantity())
-                                .subtotalAmount(pet.getPrice() * item.getQuantity())
-                                .build();
-                    } else { // PRODUCT
-                        ProductDTO product = productDTOMap.get(item.getItemId());
-                        if (product == null) {
-                            throw new IllegalArgumentException("Product not found or unavailable: " + item.getItemId() + ". Please remove this item from your cart and try again.");
-                        }
-                        return OrderItem.builder()
-                                .itemType(ItemType.PRODUCT)
-                                .itemId(product.getId())
-                                .itemName(product.getName())
-                                .unitPrice(product.getPrice())
-                                .quantity(item.getQuantity())
-                                .subtotalAmount(product.getPrice() * item.getQuantity())
-                                .build();
-                    }
-                })
-                .collect(Collectors.toList());
-
+        // 6. Calculate amounts
         double subtotalAmount = enrichedItems.stream()
                 .mapToDouble(OrderItem::getSubtotalAmount)
                 .sum();
@@ -149,12 +95,13 @@ public class OrderServiceImpl implements OrderService {
         double shippingFee = 0;
         double totalAmount = subtotalAmount + shippingFee - discountAmount;
 
-        // Xác định status dựa trên payment method
-        OrderStatus initialStatus = OrderStatus.PENDING; // Default cho COD
+        // 7. Determine initial status
+        OrderStatus initialStatus = OrderStatus.PENDING;
         if (shippingDetail != null && "vnpay".equalsIgnoreCase(shippingDetail.getPaymentMethod())) {
-            initialStatus = OrderStatus.PENDING_PAYMENT; // Chờ thanh toán VNPay
+            initialStatus = OrderStatus.PENDING_PAYMENT;
         }
 
+        // 8. Create and save order
         Order order = Order.builder()
                 .userId(userId)
                 .items(enrichedItems)
@@ -169,7 +116,7 @@ public class OrderServiceImpl implements OrderService {
                 
         Order savedOrder = orderRepository.save(order);
 
-        // Publish order created event
+        // 9. Publish order created event
         try {
             orderPublisher.publishOrderCreated(savedOrder);
         } catch (Exception e) {
@@ -177,6 +124,103 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return savedOrder;
+    }
+    
+    // Helper methods
+    private void validateOrderItems(List<OrderItem> items) {
+        for (OrderItem item : items) {
+            if (item.getItemType() == null) {
+                throw new IllegalArgumentException("Item type is required");
+            }
+            if (item.getItemId() == null) {
+                throw new IllegalArgumentException("Item ID is required");
+            }
+            if (item.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Item quantity must be greater than 0");
+            }
+        }
+    }
+    
+    private Map<UUID, PetDTO> fetchPetsData(Set<UUID> petIds) {
+        Map<UUID, PetDTO> petDTOMap = new ConcurrentHashMap<>();
+        petIds.parallelStream().forEach(petId -> {
+            if (petId == null) return;
+            try {
+                PetDTO pet = petServiceClient.getPetById(petId);
+                if (pet != null) petDTOMap.put(petId, pet);
+            } catch (Exception e) {
+                log.error("Failed to fetch pet: {}", petId, e);
+            }
+        });
+        return petDTOMap;
+    }
+    
+    private Map<UUID, ProductDTO> fetchProductsData(Set<UUID> productIds) {
+        Map<UUID, ProductDTO> productDTOMap = new ConcurrentHashMap<>();
+        productIds.parallelStream().forEach(productId -> {
+            if (productId == null) return;
+            try {
+                ProductDTO product = petServiceClient.getProductById(productId);
+                if (product != null) productDTOMap.put(productId, product);
+            } catch (Exception e) {
+                log.error("Failed to fetch product: {}", productId, e);
+            }
+        });
+        return productDTOMap;
+    }
+    
+    private List<OrderItem> enrichOrderItems(
+            List<OrderItem> items,
+            Map<UUID, PetDTO> petDTOMap,
+            Map<UUID, ProductDTO> productDTOMap) {
+        
+        return items.stream()
+                .map(item -> {
+                    if (item.getItemType() == ItemType.PET) {
+                        PetDTO pet = petDTOMap.get(item.getItemId());
+                        if (pet == null) {
+                            throw new IllegalArgumentException("Pet not found or unavailable: " + item.getItemId());
+                        }
+                        return OrderItem.builder()
+                                .itemType(ItemType.PET)
+                                .itemId(pet.getId())
+                                .itemName(pet.getName())
+                                .unitPrice(pet.getPrice())
+                                .quantity(item.getQuantity())
+                                .subtotalAmount(pet.getPrice() * item.getQuantity())
+                                .build();
+                    } else {
+                        ProductDTO product = productDTOMap.get(item.getItemId());
+                        if (product == null) {
+                            throw new IllegalArgumentException("Product not found or unavailable: " + item.getItemId());
+                        }
+                        return OrderItem.builder()
+                                .itemType(ItemType.PRODUCT)
+                                .itemId(product.getId())
+                                .itemName(product.getName())
+                                .unitPrice(product.getPrice())
+                                .quantity(item.getQuantity())
+                                .subtotalAmount(product.getPrice() * item.getQuantity())
+                                .build();
+                    }
+                })
+                .collect(Collectors.toList());
+    }
+    
+    private void rollbackStockReservation(List<OrderItem> items, List<UUID> reservedProductIds) {
+        log.warn("Rolling back stock reservation for {} products", reservedProductIds.size());
+        
+        for (OrderItem item : items) {
+            if (item.getItemType() == ItemType.PRODUCT && 
+                reservedProductIds.contains(item.getItemId())) {
+                try {
+                    petServiceClient.restoreStock(item.getItemId(), item.getQuantity());
+                    log.info("Rolled back {} units of product: {}", item.getQuantity(), item.getItemId());
+                } catch (Exception e) {
+                    log.error("Failed to rollback stock for product: {}", item.getItemId(), e);
+                }
+            }
+        }
     }
 
     @Override
@@ -193,18 +237,18 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (existingOrder.getStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Order already canceled: " + orderId);
+            throw new RuntimeException("Order already cancelled: " + orderId);
         }
 
         existingOrder.setStatus(OrderStatus.CANCELLED);
         existingOrder.setUpdatedAt(LocalDateTime.now());
         Order savedOrder = orderRepository.save(existingOrder);
 
-        // Publish order canceled event
+        // Publish order cancelled event
         try {
-            orderPublisher.publishOrderCanceled(savedOrder, reason);
+            orderPublisher.publishOrderCancelled(savedOrder, reason);
         } catch (Exception e) {
-            log.error("Failed to publish order canceled event for order: {}", savedOrder.getId(), e);
+            log.error("Failed to publish order cancelled event for order: {}", savedOrder.getId(), e);
         }
 
         return savedOrder;
@@ -258,7 +302,7 @@ public class OrderServiceImpl implements OrderService {
                 
                 // Publish order cancelled event for other services (e.g., inventory service)
                 try {
-                    orderPublisher.publishOrderCanceled(order, "Payment failed: " + reason);
+                    orderPublisher.publishOrderCancelled(order, "Payment failed: " + reason);
                 } catch (Exception e) {
                     log.error("Failed to publish order cancelled event", e);
                 }

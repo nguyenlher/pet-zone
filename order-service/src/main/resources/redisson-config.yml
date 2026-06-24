@@ -1,0 +1,5 @@
+# Redisson Configuration
+redisson:
+  lock:
+    wait-time: 10000      # 10 seconds to wait for lock
+    lease-time: 30000     # 30 seconds auto-expire

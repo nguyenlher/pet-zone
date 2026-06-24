@@ -39,4 +39,16 @@ public interface ProductRepository {
     void deleteById(UUID id);
     
     boolean existsById(UUID id);
+    
+    /**
+     * Atomic operation: Decrement stock and increment sold count
+     * @return number of affected rows (0 if stock insufficient or product not found)
+     */
+    int decrementStockAtomic(UUID id, Integer quantity);
+    
+    /**
+     * Atomic operation: Restore stock (for rollback/compensation)
+     * @return number of affected rows
+     */
+    int restoreStockAtomic(UUID id, Integer quantity);
 }

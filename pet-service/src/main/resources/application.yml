@@ -98,4 +98,10 @@ logging:
 
 api:
   key: ${API_KEY}
+
+app:
+  kafka:
+    topics:
+      order:
+        cancelled: ${KAFKA_TOPIC_ORDER_CANCELLED:${KAFKA_TOPIC_ORDER_CANCELED:order.cancelled}}
 

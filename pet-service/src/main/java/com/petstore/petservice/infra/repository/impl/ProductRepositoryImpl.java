@@ -109,4 +109,14 @@ public class ProductRepositoryImpl implements ProductRepository {
     public boolean existsById(UUID id) {
         return jpaRepository.existsById(id);
     }
+    
+    @Override
+    public int decrementStockAtomic(UUID id, Integer quantity) {
+        return jpaRepository.decrementStockAtomic(id, quantity);
+    }
+    
+    @Override
+    public int restoreStockAtomic(UUID id, Integer quantity) {
+        return jpaRepository.restoreStockAtomic(id, quantity);
+    }
 }

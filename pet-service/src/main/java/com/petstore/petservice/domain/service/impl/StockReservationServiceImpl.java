@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.petstore.petservice.domain.model.Product;
 import com.petstore.petservice.domain.repository.ProductRepository;
@@ -27,12 +27,12 @@ public class StockReservationServiceImpl implements StockReservationService {
     private final ProductRepository productRepository;
     private final ProductService productService;
     private final RedissonClient redissonClient;
+    private final TransactionTemplate transactionTemplate;
     
     private static final long LOCK_WAIT_TIME = 10L;     // seconds
     private static final long LOCK_LEASE_TIME = 30L;    // seconds
     
     @Override
-    @Transactional
     public void reserveStock(UUID productId, Integer quantity) {
         String lockKey = "stock:lock:" + productId;
         RLock lock = redissonClient.getLock(lockKey);
@@ -53,24 +53,26 @@ public class StockReservationServiceImpl implements StockReservationService {
             
             log.info("Lock acquired for product: {}", productId);
             
-            // Execute atomic stock decrement
-            int affectedRows = productRepository.decrementStockAtomic(productId, quantity);
-            
-            if (affectedRows == 0) {
-                // Either product not found, out of stock, or not available
-                Product product = productService.getProductById(productId);
+            // Execute atomic stock decrement inside dedicated transaction
+            transactionTemplate.executeWithoutResult(status -> {
+                int affectedRows = productRepository.decrementStockAtomic(productId, quantity);
                 
-                if (product.getStockQuantity() < quantity) {
-                    log.warn("Insufficient stock for product: {}. Requested: {}, Available: {}",
-                             productId, quantity, product.getStockQuantity());
-                    throw new InsufficientStockException(
-                        String.format("Not enough stock. Available: %d, Requested: %d",
-                                      product.getStockQuantity(), quantity)
-                    );
+                if (affectedRows == 0) {
+                    // Either product not found, out of stock, or not available
+                    Product product = productService.getProductById(productId);
+                    
+                    if (product.getStockQuantity() < quantity) {
+                        log.warn("Insufficient stock for product: {}. Requested: {}, Available: {}",
+                                 productId, quantity, product.getStockQuantity());
+                        throw new InsufficientStockException(
+                            String.format("Not enough stock. Available: %d, Requested: %d",
+                                          product.getStockQuantity(), quantity)
+                        );
+                    }
+                    
+                    throw new InsufficientStockException("Product is not available for purchase");
                 }
-                
-                throw new InsufficientStockException("Product is not available for purchase");
-            }
+            });
             
             log.info("Successfully reserved {} units of product: {}", quantity, productId);
             
@@ -97,7 +99,6 @@ public class StockReservationServiceImpl implements StockReservationService {
     }
     
     @Override
-    @Transactional
     public void restoreStock(UUID productId, Integer quantity) {
         String lockKey = "stock:lock:" + productId;
         RLock lock = redissonClient.getLock(lockKey);
@@ -112,13 +113,15 @@ public class StockReservationServiceImpl implements StockReservationService {
                 throw new LockAcquisitionException("Cannot restore stock - lock acquisition failed");
             }
             
-            int affectedRows = productRepository.restoreStockAtomic(productId, quantity);
-            
-            if (affectedRows == 0) {
-                log.warn("No rows affected when restoring stock for product: {}", productId);
-            } else {
-                log.info("Successfully restored {} units of product: {}", quantity, productId);
-            }
+            transactionTemplate.executeWithoutResult(status -> {
+                int affectedRows = productRepository.restoreStockAtomic(productId, quantity);
+                
+                if (affectedRows == 0) {
+                    log.warn("No rows affected when restoring stock for product: {}", productId);
+                } else {
+                    log.info("Successfully restored {} units of product: {}", quantity, productId);
+                }
+            });
             
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

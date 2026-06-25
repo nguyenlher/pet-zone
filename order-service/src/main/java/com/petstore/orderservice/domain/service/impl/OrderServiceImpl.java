@@ -2,12 +2,13 @@ package com.petstore.orderservice.domain.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -24,6 +25,7 @@ import com.petstore.orderservice.domain.model.enums.ItemType;
 import com.petstore.orderservice.domain.model.enums.OrderStatus;
 import com.petstore.orderservice.domain.publisher.OrderPublisher;
 import com.petstore.orderservice.domain.repository.OrderRepository;
+import com.petstore.orderservice.domain.service.OrderPersistenceService;
 import com.petstore.orderservice.domain.service.OrderService;
 import com.petstore.orderservice.infra.client.PetServiceClient;
 
@@ -37,10 +39,10 @@ public class OrderServiceImpl implements OrderService {
 
     private final PetServiceClient petServiceClient;
     private final OrderRepository orderRepository;
+    private final OrderPersistenceService orderPersistenceService;
     private final OrderPublisher orderPublisher;
 
     @Override
-    @Transactional
     public Order createOrder(UUID userId, List<OrderItem> items, OrderShippingDetail shippingDetail, String discountCode) {
 
         // 1. Validate items
@@ -54,38 +56,37 @@ public class OrderServiceImpl implements OrderService {
         Set<UUID> petIds = items.stream()
                 .filter(item -> item.getItemType() == ItemType.PET)
                 .map(OrderItem::getItemId)
-                .filter(id -> id != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
         Set<UUID> productIds = items.stream()
                 .filter(item -> item.getItemType() == ItemType.PRODUCT)
                 .map(OrderItem::getItemId)
-                .filter(id -> id != null)
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        // 3. Fetch data from pet-service
+        // 3. Fetch data from pet-service (controlled sequential execution, no ForkJoinPool parallelStream)
         Map<UUID, PetDTO> petDTOMap = fetchPetsData(petIds);
         Map<UUID, ProductDTO> productDTOMap = fetchProductsData(productIds);
 
-        // 4. RESERVE STOCK FIRST (with rollback on failure)
-        List<UUID> reservedProductIds = new ArrayList<>();
+        // 4. Enrich and validate items with pricing and metadata BEFORE reserving stock
+        List<OrderItem> enrichedItems = enrichOrderItems(items, petDTOMap, productDTOMap);
+
+        // 5. RESERVE STOCK (Non-transactional, with compensating rollback on partial failure)
+        List<OrderItem> successfullyReservedItems = new ArrayList<>();
         try {
-            for (OrderItem item : items) {
+            for (OrderItem item : enrichedItems) {
                 if (item.getItemType() == ItemType.PRODUCT) {
                     petServiceClient.reserveStock(item.getItemId(), item.getQuantity());
-                    reservedProductIds.add(item.getItemId());
+                    successfullyReservedItems.add(item);
                     log.info("Reserved {} units of product: {}", item.getQuantity(), item.getItemId());
                 }
             }
         } catch (Exception e) {
-            // Rollback: restore already reserved stock
-            log.error("Failed to reserve stock, rolling back reservations...", e);
-            rollbackStockReservation(items, reservedProductIds);
+            log.error("Failed to reserve stock during order creation, triggering compensating rollback...", e);
+            rollbackStockReservation(successfullyReservedItems);
             throw e;
         }
-
-        // 5. Enrich items with data
-        List<OrderItem> enrichedItems = enrichOrderItems(items, petDTOMap, productDTOMap);
 
         // 6. Calculate amounts
         double subtotalAmount = enrichedItems.stream()
@@ -101,7 +102,6 @@ public class OrderServiceImpl implements OrderService {
             initialStatus = OrderStatus.PENDING_PAYMENT;
         }
 
-        // 8. Create and save order
         Order order = Order.builder()
                 .userId(userId)
                 .items(enrichedItems)
@@ -113,10 +113,18 @@ public class OrderServiceImpl implements OrderService {
                 .status(initialStatus)
                 .createdAt(LocalDateTime.now())
                 .build();
-                
-        Order savedOrder = orderRepository.save(order);
 
-        // 9. Publish order created event
+        // 8. Persist order in isolated DB transaction (with compensating rollback if DB fails)
+        Order savedOrder;
+        try {
+            savedOrder = orderPersistenceService.saveOrder(order);
+        } catch (Exception e) {
+            log.error("Failed to persist order in database, triggering compensating rollback for reserved stock...", e);
+            rollbackStockReservation(successfullyReservedItems);
+            throw e;
+        }
+
+        // 9. Publish order created event (after DB transaction is committed)
         try {
             orderPublisher.publishOrderCreated(savedOrder);
         } catch (Exception e) {
@@ -142,30 +150,34 @@ public class OrderServiceImpl implements OrderService {
     }
     
     private Map<UUID, PetDTO> fetchPetsData(Set<UUID> petIds) {
-        Map<UUID, PetDTO> petDTOMap = new ConcurrentHashMap<>();
-        petIds.parallelStream().forEach(petId -> {
-            if (petId == null) return;
+        Map<UUID, PetDTO> petDTOMap = new HashMap<>();
+        for (UUID petId : petIds) {
+            if (petId == null) continue;
             try {
                 PetDTO pet = petServiceClient.getPetById(petId);
-                if (pet != null) petDTOMap.put(petId, pet);
+                if (pet != null) {
+                    petDTOMap.put(petId, pet);
+                }
             } catch (Exception e) {
                 log.error("Failed to fetch pet: {}", petId, e);
             }
-        });
+        }
         return petDTOMap;
     }
     
     private Map<UUID, ProductDTO> fetchProductsData(Set<UUID> productIds) {
-        Map<UUID, ProductDTO> productDTOMap = new ConcurrentHashMap<>();
-        productIds.parallelStream().forEach(productId -> {
-            if (productId == null) return;
+        Map<UUID, ProductDTO> productDTOMap = new HashMap<>();
+        for (UUID productId : productIds) {
+            if (productId == null) continue;
             try {
                 ProductDTO product = petServiceClient.getProductById(productId);
-                if (product != null) productDTOMap.put(productId, product);
+                if (product != null) {
+                    productDTOMap.put(productId, product);
+                }
             } catch (Exception e) {
                 log.error("Failed to fetch product: {}", productId, e);
             }
-        });
+        }
         return productDTOMap;
     }
     
@@ -207,18 +219,17 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
     
-    private void rollbackStockReservation(List<OrderItem> items, List<UUID> reservedProductIds) {
-        log.warn("Rolling back stock reservation for {} products", reservedProductIds.size());
-        
-        for (OrderItem item : items) {
-            if (item.getItemType() == ItemType.PRODUCT && 
-                reservedProductIds.contains(item.getItemId())) {
-                try {
-                    petServiceClient.restoreStock(item.getItemId(), item.getQuantity());
-                    log.info("Rolled back {} units of product: {}", item.getQuantity(), item.getItemId());
-                } catch (Exception e) {
-                    log.error("Failed to rollback stock for product: {}", item.getItemId(), e);
-                }
+    private void rollbackStockReservation(List<OrderItem> reservedItems) {
+        if (reservedItems == null || reservedItems.isEmpty()) {
+            return;
+        }
+        log.warn("Rolling back stock reservation for {} items", reservedItems.size());
+        for (OrderItem item : reservedItems) {
+            try {
+                petServiceClient.restoreStock(item.getItemId(), item.getQuantity());
+                log.info("Compensating action: restored {} units of product: {}", item.getQuantity(), item.getItemId());
+            } catch (Exception e) {
+                log.error("Failed to rollback stock during compensating action for product: {}", item.getItemId(), e);
             }
         }
     }

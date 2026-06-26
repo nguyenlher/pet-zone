@@ -27,6 +27,7 @@ import com.petstore.orderservice.domain.publisher.OrderPublisher;
 import com.petstore.orderservice.domain.repository.OrderRepository;
 import com.petstore.orderservice.domain.service.OrderPersistenceService;
 import com.petstore.orderservice.domain.service.OrderService;
+import com.petstore.orderservice.exception.OrderNotFoundException;
 import com.petstore.orderservice.infra.client.PetServiceClient;
 
 import lombok.RequiredArgsConstructor;
@@ -238,17 +239,17 @@ public class OrderServiceImpl implements OrderService {
     public Order cancelOrder(UUID orderId, String reason) {
         Optional<Order> order = orderRepository.findById(orderId);
         if (order.isEmpty()) {
-            throw new RuntimeException("Order not found: " + orderId);
+            throw new OrderNotFoundException("Order not found: " + orderId);
         }
 
         Order existingOrder = order.get();
 
         if (existingOrder.getStatus() == OrderStatus.CONFIRM) {
-            throw new RuntimeException("Cannot cancel confirmed order: " + orderId);
+            throw new IllegalStateException("Cannot cancel confirmed order: " + orderId);
         }
 
         if (existingOrder.getStatus() == OrderStatus.CANCELLED) {
-            throw new RuntimeException("Order already cancelled: " + orderId);
+            throw new IllegalStateException("Order already cancelled: " + orderId);
         }
 
         existingOrder.setStatus(OrderStatus.CANCELLED);

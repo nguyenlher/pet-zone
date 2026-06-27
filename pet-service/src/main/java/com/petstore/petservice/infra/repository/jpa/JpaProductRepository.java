@@ -18,72 +18,73 @@ import com.petstore.petservice.infra.entity.ProductEntity;
 
 @Repository
 public interface JpaProductRepository extends JpaRepository<ProductEntity, UUID> {
-    
-    Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
-    
-    Page<ProductEntity> findByCategory(ProductCategory category, Pageable pageable);
-    
-    Page<ProductEntity> findByCategoryAndStatus(ProductCategory category, ProductStatus status, Pageable pageable);
-    
-    Page<ProductEntity> findByPetTypeId(UUID petTypeId, Pageable pageable);
-    
-    Page<ProductEntity> findByPetTypeIdAndCategory(UUID petTypeId, ProductCategory category, Pageable pageable);
-    
-    @Query("SELECT p FROM ProductEntity p WHERE p.name LIKE %:keyword% OR p.brand LIKE %:keyword%")
-    Page<ProductEntity> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
-    
-    @Query("SELECT p FROM ProductEntity p WHERE " +
-           "(:category IS NULL OR p.category = :category) AND " +
-           "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
-           "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
-           "(:status IS NULL OR p.status = :status) AND " +
-           "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')) OR LOWER(p.brand) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')))")
-    Page<ProductEntity> findWithFilters(
-            @Param("category") ProductCategory category,
-            @Param("minPrice") BigDecimal minPrice,
-            @Param("maxPrice") BigDecimal maxPrice,
-            @Param("status") ProductStatus status,
-            @Param("keyword") String keyword,
-            Pageable pageable);
 
-    
-    @Query("SELECT p FROM ProductEntity p WHERE p.status = :status ORDER BY p.soldCount DESC")
-    List<ProductEntity> findTopSellingProducts(@Param("status") ProductStatus status, Pageable pageable);
-    
-    @Query("SELECT p FROM ProductEntity p WHERE p.status = :status ORDER BY p.avgRating DESC, p.totalReviews DESC")
-    List<ProductEntity> findTopRatedProducts(@Param("status") ProductStatus status, Pageable pageable);
-    
-    /**
-     * Atomic operation: Decrement stock and increment sold count
-     * Only succeeds if stock >= quantity and product is AVAILABLE
-     * @return number of affected rows (0 if stock insufficient or product not found)
-     */
-    @Modifying
-    @Query("UPDATE ProductEntity p SET " +
-           "p.stockQuantity = p.stockQuantity - :quantity, " +
-           "p.soldCount = p.soldCount + :quantity, " +
-           "p.updatedAt = CURRENT_TIMESTAMP " +
-           "WHERE p.id = :id " +
-           "AND p.stockQuantity >= :quantity " +
-           "AND p.status = 'AVAILABLE'")
-    int decrementStockAtomic(
-        @Param("id") UUID id, 
-        @Param("quantity") Integer quantity
-    );
-    
-    /**
-     * Atomic operation: Restore stock (for compensation/rollback)
-     * @return number of affected rows
-     */
-    @Modifying
-    @Query("UPDATE ProductEntity p SET " +
-           "p.stockQuantity = p.stockQuantity + :quantity, " +
-           "p.soldCount = CASE WHEN p.soldCount >= :quantity THEN p.soldCount - :quantity ELSE 0 END, " +
-           "p.updatedAt = CURRENT_TIMESTAMP, " +
-           "p.status = CASE WHEN p.stockQuantity + :quantity > 0 THEN 'AVAILABLE' ELSE p.status END " +
-           "WHERE p.id = :id")
-    int restoreStockAtomic(
-        @Param("id") UUID id, 
-        @Param("quantity") Integer quantity
-    );
+        Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
+
+        Page<ProductEntity> findByCategory(ProductCategory category, Pageable pageable);
+
+        Page<ProductEntity> findByCategoryAndStatus(ProductCategory category, ProductStatus status, Pageable pageable);
+
+        Page<ProductEntity> findByPetTypeId(UUID petTypeId, Pageable pageable);
+
+        Page<ProductEntity> findByPetTypeIdAndCategory(UUID petTypeId, ProductCategory category, Pageable pageable);
+
+        @Query("SELECT p FROM ProductEntity p WHERE p.name LIKE %:keyword% OR p.brand LIKE %:keyword%")
+        Page<ProductEntity> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+        @Query("SELECT p FROM ProductEntity p WHERE " +
+                        "(:category IS NULL OR p.category = :category) AND " +
+                        "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
+                        "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
+                        "(:status IS NULL OR p.status = :status) AND " +
+                        "(:keyword IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')) OR LOWER(p.brand) LIKE LOWER(CONCAT('%', CAST(:keyword AS String), '%')))")
+        Page<ProductEntity> findWithFilters(
+                        @Param("category") ProductCategory category,
+                        @Param("minPrice") BigDecimal minPrice,
+                        @Param("maxPrice") BigDecimal maxPrice,
+                        @Param("status") ProductStatus status,
+                        @Param("keyword") String keyword,
+                        Pageable pageable);
+
+        @Query("SELECT p FROM ProductEntity p WHERE p.status = :status ORDER BY p.soldCount DESC")
+        List<ProductEntity> findTopSellingProducts(@Param("status") ProductStatus status, Pageable pageable);
+
+        @Query("SELECT p FROM ProductEntity p WHERE p.status = :status ORDER BY p.avgRating DESC, p.totalReviews DESC")
+        List<ProductEntity> findTopRatedProducts(@Param("status") ProductStatus status, Pageable pageable);
+
+        /**
+         * Atomic operation: Decrement stock and increment sold count
+         * Only succeeds if stock >= quantity and product is AVAILABLE
+         * 
+         * @return number of affected rows (0 if stock insufficient or product not
+         *         found)
+         */
+        @Modifying
+        @Query("UPDATE ProductEntity p SET " +
+                        "p.stockQuantity = p.stockQuantity - :quantity, " +
+                        "p.soldCount = p.soldCount + :quantity, " +
+                        "p.updatedAt = CURRENT_TIMESTAMP " +
+                        "WHERE p.id = :id " +
+                        "AND p.stockQuantity >= :quantity " +
+                        "AND p.status = com.petstore.petservice.domain.model.enums.ProductStatus.AVAILABLE")
+        int decrementStockAtomic(
+                        @Param("id") UUID id,
+                        @Param("quantity") Integer quantity);
+
+        /**
+         * Atomic operation: Restore stock (for compensation/rollback)
+         * 
+         * @return number of affected rows
+         */
+        @Modifying
+        @Query("UPDATE ProductEntity p SET " +
+                        "p.stockQuantity = p.stockQuantity + :quantity, " +
+                        "p.soldCount = CASE WHEN p.soldCount >= :quantity THEN p.soldCount - :quantity ELSE 0 END, " +
+                        "p.updatedAt = CURRENT_TIMESTAMP, " +
+                        "p.status = CASE WHEN p.stockQuantity + :quantity > 0 THEN com.petstore.petservice.domain.model.enums.ProductStatus.AVAILABLE ELSE p.status END "
+                        +
+                        "WHERE p.id = :id")
+        int restoreStockAtomic(
+                        @Param("id") UUID id,
+                        @Param("quantity") Integer quantity);
 }

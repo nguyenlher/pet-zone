@@ -1,4 +1,4 @@
-package com.petstore.notificationservice.client.impl;
+package com.petstore.notificationservice.infra.client.impl;
 
 import java.util.UUID;
 
@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import com.petstore.notificationservice.client.UserClient;
+import com.petstore.notificationservice.infra.client.UserClient;
 
 @Component
 public class UserClientImpl implements UserClient {

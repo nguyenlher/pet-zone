@@ -33,6 +33,7 @@ public class PaymentPublisherImpl implements PaymentPublisher {
                 .orderId(payment.getOrderId())
                 .paymentId(payment.getId())
                 .transactionId(payment.getTransactionId())
+                .userId(payment.getUserId())
                 .build();
         kafkaTemplate.send(paymentSucceededTopic, payment.getOrderId().toString(), message);
     }

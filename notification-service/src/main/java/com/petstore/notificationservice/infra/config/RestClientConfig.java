@@ -1,4 +1,4 @@
-package com.petstore.notificationservice.config;
+package com.petstore.notificationservice.infra.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

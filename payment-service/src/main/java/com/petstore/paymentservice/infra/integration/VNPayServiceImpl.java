@@ -30,7 +30,6 @@ import com.petstore.paymentservice.domain.model.enums.PaymentMethod;
 import com.petstore.paymentservice.domain.model.enums.PaymentStatus;
 import com.petstore.paymentservice.domain.publisher.PaymentPublisher;
 import com.petstore.paymentservice.domain.service.strategy.PaymentStrategy;
-import com.petstore.paymentservice.infra.publisher.event.SendNotificationEvent;
 import com.petstore.paymentservice.infra.repository.PaymentRepository;
 import com.petstore.paymentservice.utils.properties.VNPayProperties;
 import com.petstore.paymentservice.utils.vnpay.VNPayUtils;
@@ -49,7 +48,6 @@ public class VNPayServiceImpl implements PaymentStrategy {
     private final PaymentRepository paymentRepository;
     private final OrderClient orderClient;
     private final PaymentPublisher paymentPublisher;
-    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public PaymentMethod getPaymentMethod() {
@@ -179,7 +177,6 @@ public class VNPayServiceImpl implements PaymentStrategy {
         try {
             if (newStatus == PaymentStatus.SUCCESS) {
                 paymentPublisher.publishPaymentSucceeded(saved);
-                eventPublisher.publishEvent(new SendNotificationEvent(saved.getUserId()));
             } else {
                 paymentPublisher.publishPaymentFailed(saved, "VNPay responseCode=" + responseCode);
             }

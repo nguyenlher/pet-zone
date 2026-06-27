@@ -1,4 +1,4 @@
-package com.petstore.notificationservice.service.impl;
+package com.petstore.notificationservice.domain.service.impl;
 
 import java.util.UUID;
 
@@ -6,10 +6,10 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import com.petstore.notificationservice.client.UserClient;
-import com.petstore.notificationservice.client.UserClient.UserInfo;
-import com.petstore.notificationservice.dto.request.SendMailRequest;
-import com.petstore.notificationservice.service.NotificationService;
+import com.petstore.notificationservice.api.dto.SendMailRequest;
+import com.petstore.notificationservice.domain.service.NotificationService;
+import com.petstore.notificationservice.infra.client.UserClient;
+import com.petstore.notificationservice.infra.client.UserClient.UserInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,10 +27,11 @@ public class NotificationServiceImpl implements NotificationService {
             throw new RuntimeException("User email not found");
         }
 
-        SendMailRequest request = new SendMailRequest(
-                user.email(),
-                "Payment Confirmation",
-                "Your payment has been successfully processed!");
+        SendMailRequest request = SendMailRequest.builder()
+                .email(user.email())
+                .subject("Payment Confirmation")
+                .text("Your payment has been successfully processed!")
+                .build();
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("noreply@petstore.com");

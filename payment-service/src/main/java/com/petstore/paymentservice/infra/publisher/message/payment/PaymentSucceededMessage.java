@@ -20,4 +20,5 @@ public class PaymentSucceededMessage {
     UUID orderId;
     UUID paymentId;
     String transactionId;
+    UUID userId;
 }

@@ -1,4 +1,4 @@
-package com.petstore.notificationservice.service;
+package com.petstore.notificationservice.domain.service;
 
 import java.util.UUID;
 

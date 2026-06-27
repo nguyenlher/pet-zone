@@ -1,4 +1,4 @@
-package com.petstore.notificationservice.client;
+package com.petstore.notificationservice.infra.client;
 
 import java.util.UUID;
 

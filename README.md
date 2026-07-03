@@ -1,105 +1,109 @@
-# Super Pet Mark 3D - E-commerce Platform
+# Pet Zone - 3D E-commerce Platform
 
 ## Overview
 
-Super Pet Mark 3D is a modern e-commerce platform for pet stores, built using a microservices architecture. The system includes an interactive 3D interface for customers and a comprehensive admin dashboard.
+**Pet Zone** is a modern, high-performance e-commerce platform for pet stores, built using a microservices architecture. The system delivers an immersive shopping experience through an interactive 3D interface for customers, paired with a comprehensive administrative management dashboard.
 
 ### Key Features
 
-- **Interactive 3D Interface** - Pet shopping experience with Tripo API and Three.js technology
-- **User Management** - Authentication and authorization with Keycloak
-- **Pet Management** - Full CRUD for pet products
-- **Order System** - Order and shopping cart management
-- **Payment** - Integrated payment processing
-- **Notifications** - Realtime notifications and email delivery
-- **Statistics** - Analytics and reporting dashboard
-- **Media Management** - Upload and manage images and 3D models with Cloudinary
+- **Interactive 3D Experience** - Realistic 3D pet viewing and product exploration powered by Three.js and Tripo 3D models
+- **Identity & Access Management** - Robust authentication, OAuth2/OIDC, and role-based access control with Keycloak
+- **Pet & Product Management** - Full catalog management with atomic stock control and category filtering
+- **Order Processing System** - Resilient distributed order processing, reservation compensation, and inventory safety
+- **Integrated Payment** - Multi-provider payment gateway integration (VNPay)
+- **Event-Driven Notifications** - Asynchronous email and transactional notifications via Apache Kafka
+- **Analytics & Reporting** - Real-time sales statistics, revenue metrics, and order tracking
+- **Cloud Media Storage** - High-speed media and 3D asset management with Cloudinary
+
+---
 
 ## System Architecture
 
-### Backend Services (Spring Boot + Java)
+### Backend Microservices (Spring Boot + Java)
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      API Gateway (8090)                      │
 │                    Spring Cloud Gateway                      │
 └─────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-┌───────▼────────┐   ┌───────▼────────┐   ┌───────▼────────┐
-│  User Service  │   │  Pet Service   │   │ Order Service  │
-│     (8081)     │   │     (8082)     │   │     (8084)     │
-└────────────────┘   └────────────────┘   └────────────────┘
-        │                     │                     │
-┌───────▼────────┐   ┌───────▼────────┐   ┌───────▼────────┐
-│Payment Service │   │Notification Svc│   │Statistics Svc  │
-│     (8085)     │   │     (8086)     │   │     (8087)     │
-└────────────────┘   └────────────────┘   └────────────────┘
-        │                     │                     │
-        └─────────────────────┼─────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        │                     │                     │
-┌───────▼────────┐   ┌───────▼────────┐   ┌───────▼────────┐
-│   PostgreSQL   │   │     Redis      │   │     Kafka      │
-│     (5433)     │   │     (6379)     │   │     (9092)     │
-└────────────────┘   └────────────────┘   └────────────────┘
+                               │
+         ┌─────────────────────┼─────────────────────┐
+         │                     │                     │
+┌────────▼────────┐   ┌────────▼────────┐   ┌────────▼────────┐
+│  User Service   │   │   Pet Service   │   │  Order Service  │
+│     (8081)      │   │     (8082)      │   │     (8084)      │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+         │                     │                     │
+┌────────▼────────┐   ┌────────▼────────┐   ┌────────▼────────┐
+│ Payment Service │   │Notification Svc │   │ Statistics Svc  │
+│     (8085)      │   │     (8086)      │   │     (8087)      │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
+         │                     │                     │
+         └─────────────────────┼─────────────────────┘
+                               │
+         ┌─────────────────────┼─────────────────────┐
+         │                     │                     │
+┌────────▼────────┐   ┌────────▼────────┐   ┌────────▼────────┐
+│   PostgreSQL    │   │      Redis      │   │      Kafka      │
+│     (5433)      │   │     (6379)      │   │     (9092)      │
+└─────────────────┘   └─────────────────┘   └─────────────────┘
 ```
 
-### Frontend Applications (React + Vite)
+### Frontend Applications
 
-- **Frontend Client** - Customer interface with Three.js 3D
-- **Frontend Admin** - Admin dashboard with Recharts
+- **Frontend Client (Next.js)** - Customer-facing web application built with Next.js 15 App Router, React 19, Tailwind CSS, and Three.js 3D viewer.
+- **Frontend Admin** - Administrative management dashboard built with React, Vite, and Recharts.
 
 ### Infrastructure Services
 
 - **Keycloak** (8088) - Identity & Access Management
-- **Kafka UI** (8080) - Kafka monitoring
+- **Kafka UI** (8080) - Kafka cluster monitoring
 - **Zookeeper** (2181) - Kafka coordination
+
+---
 
 ## Technologies Used
 
 ### Backend
-- **Framework**: Spring Boot 3.x
-- **Language**: Java 17+
+- **Framework**: Spring Boot 3.x / 4.x
+- **Language**: Java 21
 - **Database**: PostgreSQL 16
-- **Cache**: Redis 7
-- **Message Queue**: Apache Kafka
+- **Distributed Cache & Locking**: Redis 7, Redisson
+- **Message Broker**: Apache Kafka
 - **API Gateway**: Spring Cloud Gateway
-- **Authentication**: Keycloak
+- **Security & IAM**: Keycloak, Spring Security, JWT
 - **Build Tool**: Maven
 
 ### Frontend
-- **Framework**: React 19
-- **Build Tool**: Vite 8
-- **3D Graphics**: Three.js, React Three Fiber
-- **UI Components**: Tailwind CSS, Lucide React
-- **Charts**: Recharts
-- **HTTP Client**: Axios
-- **Routing**: React Router DOM
+- **Client App**: Next.js 15, React 19, TypeScript, Tailwind CSS, Three.js, Lucide React
+- **Admin App**: React 19, Vite, Tailwind CSS, Recharts, Axios, React Router DOM
 
-### DevOps
+### DevOps & Cloud
 - **Containerization**: Docker & Docker Compose
-- **Cloud Storage**: Cloudinary
+- **Media CDN**: Cloudinary
+- **Continuous Integration**: GitHub Actions CI/CD
+
+---
 
 ## Project Structure
 
 ```text
-pet-3d-store/
-├── api-gateway/              # API Gateway service
-├── user-service/             # User management service
-├── pet-service/              # Pet product service
-├── order-service/            # Order management service
-├── payment-service/          # Payment processing service
-├── notification-service/     # Email & notification service
-├── statistics-service/       # Analytics & reporting service
-├── frontend-admin/           # Admin dashboard (React)
-├── frontend-client-nextjs/    # Customer frontend (Next.js 15 App Router + Three.js)
-├── postgres-init/            # Database initialization scripts
-├── docker-compose.yml        # Docker orchestration
-└── .env                      # Environment variables
+pet-zone/
+├── api-gateway/              # Spring Cloud API Gateway (Port 8090)
+├── user-service/             # User & profile management service (Port 8081)
+├── pet-service/              # Pet catalog & stock management service (Port 8082)
+├── order-service/            # Order creation & lifecycle service (Port 8084)
+├── payment-service/          # VNPay & transaction payment service (Port 8085)
+├── notification-service/     # Event-driven email notification service (Port 8086)
+├── statistics-service/       # Business analytics & revenue metrics service (Port 8087)
+├── frontend-client-nextjs/   # Modern Customer Frontend (Next.js 15 App Router)
+├── frontend-admin/           # Administrative Dashboard (React + Vite)
+├── postgres-init/            # PostgreSQL database initialization scripts
+├── docker-compose.yml        # Docker orchestration compose file
+└── .env                      # Environment variables configuration
 ```
+
+---
 
 ## Setup Guide
 
@@ -107,25 +111,25 @@ pet-3d-store/
 
 ```bash
 git clone <repository-url>
-cd pet-3d-store
+cd pet-zone
 ```
 
 ### 2. Configure Environment Variables
 
-The `.env` file requires some configuration. You can copy the template provided:
+Create and configure the `.env` file from the example template:
 
 ```bash
 cp .env.example .env
 ```
 
-Here is an example `.env`:
+Example `.env` configuration:
 
 ```env
 # JWT Configuration
 JWT_SECRET=your_jwt_secret
 JWT_EXPIRATION=86400000
 
-# API Key
+# API Key for internal microservice calls
 API_KEY=your_internal_api_key
 
 # Keycloak
@@ -145,13 +149,7 @@ MAIL_PASSWORD=your_app_password
 
 ### 3. Initialize Database
 
-Create a `postgres-init` directory and add the database initialization script:
-
-```bash
-mkdir -p postgres-init
-```
-
-Create the `postgres-init/init.sql` file:
+Ensure `postgres-init/init.sql` exists to provision databases for each microservice:
 
 ```sql
 -- Create databases for each service
@@ -171,112 +169,114 @@ GRANT ALL PRIVILEGES ON DATABASE notification_db TO postgres;
 GRANT ALL PRIVILEGES ON DATABASE keycloak_db TO postgres;
 ```
 
+---
+
 ## Running the Project
 
 ### Option 1: Run Entire System with Docker Compose (Recommended)
 
 #### Start all services:
-
 ```bash
 docker-compose up -d
 ```
 
 #### Stop services:
-
 ```bash
 docker-compose down
 ```
 
-#### Stop and remove volumes (reset database):
-
+#### Reset databases (remove persistent volumes):
 ```bash
 docker-compose down -v
 ```
 
-### Option 2: Run Backend Services Individually
+### Option 2: Run Infrastructure First, Services Locally
 
-#### Start infrastructure services first:
-
+Start infrastructure containers (Postgres, Redis, Kafka, Keycloak):
 ```bash
 docker-compose up -d postgres redis kafka zookeeper keycloak
 ```
 
-### Option 3: Run Frontend Locally
-
-#### Frontend Admin:
-
+Run any backend microservice individually:
 ```bash
-cd frontend-admin
-npm install
-npm run dev
+cd pet-service
+mvn spring-boot:run
 ```
 
-Access: http://localhost:5173
+### Option 3: Run Frontend Applications Locally
 
-#### Frontend Client (Next.js):
-
+#### Customer Frontend (Next.js):
 ```bash
 cd frontend-client-nextjs
 npm install
 npm run dev
 ```
+> Access application at: **http://localhost:3000**
 
-Access: http://localhost:3000
+#### Administrative Dashboard:
+```bash
+cd frontend-admin
+npm install
+npm run dev
+```
+> Access dashboard at: **http://localhost:5173**
+
+---
 
 ## Endpoints & Ports
 
 ### Backend Services
 
-| Service | Port | URL | Description |
-|---------|------|-----|-------------|
-| API Gateway | 8090 | http://localhost:8090 | Main entry point |
-| User Service | 8081 | http://localhost:8081 | User management |
-| Pet Service | 8082 | http://localhost:8082 | Pet products |
-| Order Service | 8084 | http://localhost:8084 | Orders |
-| Payment Service | 8085 | http://localhost:8085 | Payments |
-| Notification Service | 8086 | http://localhost:8086 | Notifications |
-| Statistics Service | 8087 | http://localhost:8087 | Analytics |
+| Service | Port | Local URL | Description |
+|---------|------|-----------|-------------|
+| **API Gateway** | 8090 | http://localhost:8090 | Central entry point & routing |
+| **User Service** | 8081 | http://localhost:8081 | User profile and authentication |
+| **Pet Service** | 8082 | http://localhost:8082 | Pet catalog & inventory management |
+| **Order Service** | 8084 | http://localhost:8084 | Order processing & reservation |
+| **Payment Service** | 8085 | http://localhost:8085 | VNPay integration & payment lifecycle |
+| **Notification Service** | 8086 | http://localhost:8086 | Event-driven email notifications |
+| **Statistics Service** | 8087 | http://localhost:8087 | Revenue & analytics dashboard data |
 
 ### Infrastructure
 
 | Service | Port | URL | Credentials |
 |---------|------|-----|-------------|
-| Keycloak | 8088 | http://localhost:8088 | admin / admin |
-| Kafka UI | 8080 | http://localhost:8080 | - |
-| PostgreSQL | 5433 | localhost:5433 | postgres / postgres |
-| Redis | 6379 | localhost:6379 | - |
+| **Keycloak** | 8088 | http://localhost:8088 | `admin` / `admin` |
+| **Kafka UI** | 8080 | http://localhost:8080 | - |
+| **PostgreSQL** | 5433 | localhost:5433 | `postgres` / `postgres` |
+| **Redis** | 6379 | localhost:6379 | - |
 
-### Frontend
+### Frontend Applications
 
-| Application | Port | URL |
-|-------------|------|-----|
-| Admin Dashboard | 5173 | http://localhost:5173 |
-| Client App | 5174 | http://localhost:5174 |
+| Application | Port | Local URL | Technology |
+|-------------|------|-----------|------------|
+| **Client App** | 3000 | http://localhost:3000 | Next.js 15, Three.js 3D |
+| **Admin Dashboard** | 5173 | http://localhost:5173 | React, Vite, Recharts |
 
-## API Documentation
+---
 
-### API Gateway Routes
+## API Gateway Routes Summary
 
-All requests go through the API Gateway at `http://localhost:8090`
+All client requests route through the API Gateway at `http://localhost:8090`:
 
-#### Public Endpoints (No authentication required)
-
+### Public Endpoints
 ```http
 POST   /api/auth/login
 POST   /api/auth/register
 GET    /api/pets
 GET    /api/pets/{id}
+GET    /api/products
+GET    /api/products/{id}
 ```
 
-#### Protected Endpoints (JWT token required)
-
+### Protected Endpoints (Requires Bearer JWT)
 ```http
 # User Management
 GET    /api/users/profile
 PUT    /api/users/profile
 GET    /api/users/{id}
 
-# Pet Management
+# Pet & Product Management
 POST   /api/pets
 PUT    /api/pets/{id}
 DELETE /api/pets/{id}
@@ -285,13 +285,13 @@ DELETE /api/pets/{id}
 GET    /api/orders
 POST   /api/orders
 GET    /api/orders/{id}
-PUT    /api/orders/{id}/status
+PUT    /api/orders/{id}/cancel
 
 # Payment
-POST   /api/payments
-GET    /api/payments/{id}
+POST   /api/payments/create
+GET    /api/payments/callback/vnpay
 
-# Statistics (Admin only)
+# Statistics (Admin Role Only)
 GET    /api/statistics/dashboard
 GET    /api/statistics/revenue
 GET    /api/statistics/orders

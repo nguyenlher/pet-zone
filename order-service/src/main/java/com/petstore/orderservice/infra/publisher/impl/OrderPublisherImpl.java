@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.petstore.orderservice.domain.model.Order;
 import com.petstore.orderservice.domain.publisher.OrderPublisher;
-import com.petstore.orderservice.infra.publisher.message.OrderCanceledMessage;
+import com.petstore.orderservice.infra.publisher.message.OrderCancelledMessage;
 import com.petstore.orderservice.infra.publisher.message.OrderConfirmedMessage;
 import com.petstore.orderservice.infra.publisher.message.OrderCreatedMessage;
 import com.petstore.orderservice.infra.publisher.message.OrderItemMessage;
@@ -29,8 +29,8 @@ public class OrderPublisherImpl implements OrderPublisher {
     @Value("${app.kafka.topics.order.confirmed}")
     private String orderConfirmedTopic;
 
-    @Value("${app.kafka.topics.order.canceled}")
-    private String orderCanceledTopic;
+    @Value("${app.kafka.topics.order.cancelled:order.cancelled}")
+    private String orderCancelledTopic;
 
     @Override
     public void publishOrderCreated(Order order) {
@@ -70,16 +70,26 @@ public class OrderPublisherImpl implements OrderPublisher {
     }
 
     @Override
-    public void publishOrderCanceled(Order order, String reason) {
-        OrderCanceledMessage message = OrderCanceledMessage.builder()
+    public void publishOrderCancelled(Order order, String reason) {
+        OrderCancelledMessage message = OrderCancelledMessage.builder()
                 .orderId(order.getId())
                 .userId(order.getUserId())
                 .reason(reason)
                 .status(order.getStatus().name())
-                .canceledAt(order.getUpdatedAt())
+                .cancelledAt(order.getUpdatedAt())
+                .items(order.getItems().stream()
+                        .map(item -> OrderItemMessage.builder()
+                                .itemType(item.getItemType())
+                                .itemId(item.getItemId())
+                                .itemName(item.getItemName())
+                                .quantity(item.getQuantity())
+                                .unitPrice(item.getUnitPrice())
+                                .subtotalAmount(item.getSubtotalAmount())
+                                .build())
+                        .collect(Collectors.toList()))
                 .build();
 
-        kafkaTemplate.send(orderCanceledTopic, order.getId().toString(), message);
-        log.info("Published OrderCanceledMessage for order: {}", order.getId());
+        kafkaTemplate.send(orderCancelledTopic, order.getId().toString(), message);
+        log.info("Published OrderCancelledMessage for order: {} with {} items", order.getId(), order.getItems().size());
     }
 }

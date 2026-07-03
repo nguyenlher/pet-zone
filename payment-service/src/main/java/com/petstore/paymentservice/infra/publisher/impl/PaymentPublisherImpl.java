@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.petstore.paymentservice.domain.model.Payment;
 import com.petstore.paymentservice.domain.publisher.PaymentPublisher;
-import com.petstore.paymentservice.infra.publisher.message.payment.PaymentCanceledMessage;
+import com.petstore.paymentservice.infra.publisher.message.payment.PaymentCancelledMessage;
 import com.petstore.paymentservice.infra.publisher.message.payment.PaymentFailedMessage;
 import com.petstore.paymentservice.infra.publisher.message.payment.PaymentSucceededMessage;
 
@@ -24,8 +24,8 @@ public class PaymentPublisherImpl implements PaymentPublisher {
     @Value("${app.kafka.topics.payment.failed}")
     private String paymentFailedTopic;
 
-    @Value("${app.kafka.topics.payment.canceled}")
-    private String paymentCanceledTopic;
+    @Value("${app.kafka.topics.payment.cancelled:${app.kafka.topics.payment.canceled:payment.cancelled}}")
+    private String paymentCancelledTopic;
 
     @Override
     public void publishPaymentSucceeded(Payment payment) {
@@ -33,6 +33,7 @@ public class PaymentPublisherImpl implements PaymentPublisher {
                 .orderId(payment.getOrderId())
                 .paymentId(payment.getId())
                 .transactionId(payment.getTransactionId())
+                .userId(payment.getUserId())
                 .build();
         kafkaTemplate.send(paymentSucceededTopic, payment.getOrderId().toString(), message);
     }
@@ -48,11 +49,11 @@ public class PaymentPublisherImpl implements PaymentPublisher {
     }
 
     @Override
-    public void publishPaymentCanceled(Payment payment) {
-        var message = PaymentCanceledMessage.builder()
+    public void publishPaymentCancelled(Payment payment) {
+        var message = PaymentCancelledMessage.builder()
                 .orderId(payment.getOrderId())
                 .paymentId(payment.getId())
                 .build();
-        kafkaTemplate.send(paymentCanceledTopic, payment.getOrderId().toString(), message);
+        kafkaTemplate.send(paymentCancelledTopic, payment.getOrderId().toString(), message);
     }
 }

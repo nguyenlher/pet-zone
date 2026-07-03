@@ -53,7 +53,7 @@ public class PaymentTimeoutScheduler {
                     orderRepository.save(order);
                     
                     // Publish cancellation event for compensating transactions
-                    orderPublisher.publishOrderCanceled(
+                    orderPublisher.publishOrderCancelled(
                             order, 
                             "Payment timeout - order cancelled after " + PAYMENT_TIMEOUT_MINUTES + " minutes"
                     );

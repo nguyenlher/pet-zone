@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import com.petstore.orderservice.api.dto.UserDTO;
 import com.petstore.orderservice.api.dto.request.CancelOrderRequest;
@@ -55,7 +56,7 @@ public class OrderController {
 
     @PostMapping(OrderApiPath.ORDER_CREATE)
     public ResponseEntity<CreateOrderResponse> createOrder(
-            @RequestBody CreateOrderRequest request,
+            @Valid @RequestBody CreateOrderRequest request,
             HttpServletRequest httpRequest) {
         List<OrderItem> items = request.getItems().stream()
                 .map(item -> OrderItem.builder()
@@ -115,14 +116,14 @@ public class OrderController {
     }
 
     @PostMapping(OrderApiPath.ORDER_CANCEL)
-    public ResponseEntity<CancelOrderResponse> cancelOrder(@RequestBody CancelOrderRequest request) {
+    public ResponseEntity<CancelOrderResponse> cancelOrder(@Valid @RequestBody CancelOrderRequest request) {
         Order order = orderService.cancelOrder(request.getOrderId(), request.getReason());
 
         CancelOrderResponse response = CancelOrderResponse.builder()
                 .orderId(order.getId())
                 .orderStatus(order.getStatus())
                 .updatedAt(order.getUpdatedAt())
-                .message("Order canceled successfully")
+                .message("Order cancelled successfully")
                 .build();
 
         return ResponseEntity.ok(response);

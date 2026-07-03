@@ -26,12 +26,6 @@ spring:
       auto-offset-reset: earliest
       enable-auto-commit: false
 
-app:
-  kafka:
-    topics:
-      payment:
-        succeeded: ${KAFKA_TOPIC_PAYMENT_SUCCEEDED:payment.succeeded}
-
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -44,6 +38,12 @@ app:
           starttls:
             enable: true
 
+app:
+  kafka:
+    topics:
+      payment:
+        succeeded: ${KAFKA_TOPIC_PAYMENT_SUCCEEDED:payment.succeeded}
+
 server:
   port: ${SERVER_PORT:8086}
 
@@ -53,4 +53,8 @@ rest:
       baseUrl: ${USER_SERVICE_URL:http://localhost:8081}
 
 api-key:
-  value: ${API_KEY}
+  value: ${API_KEY:test-api-key}
+
+jwt:
+  secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}
+  expiration: ${JWT_EXPIRATION:86400000}

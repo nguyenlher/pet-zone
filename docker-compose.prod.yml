@@ -1,0 +1,284 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      KAFKA_HEAP_OPTS: "-Xms64m -Xmx128m"
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_HEAP_OPTS: "-Xms128m -Xmx256m"
+    depends_on:
+      - zookeeper
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db?TimeZone=Asia/Ho_Chi_Minh
+      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KC_HOSTNAME: https://petzone-auth.nguyenlh.tech
+      KC_PROXY_HEADERS: xforwarded
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      JAVA_OPTS_KC_BUILD: "-Xms128m -Xmx256m"
+      JAVA_OPTS: "-Xms128m -Xmx256m"
+    command: start-dev
+    ports:
+      - "8088:8080"
+    depends_on:
+      - postgres
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    environment:
+      SERVER_PORT: 8081
+      JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
+      DB_URL: jdbc:postgresql://postgres:5432/user_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      API_KEY: ${API_KEY}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: super-petmark-3d
+      KEYCLOAK_CLIENT_ID: user-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - keycloak
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  pet-service:
+    build:
+      context: ./pet-service
+      dockerfile: Dockerfile
+    container_name: pet-service
+    environment:
+      SERVER_PORT: 8082
+      JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
+      DB_URL: jdbc:postgresql://postgres:5432/pet_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: super-petmark-3d
+      KEYCLOAK_CLIENT_ID: pet-service
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+      - keycloak
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    environment:
+      SERVER_PORT: 8084
+      JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
+      DB_URL: jdbc:postgresql://postgres:5432/order_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      USER_SERVICE_URL: http://user-service:8081
+      PET_SERVICE_URL: http://pet-service:8082
+      PAYMENT_SERVICE_URL: http://payment-service:8085
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    container_name: payment-service
+    environment:
+      SERVER_PORT: 8085
+      JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
+      DB_URL: jdbc:postgresql://postgres:5432/payment_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
+      ORDER_SERVICE_URL: http://order-service:8084
+      VNPAY_RETURN_URL: https://petzone.nguyenlh.tech/payment/callback
+      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET}
+      VNPAY_PAY_URL: ${VNPAY_PAY_URL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+    depends_on:
+      - postgres
+      - kafka
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: notification-service
+    environment:
+      SERVER_PORT: 8086
+      JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
+      DB_URL: jdbc:postgresql://postgres:5432/notification_db?TimeZone=Asia/Ho_Chi_Minh
+      DB_USERNAME: ${POSTGRES_USER:-postgres}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
+      USER_SERVICE_URL: http://user-service:8081
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  statistics-service:
+    build:
+      context: ./statistics-service
+      dockerfile: Dockerfile
+    container_name: statistics-service
+    environment:
+      SERVER_PORT: 8087
+      JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
+      ORDER_SERVICE_URL: http://order-service:8084
+      PAYMENT_SERVICE_URL: http://payment-service:8085
+      PET_SERVICE_URL: http://pet-service:8082
+      USER_SERVICE_URL: http://user-service:8081
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET}
+      API_KEY: ${API_KEY}
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+    depends_on:
+      - redis
+      - keycloak
+      - order-service
+      - payment-service
+      - pet-service
+      - user-service
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      SERVER_PORT: 8090
+      JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+    depends_on:
+      - redis
+      - user-service
+      - pet-service
+      - order-service
+      - payment-service
+      - notification-service
+      - statistics-service
+    networks:
+      - petzone-network
+    restart: unless-stopped
+
+networks:
+  petzone-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

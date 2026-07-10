@@ -2,9 +2,9 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 
 const getKeycloakIssuer = () => {
-  const envIssuer = process.env.KEYCLOAK_ISSUER;
+  const envIssuer = process.env.KEYCLOAK_ISSUER || process.env.NEXT_PUBLIC_KEYCLOAK_ISSUER;
   if (envIssuer && !envIssuer.includes(':8080')) {
-    return envIssuer;
+    return envIssuer.replace(/\/+$/, '');
   }
   return 'http://localhost:8088/realms/super-petmark-3d';
 };

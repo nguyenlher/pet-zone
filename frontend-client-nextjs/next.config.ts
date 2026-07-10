@@ -18,7 +18,8 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const apiGateway = process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8090";
+    const rawGateway = process.env.NEXT_PUBLIC_API_GATEWAY_URL || "http://localhost:8090";
+    const apiGateway = rawGateway.replace(/\/+$/, "").replace(/\/api$/, "");
     return [
       {
         source: "/api/backend/:path*",

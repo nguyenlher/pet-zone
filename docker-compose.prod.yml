@@ -63,7 +63,7 @@ services:
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db?TimeZone=Asia/Ho_Chi_Minh
       KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      KC_HOSTNAME: https://petzone-auth.nguyenlh.tech
+      KC_HOSTNAME: ${KC_HOSTNAME}
       KC_PROXY_HEADERS: xforwarded
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
@@ -95,7 +95,7 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
       API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
-      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
       KEYCLOAK_SERVER_URL: http://keycloak:8080
       KEYCLOAK_REALM: super-petmark-3d
       KEYCLOAK_CLIENT_ID: user-service
@@ -125,7 +125,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
-      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
       KEYCLOAK_SERVER_URL: http://keycloak:8080
       KEYCLOAK_REALM: super-petmark-3d
       KEYCLOAK_CLIENT_ID: pet-service
@@ -158,7 +158,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
-      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
       USER_SERVICE_URL: http://user-service:8081
       PET_SERVICE_URL: http://pet-service:8082
       PAYMENT_SERVICE_URL: http://payment-service:8085
@@ -185,7 +185,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       ORDER_SERVICE_URL: http://order-service:8084
-      VNPAY_RETURN_URL: https://petzone.nguyenlh.tech/payment/callback
+      VNPAY_RETURN_URL: ${VNPAY_RETURN_URL}
       VNPAY_TMN_CODE: ${VNPAY_TMN_CODE}
       VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET}
       VNPAY_PAY_URL: ${VNPAY_PAY_URL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
@@ -241,7 +241,7 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       KEYCLOAK_JWK_URI: http://keycloak:8080/realms/super-petmark-3d/protocol/openid-connect/certs
-      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
     depends_on:
       - redis
       - keycloak
@@ -265,7 +265,7 @@ services:
       JAVA_TOOL_OPTIONS: "-Xms100m -Xmx200m -XX:+UseG1GC"
       REDIS_HOST: redis
       JWT_SECRET: ${JWT_SECRET}
-      KEYCLOAK_ISSUER_URI: https://petzone-auth.nguyenlh.tech/realms/super-petmark-3d
+      KEYCLOAK_ISSUER_URI: ${KEYCLOAK_ISSUER_URI}
     depends_on:
       - redis
       - user-service

@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { authService } from '@/services/authService';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -75,8 +76,14 @@ export default function RegisterPage() {
 
     setSubmitting(true);
 
-    // Simulate account registration
-    setTimeout(() => {
+    try {
+      await authService.register({
+        email: email.trim(),
+        password,
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+      });
+
       setSubmitting(false);
       setSuccess(true);
       confetti({
@@ -90,7 +97,20 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push('/auth/signin');
       }, 2000);
-    }, 900);
+    } catch (err: unknown) {
+      setSubmitting(false);
+      const message = err instanceof Error ? err.message : '';
+      if (
+        message.includes('already in use') ||
+        message.includes('already exists') ||
+        message.includes('Duplicate') ||
+        message.includes('409')
+      ) {
+        setErrorMsg('Email này đã được đăng ký. Vui lòng đăng nhập hoặc dùng email khác.');
+      } else {
+        setErrorMsg('Đăng ký không thành công. Vui lòng thử lại sau.');
+      }
+    }
   };
 
   return (

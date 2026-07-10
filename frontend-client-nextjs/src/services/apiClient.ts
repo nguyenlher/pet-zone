@@ -7,7 +7,8 @@ export const getApiBaseUrl = (): string => {
     return '/api/backend';
   }
   // On server: directly call API Gateway container / localhost port 8090
-  return (process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:8090') + '/api';
+  const gateway = (process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:8090').replace(/\/+$/, '');
+  return gateway.endsWith('/api') ? gateway : `${gateway}/api`;
 };
 
 interface RequestOptions extends RequestInit {

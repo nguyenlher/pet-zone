@@ -1,155 +1,158 @@
 // src/pages/LoginPage.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PawPrint, Mail, Lock, AlertCircle } from 'lucide-react';
 import { authService } from '../services/authService';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
     try {
-      const response = await authService.login(email, password);
-      
-      // Store tokens
+      const response = await authService.login(email.trim(), password);
+
       if (response.access_token) {
         localStorage.setItem('accessToken', response.access_token);
         localStorage.setItem('refreshToken', response.refresh_token);
-        
+
         // Check if user has ADMIN role
         const { isAdmin, getUserInfoFromToken } = await import('../utils/jwtUtils');
-        
+
         if (!isAdmin(response.access_token)) {
-          // Clear tokens if not admin
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-          
+
           const userInfo = getUserInfoFromToken(response.access_token);
           const roles = userInfo?.roles?.join(', ') || 'none';
-          
-          setError(`Access denied. Admin role required. Your roles: ${roles}`);
+
+          setError(`Truy cập bị từ chối. Yêu cầu quyền Quản trị viên (Admin). Vai trò tài khoản của bạn: ${roles}`);
           setIsLoading(false);
           return;
         }
-        
-        // Redirect to dashboard
+
         navigate('/', { replace: true });
       } else {
-        setError('Invalid response from server');
+        setError('Phản hồi không hợp lệ từ máy chủ.');
       }
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.response?.data?.message || 'Invalid email or password');
+      const serverMsg = err.response?.data?.message;
+      if (serverMsg) {
+        setError(serverMsg);
+      } else if (err.response?.status === 401 || err.response?.status === 400) {
+        setError('Tên đăng nhập hoặc mật khẩu không chính xác.');
+      } else {
+        setError('Không thể kết nối đến máy chủ xác thực. Vui lòng thử lại sau.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo & Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500 mb-4">
-            <PawPrint size={32} className="text-white" />
+    <div className="min-h-screen bg-white flex flex-col justify-center items-center px-4 py-12">
+      <div className="w-full max-w-[540px]">
+        {/* Brand Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
+            <span className="text-xs uppercase font-extrabold tracking-[0.25em] text-neutral-400">
+              Quản trị hệ thống
+            </span>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            PetStore <span className="text-emerald-500">Admin</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+            Pet Zone
           </h1>
-          <p className="text-gray-600">Sign in to manage your store</p>
         </div>
 
-        {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Error Message */}
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-                <AlertCircle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-red-800">Login Failed</p>
-                  <p className="text-sm text-red-600 mt-1">{error}</p>
-                </div>
-              </div>
-            )}
+        {/* Section Header (Styled like the title in image) */}
+        <div className="border-b border-gray-200 mb-8 pb-4 relative">
+          <h2 className="text-xs sm:text-sm font-bold tracking-widest uppercase text-black">
+            ĐĂNG NHẬP
+          </h2>
+          <span className="absolute bottom-0 left-0 w-24 h-[2.5px] bg-black" />
+        </div>
 
-            {/* Email Field */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@petstore.com"
-                  required
-                  className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                />
-              </div>
+        {/* Form Container */}
+        <form onSubmit={handleLogin} className="space-y-6">
+          {/* Email Field */}
+          <div>
+            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              ĐỊA CHỈ EMAIL
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@petzone.com"
+              className="w-full px-4 py-3.5 border border-gray-300 rounded-none text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+            />
+          </div>
+
+          {/* Password Field */}
+          <div>
+            <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+              MẬT KHẨU
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••••••"
+              className="w-full px-4 py-3.5 border border-gray-300 rounded-none text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+            />
+          </div>
+
+          {/* Error Message Box (Matches screenshot red outline box) */}
+          {error && (
+            <div className="border border-red-500 bg-white p-4 text-xs sm:text-sm text-red-600 leading-relaxed rounded-none">
+              {error}
             </div>
+          )}
 
-            {/* Password Field */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  className="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-                />
-              </div>
-            </div>
+          {/* Remember Me & Forgot Password */}
+          <div className="flex items-center justify-between text-xs sm:text-sm pt-1">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none text-gray-700">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded-none accent-black cursor-pointer text-black"
+              />
+              <span>Ghi nhớ đăng nhập</span>
+            </label>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 rounded border-gray-300 text-emerald-500 focus:ring-emerald-500"
-                />
-                <span className="text-sm text-gray-600">Remember me</span>
-              </label>
-              <button
-                type="button"
-                className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            {/* Submit Button */}
             <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full py-3 bg-emerald-500 text-white font-semibold rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30"
+              type="button"
+              onClick={() => setError('Vui lòng liên hệ Quản trị viên hệ thống để cấp lại mật khẩu.')}
+              className="text-gray-500 hover:text-black font-medium transition-colors cursor-pointer"
             >
-              {isLoading ? 'Signing in...' : 'Sign In'}
+              Quên mật khẩu?
             </button>
-          </form>
-        </div>
+          </div>
 
-        {/* Footer */}
-        <p className="text-center text-sm text-gray-500 mt-6">
-          © 2024 PetStore. All rights reserved.
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-4 text-xs sm:text-sm tracking-widest uppercase transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-4"
+          >
+            {isLoading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP'}
+          </button>
+        </form>
+
+        {/* Footer info */}
+        <p className="text-center text-xs text-gray-400 mt-10">
+          © {new Date().getFullYear()} Pet Zone Admin. Giao thức xác thực an toàn chuẩn OpenID Connect.
         </p>
       </div>
     </div>

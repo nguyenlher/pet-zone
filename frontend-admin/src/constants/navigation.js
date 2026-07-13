@@ -1,6 +1,6 @@
-// src/data/mockData.js
+// src/constants/navigation.js
 
-// Navigation items for sidebar
+// Navigation items for admin sidebar
 export const navItems = [
   {
     id: 'dashboard',
@@ -44,46 +44,12 @@ export const navItems = [
     path: '/customers',
     hasDropdown: false,
   },
-  {
-    id: 'reports',
-    label: 'Reports',
-    icon: 'BarChart2',
-    path: '/reports',
-    hasDropdown: false,
-  },
+
   {
     id: 'generate-3d',
     label: '3D Generation',
     icon: 'Box',
     path: '/generate-3d',
     hasDropdown: false,
-  },
-];
-
-// Current offers data
-export const currentOffers = [
-  {
-    id: 1,
-    name: 'Summer Sale - 20% Off',
-    expiry: 'Expires in 5 days',
-    progress: 75,
-  },
-  {
-    id: 2,
-    name: 'New Customer Discount',
-    expiry: 'Expires in 12 days',
-    progress: 45,
-  },
-  {
-    id: 3,
-    name: 'Pet Food Bundle Deal',
-    expiry: 'Expires in 3 days',
-    progress: 90,
-  },
-  {
-    id: 4,
-    name: 'Free Shipping Weekend',
-    expiry: 'Expires in 2 days',
-    progress: 60,
   },
 ];

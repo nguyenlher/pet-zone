@@ -42,7 +42,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" data-scroll-behavior="smooth" className={`${plusJakarta.variable} ${outfit.variable}`}>
-      <body className="min-h-screen bg-[#FAFAF8] text-[#121316] font-sans antialiased selection:bg-[#D4F442] selection:text-black">
+      <body className="min-h-screen bg-white text-black font-sans antialiased selection:bg-black selection:text-white">
         <ApiStatusProvider>
           <FallbackBanner />
           <AuthProvider>

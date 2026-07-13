@@ -2,15 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  KeyRound,
-  ArrowLeft,
-  Mail,
-  CheckCircle2,
-  ShieldCheck,
-  AlertCircle,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/authService';
 
 export default function ForgotPasswordPage() {
@@ -45,137 +37,114 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] text-[#121316] flex flex-col justify-between">
+    <div className="min-h-screen bg-white text-[#121316] flex flex-col justify-between">
       {/* Top Bar */}
-      <header className="p-6 max-w-7xl mx-auto w-full flex items-center justify-between">
+      <header className="p-6 max-w-5xl mx-auto w-full flex items-center justify-between">
         <Link
           href="/auth/signin"
-          className="inline-flex items-center gap-2 text-xs font-bold text-stone-600 hover:text-black transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-neutral-500 hover:text-black transition-colors uppercase tracking-wider"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
           <span>Quay lại Đăng nhập</span>
-        </Link>
-
-        <Link href="/" className="flex items-center gap-2 select-none">
-          <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white">
-            <svg
-              className="w-4 h-4 text-[#D4F442] fill-current"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 11c-2.21 0-4 1.79-4 4 0 1.94 1.38 3.56 3.23 3.93.5.1 1.04.1 1.54 0 1.85-.37 3.23-1.99 3.23-3.93 0-2.21-1.79-4-4-4z" />
-              <circle cx="7" cy="8.5" r="2" />
-              <circle cx="17" cy="8.5" r="2" />
-              <circle cx="10" cy="5.5" r="1.8" />
-              <circle cx="14" cy="5.5" r="1.8" />
-            </svg>
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-stone-900">
-            Pet Zone<span className="text-[#FF5E3A]">.</span>
-          </span>
         </Link>
       </header>
 
       {/* Main Container */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-md bg-white rounded-3xl border border-stone-200/90 shadow-xl p-8 sm:p-10 space-y-7"
-        >
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 rounded-2xl bg-[#F9ECE7] text-[#D9654B] flex items-center justify-center mx-auto mb-2 shadow-sm">
-              <KeyRound className="w-7 h-7" />
+        <div className="w-full max-w-[540px]">
+          {/* Brand Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center gap-2 mb-2">
+              <span className="text-xs uppercase font-extrabold tracking-[0.25em] text-neutral-400">
+                Khôi phục tài khoản
+              </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-stone-900">
-              Khôi Phục Mật Khẩu
+            <h1 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+              Pet Zone
             </h1>
-            <p className="text-xs sm:text-sm text-stone-500 max-w-xs mx-auto">
-              Đừng lo lắng! Nhập email đã đăng ký tài khoản Pet Zone để nhận hướng dẫn đặt lại mật khẩu an toàn.
-            </p>
           </div>
 
-          {errorMsg && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-              <span>{errorMsg}</span>
-            </div>
-          )}
+          {/* Section Header */}
+          <div className="border-b border-gray-200 mb-8 pb-4 relative">
+            <h2 className="text-xs sm:text-sm font-bold tracking-widest uppercase text-black">
+              QUÊN MẬT KHẨU
+            </h2>
+            <span className="absolute bottom-0 left-0 w-28 h-[2.5px] bg-black" />
+          </div>
 
           {!submitted ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-stone-700 block">
-                  Địa chỉ Email của bạn
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                Nhập địa chỉ email đã đăng ký của bạn để nhận liên kết khôi phục mật khẩu.
+              </p>
+
+              {/* Email Field */}
+              <div>
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+                  ĐỊA CHỈ EMAIL
                 </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="ban@example.com"
-                    className="w-full pl-11 pr-4 py-3 rounded-2xl bg-stone-50 border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-black placeholder:text-stone-400"
-                  />
-                </div>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="info@drakele.com"
+                  className="w-full px-4 py-3.5 border border-gray-300 rounded-none text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+                />
               </div>
 
+              {/* Error Message Box */}
+              {errorMsg && (
+                <div className="border border-red-500 bg-white p-4 text-xs sm:text-sm text-red-600 leading-relaxed rounded-none">
+                  {errorMsg}
+                </div>
+              )}
+
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3.5 px-6 rounded-2xl bg-black hover:bg-stone-800 text-white font-extrabold text-sm transition-transform active:scale-[0.98] shadow-xl cursor-pointer disabled:opacity-50"
+                className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-4 text-xs sm:text-sm tracking-widest uppercase transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-4"
               >
-                {loading ? 'Đang xử lý...' : 'Gửi Liên Kết Đặt Lại Mật Khẩu'}
+                {loading ? 'ĐANG GỬI YÊU CẦU...' : 'GỬI LIÊN KẾT ĐẶT LẠI MẬT KHẨU'}
               </button>
             </form>
           ) : (
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="space-y-5 text-center"
-            >
-              <div className="p-6 rounded-2xl bg-[#EBF3ED] border border-emerald-200 space-y-2">
-                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto shadow-sm">
-                  <CheckCircle2 className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-emerald-950 text-sm">
-                  Kiểm tra hộp thư của bạn
-                </h3>
-                <p className="text-xs text-emerald-800 leading-relaxed">
-                  Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến{' '}
-                  <strong className="text-emerald-950">{email}</strong>. Vui lòng kiểm tra cả mục Thư rác (Spam) nếu không thấy sau 2 phút.
+            <div className="space-y-6">
+              <div className="border border-emerald-500 bg-emerald-50/50 p-5 text-xs sm:text-sm text-emerald-800 leading-relaxed rounded-none">
+                <p className="font-bold mb-1">Kiểm tra hộp thư của bạn</p>
+                <p>
+                  Chúng tôi đã gửi hướng dẫn đặt lại mật khẩu đến <strong>{email}</strong>. Vui lòng kiểm tra cả mục Thư rác (Spam) nếu không thấy thư.
                 </p>
               </div>
 
-              <button
-                onClick={() => setSubmitted(false)}
-                className="text-xs text-stone-500 hover:text-black font-semibold underline cursor-pointer"
-              >
-                Gửi lại email khác
-              </button>
-            </motion.div>
+              <div className="flex items-center justify-between text-xs sm:text-sm pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSubmitted(false)}
+                  className="text-gray-600 hover:text-black font-semibold underline cursor-pointer"
+                >
+                  Gửi lại với email khác
+                </button>
+
+                <Link
+                  href="/auth/signin"
+                  className="text-black font-bold uppercase tracking-wider hover:underline"
+                >
+                  Đăng nhập ngay
+                </Link>
+              </div>
+            </div>
           )}
 
-          {/* Back to sign in */}
-          <div className="pt-2 text-center text-xs text-stone-500 border-t border-stone-100">
-            Nhớ mật khẩu rồi?{' '}
-            <Link
-              href="/auth/signin"
-              className="font-bold text-stone-900 hover:underline"
-            >
-              Đăng nhập ngay
-            </Link>
-          </div>
-        </motion.div>
+          {/* Footer note */}
+          <p className="text-center text-xs text-gray-400 mt-10">
+            © {new Date().getFullYear()} Pet Zone. Giao thức xác thực an toàn chuẩn OpenID Connect.
+          </p>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="p-6 text-center text-xs text-stone-400">
-        © {new Date().getFullYear()} Pet Zone. Bảo mật & An toàn.
-      </footer>
+      <div className="p-4" />
     </div>
   );
 }

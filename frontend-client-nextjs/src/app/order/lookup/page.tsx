@@ -11,33 +11,29 @@ export const metadata: Metadata = {
 
 export default function OrderLookupPage() {
   return (
-    <main className="min-h-screen bg-[#FAFAF8] text-stone-900 pt-28 md:pt-36 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Ambient background glows */}
-      <div className="absolute top-20 left-1/3 w-96 h-96 bg-amber-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-80 right-1/4 w-80 h-80 bg-[#D4F442]/10 rounded-full blur-3xl pointer-events-none -z-10" />
-
+    <main className="min-h-screen bg-white text-black pt-24 md:pt-28 pb-24 px-4 sm:px-6 lg:px-8 relative">
       <div className="max-w-xl mx-auto">
         {/* Breadcrumb */}
-        <div className="flex items-center justify-center gap-2 text-xs font-semibold text-stone-400 mb-6">
-          <Link href="/" className="hover:text-stone-900 transition-colors">
+        <div className="flex items-center justify-center gap-2 text-xs text-neutral-400 mb-6 uppercase tracking-wider">
+          <Link href="/" className="hover:text-black transition-colors">
             Trang chủ
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
-          <span className="text-stone-900">Tra cứu đơn hàng</span>
+          <span className="text-black font-bold">Tra cứu đơn hàng</span>
         </div>
 
         {/* Hero title */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">
-            TRA CỨU ĐƠN HÀNG
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-black uppercase tracking-tight mb-2">
+            Tra Cứu Đơn Hàng
           </h1>
-          <p className="text-stone-500 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
+          <p className="text-neutral-500 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
             Dành cho khách hàng chưa đăng nhập. Nhập mã đơn và số điện thoại nhận hàng để kiểm tra tiến trình chuẩn bị và vận chuyển.
           </p>
         </div>
 
         {/* Form Container Card */}
-        <div className="bg-white rounded-3xl border border-stone-200/90 shadow-xl p-7 sm:p-9 relative">
+        <div className="bg-white rounded-none border border-neutral-200 p-6 sm:p-8 relative">
           <OrderLookupForm />
         </div>
 
@@ -46,36 +42,36 @@ export default function OrderLookupPage() {
           {/* Account link */}
           <Link
             href="/account/orders"
-            className="p-4 rounded-2xl bg-white/70 border border-stone-200/70 hover:bg-white hover:border-stone-300 transition-all shadow-sm flex flex-col items-center gap-2 group cursor-pointer"
+            className="p-4 rounded-none bg-white border border-neutral-200 hover:border-black transition-colors flex flex-col items-center gap-2 group cursor-pointer"
           >
-            <div className="w-9 h-9 rounded-xl bg-stone-100 group-hover:bg-stone-900 group-hover:text-white transition-colors flex items-center justify-center text-stone-700">
+            <div className="w-8 h-8 rounded-none border border-neutral-200 bg-neutral-50 group-hover:bg-black group-hover:text-white transition-colors flex items-center justify-center text-black">
               <User className="w-4 h-4" />
             </div>
             <div>
-              <span className="block text-xs font-bold text-stone-900">Đã có tài khoản?</span>
-              <span className="text-[11px] text-stone-400">Xem toàn bộ lịch sử đơn</span>
+              <span className="block text-xs font-bold uppercase tracking-wider text-black">Đã có tài khoản?</span>
+              <span className="text-[11px] text-neutral-400">Xem lịch sử đơn</span>
             </div>
           </Link>
 
           {/* Hotline */}
-          <div className="p-4 rounded-2xl bg-white/70 border border-stone-200/70 shadow-sm flex flex-col items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700">
+          <div className="p-4 rounded-none bg-white border border-neutral-200 flex flex-col items-center gap-2">
+            <div className="w-8 h-8 rounded-none border border-neutral-200 bg-neutral-50 flex items-center justify-center text-black">
               <Headphones className="w-4 h-4" />
             </div>
             <div>
-              <span className="block text-xs font-bold text-stone-900">Hotline hỗ trợ</span>
-              <span className="text-[11px] text-stone-600 font-semibold">1900 6868 (8h-21h)</span>
+              <span className="block text-xs font-bold uppercase tracking-wider text-black">Hotline hỗ trợ</span>
+              <span className="text-[11px] text-neutral-600 font-semibold font-mono">1900 6868</span>
             </div>
           </div>
 
           {/* Policy */}
-          <div className="p-4 rounded-2xl bg-white/70 border border-stone-200/70 shadow-sm flex flex-col items-center gap-2">
-            <div className="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center text-stone-700">
+          <div className="p-4 rounded-none bg-white border border-neutral-200 flex flex-col items-center gap-2">
+            <div className="w-8 h-8 rounded-none border border-neutral-200 bg-neutral-50 flex items-center justify-center text-black">
               <RotateCcw className="w-4 h-4" />
             </div>
             <div>
-              <span className="block text-xs font-bold text-stone-900">Chính sách đổi trả</span>
-              <span className="text-[11px] text-stone-400">Miễn phí 7 ngày</span>
+              <span className="block text-xs font-bold uppercase tracking-wider text-black">Chính sách</span>
+              <span className="text-[11px] text-neutral-400">Đổi trả 7 ngày</span>
             </div>
           </div>
         </div>

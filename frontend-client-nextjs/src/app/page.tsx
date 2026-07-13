@@ -12,7 +12,7 @@ import { Footer } from '@/components/sections/Footer';
 
 export default function Home() {
   return (
-    <main className="relative min-h-screen bg-[#FAFAF8] text-[#121316]">
+    <main className="relative min-h-screen bg-white text-black">
       <Navbar />
       <HeroSection />
       <CategoriesSection />

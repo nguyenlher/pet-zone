@@ -4,8 +4,8 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useOrderStats } from '../hooks/useStatistics';
 
-const OUTER_COLORS = ['#10B981', '#F3F4F6'];
-const INNER_COLORS = ['#6366F1', '#F3F4F6'];
+const OUTER_COLORS = ['#000000', '#F5F5F5'];
+const INNER_COLORS = ['#737373', '#F5F5F5'];
 
 export default function SalesTarget() {
   // Get current month data
@@ -20,8 +20,8 @@ export default function SalesTarget() {
   const { outerData, innerData, monthlyProgress, dailyProgress } = useMemo(() => {
     if (!orderStats) {
       return {
-        outerData: [{ name: 'Monthly Progress', value: 0 }, { name: 'Remaining', value: 100 }],
-        innerData: [{ name: 'Daily Progress', value: 0 }, { name: 'Remaining', value: 100 }],
+        outerData: [{ name: 'Mục tiêu tháng', value: 0 }, { name: 'Còn lại', value: 100 }],
+        innerData: [{ name: 'Mục tiêu ngày', value: 0 }, { name: 'Còn lại', value: 100 }],
         monthlyProgress: 0,
         dailyProgress: 0,
       };
@@ -34,38 +34,40 @@ export default function SalesTarget() {
 
     // Daily target: assume 20 orders per day
     const dailyTarget = 20;
-    const dailyAchieved = Math.floor(monthlyAchieved / today.getDate()); // Average per day
+    const dailyAchieved = Math.floor(monthlyAchieved / today.getDate());
     const dailyPct = Math.min(100, Math.round((dailyAchieved / dailyTarget) * 100));
 
     return {
       outerData: [
-        { name: 'Monthly Progress', value: monthlyPct },
-        { name: 'Remaining', value: 100 - monthlyPct },
+        { name: 'Mục tiêu tháng', value: monthlyPct },
+        { name: 'Còn lại', value: 100 - monthlyPct },
       ],
       innerData: [
-        { name: 'Daily Progress', value: dailyPct },
-        { name: 'Remaining', value: 100 - dailyPct },
+        { name: 'Mục tiêu ngày', value: dailyPct },
+        { name: 'Còn lại', value: 100 - dailyPct },
       ],
       monthlyProgress: monthlyPct,
       dailyProgress: dailyPct,
     };
   }, [orderStats, today]);
 
-  const currentMonth = today.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const currentMonth = today.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-center h-96">
-        <div className="text-gray-500">Loading target data...</div>
+      <div className="bg-white rounded-lg border border-neutral-200 p-6 shadow-sm flex items-center justify-center h-96">
+        <div className="text-xs text-neutral-400 font-medium">Đang nạp dữ liệu mục tiêu...</div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-gray-900">Sales Target</h2>
-        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-lg">{currentMonth}</span>
+    <div className="bg-white rounded-lg border border-neutral-200 p-6 shadow-sm flex flex-col gap-5 select-none">
+      <div className="flex items-center justify-between pb-3 border-b border-neutral-100">
+        <h2 className="text-sm font-semibold text-neutral-900">Mục Tiêu Doanh Số</h2>
+        <span className="text-xs font-mono text-neutral-600 border border-neutral-200 bg-neutral-50 px-2.5 py-0.5 rounded">
+          {currentMonth}
+        </span>
       </div>
 
       {/* Donut Chart */}
@@ -106,50 +108,51 @@ export default function SalesTarget() {
             </Pie>
             <Tooltip
               formatter={(value, name) => [`${value}%`, name]}
-              contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 24px rgba(0,0,0,0.12)', fontSize: '12px' }}
+              contentStyle={{ borderRadius: '0px', border: '1px solid #262626', backgroundColor: '#000000', color: '#FFFFFF', fontSize: '11px', fontFamily: 'monospace' }}
             />
           </PieChart>
         </ResponsiveContainer>
 
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <span className="text-2xl font-bold text-gray-900">{monthlyProgress}%</span>
-          <span className="text-xs text-gray-400">Achieved</span>
+          <span className="text-2xl font-extrabold text-black font-mono tracking-tight">{monthlyProgress}%</span>
+          <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider">Đạt được</span>
         </div>
       </div>
 
       {/* Legend */}
-      <div className="flex items-center justify-center gap-4 text-xs">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-          <span className="text-gray-500">Monthly</span>
+      <div className="flex items-center justify-center gap-5 text-xs py-1 border-t border-b border-neutral-100">
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-neutral-900" />
+          <span className="text-xs font-medium text-neutral-800">Tháng</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-indigo-500" />
-          <span className="text-gray-500">Daily</span>
+        <div className="flex items-center gap-2">
+          <div className="w-2.5 h-2.5 rounded-full bg-neutral-400" />
+          <span className="text-xs font-medium text-neutral-500">Ngày</span>
         </div>
       </div>
 
       {/* Targets */}
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between p-3 rounded-md bg-neutral-50 border border-neutral-100">
           <div>
-            <p className="text-xs text-gray-400 font-medium">Daily Target</p>
-            <p className="text-lg font-bold text-gray-900">{orderStats?.completedOrders ? Math.floor(orderStats.completedOrders / today.getDate()) : 0}</p>
+            <p className="text-xs font-medium text-neutral-500">Mục tiêu ngày</p>
+            <p className="text-sm font-bold text-neutral-900 font-mono tracking-tight mt-0.5">{orderStats?.completedOrders ? Math.floor(orderStats.completedOrders / today.getDate()) : 0} đơn</p>
           </div>
-          <div className={`flex items-center gap-1 text-xs font-semibold ${dailyProgress >= 50 ? 'text-emerald-500' : 'text-red-500'}`}>
-            {dailyProgress >= 50 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            <span>{dailyProgress >= 50 ? '+' : '-'}{Math.abs(dailyProgress - 50)}%</span>
+          <div className={`flex items-center gap-1 text-xs font-mono font-bold ${dailyProgress >= 50 ? 'text-emerald-700' : 'text-neutral-500'}`}>
+            <TrendingUp size={13} />
+            <span>{dailyProgress}%</span>
           </div>
         </div>
-        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+
+        <div className="flex items-center justify-between p-3 rounded-md bg-neutral-50 border border-neutral-100">
           <div>
-            <p className="text-xs text-gray-400 font-medium">Monthly Target</p>
-            <p className="text-lg font-bold text-gray-900">{orderStats?.completedOrders || 0}</p>
+            <p className="text-xs font-medium text-neutral-500">Mục tiêu tháng</p>
+            <p className="text-sm font-bold text-neutral-900 font-mono tracking-tight mt-0.5">{orderStats?.completedOrders || 0} / 500 đơn</p>
           </div>
-          <div className={`flex items-center gap-1 text-xs font-semibold ${monthlyProgress >= 50 ? 'text-emerald-500' : 'text-red-500'}`}>
-            {monthlyProgress >= 50 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            <span>{monthlyProgress >= 50 ? '+' : '-'}{Math.abs(monthlyProgress - 50)}%</span>
+          <div className={`flex items-center gap-1 text-xs font-mono font-bold ${monthlyProgress >= 50 ? 'text-emerald-700' : 'text-neutral-500'}`}>
+            <TrendingUp size={13} />
+            <span>{monthlyProgress}%</span>
           </div>
         </div>
       </div>

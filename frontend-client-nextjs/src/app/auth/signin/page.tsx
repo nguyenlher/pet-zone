@@ -4,17 +4,7 @@ import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import {
-  LogIn,
-  ArrowLeft,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  CheckCircle2,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 function SignInContent() {
@@ -25,6 +15,7 @@ function SignInContent() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -32,7 +23,7 @@ function SignInContent() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) {
-      setFormError('Vui lòng nhập tên đăng nhập/email và mật khẩu.');
+      setFormError('Vui lòng nhập địa chỉ email và mật khẩu.');
       return;
     }
 
@@ -40,7 +31,6 @@ function SignInContent() {
     setFormError(null);
 
     try {
-      // Send credentials directly through NextAuth to Keycloak via OpenID Connect
       const result = await signIn('keycloak-credentials', {
         username: username.trim(),
         password,
@@ -49,6 +39,7 @@ function SignInContent() {
       });
 
       if (result?.error) {
+        console.error('[SignIn] NextAuth signin error:', result.error, result);
         setFormError(
           result.error === 'CredentialsSignin' ||
           result.error === 'Configuration' ||
@@ -63,153 +54,140 @@ function SignInContent() {
           particleCount: 50,
           spread: 60,
           origin: { y: 0.7 },
-          colors: ['#D4F442', '#FF5E3A', '#2D4A3E'],
+          colors: ['#000000', '#D4F442', '#FF5E3A'],
         });
 
-        // Smooth redirect
         setTimeout(() => {
           router.push(callbackUrl);
           router.refresh();
-        }, 1000);
+        }, 800);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Sign in error:', err);
-      setFormError('Không thể kết nối đến máy chủ xác thực Keycloak.');
+      setFormError('Không thể kết nối đến máy chủ xác thực. Vui lòng thử lại sau.');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF9F5] text-[#121316] flex flex-col justify-between">
+    <div className="min-h-screen bg-white text-[#121316] flex flex-col justify-between">
       {/* Top Bar */}
-      <header className="p-6 max-w-7xl mx-auto w-full flex items-center justify-between">
+      <header className="p-6 max-w-5xl mx-auto w-full flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-bold text-stone-600 hover:text-black transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-bold text-neutral-500 hover:text-black transition-colors uppercase tracking-wider"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
           <span>Trở về Trang chủ</span>
-        </Link>
-
-        <Link href="/" className="flex items-center gap-2 select-none">
-          <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white">
-            <svg
-              className="w-4 h-4 text-[#D4F442] fill-current"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 11c-2.21 0-4 1.79-4 4 0 1.94 1.38 3.56 3.23 3.93.5.1 1.04.1 1.54 0 1.85-.37 3.23-1.99 3.23-3.93 0-2.21-1.79-4-4-4z" />
-              <circle cx="7" cy="8.5" r="2" />
-              <circle cx="17" cy="8.5" r="2" />
-              <circle cx="10" cy="5.5" r="1.8" />
-              <circle cx="14" cy="5.5" r="1.8" />
-            </svg>
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-stone-900">
-            Pet Zone<span className="text-[#FF5E3A]">.</span>
-          </span>
         </Link>
       </header>
 
       {/* Main Container */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          className="w-full max-w-md bg-white rounded-3xl border border-stone-200/90 shadow-xl p-8 sm:p-10 space-y-7"
-        >
-          {/* Header text */}
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-black tracking-tight text-stone-900">
-              Đăng Nhập
+        <div className="w-full max-w-[540px]">
+          {/* Brand Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center gap-2 mb-2">
+              <span className="text-xs uppercase font-extrabold tracking-[0.25em] text-neutral-400">
+                Tài khoản khách hàng
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-black tracking-tight">
+              Pet Zone
             </h1>
-            <p className="text-xs sm:text-sm text-stone-500 max-w-xs mx-auto">
-              Nhập thông tin tài khoản của bạn để đăng nhập vào Pet Zone.
-            </p>
           </div>
 
-          {/* Success State */}
-          {isSuccess && (
-            <div className="p-4 rounded-2xl bg-[#EBF3ED] border border-emerald-300 flex items-center gap-3 text-xs text-emerald-800">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-              <span className="font-bold">Đăng nhập thành công! Đang chuyển hướng...</span>
+          {/* Navigation Tabs */}
+          <div className="grid grid-cols-2 border-b border-gray-200 mb-8">
+            <div className="pb-4 text-center text-xs sm:text-sm font-bold tracking-widest uppercase text-black relative cursor-default">
+              ĐĂNG NHẬP
+              <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-black" />
             </div>
-          )}
 
-          {/* Error Alert */}
-          {formError && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex items-start gap-2.5 text-xs text-rose-700">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
-              <span>{formError}</span>
-            </div>
-          )}
+            <Link
+              href="/auth/register"
+              className="pb-4 text-center text-xs sm:text-sm font-bold tracking-widest uppercase text-gray-400 hover:text-gray-700 transition-colors"
+            >
+              ĐĂNG KÝ
+            </Link>
+          </div>
 
-          {/* Direct Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Username / Email Field */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 block">
-                Tên đăng nhập / Email
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Email Field */}
+            <div>
+              <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+                ĐỊA CHỈ EMAIL
               </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin hoặc email@example.com"
-                  className="w-full pl-11 pr-4 py-3 rounded-2xl bg-stone-50 border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-black placeholder:text-stone-400 transition-all"
-                />
-              </div>
+              <input
+                type="email"
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="info@drakele.com"
+                className="w-full px-4 py-3.5 border border-gray-300 rounded-none text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-black transition-colors"
+              />
             </div>
 
             {/* Password Field */}
-            <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 block">Mật khẩu</label>
+            <div>
+              <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">
+                MẬT KHẨU
+              </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-stone-400 absolute left-4 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-11 pr-11 py-3 rounded-2xl bg-stone-50 border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-black placeholder:text-stone-400 transition-all"
+                  placeholder="••••••••••••"
+                  className={`w-full px-4 py-3.5 pr-10 border rounded-none text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none transition-colors ${
+                    password
+                      ? 'bg-[#FEFEDF] border-gray-300 focus:border-black'
+                      : 'bg-white border-gray-300 focus:border-black'
+                  }`}
                 />
                 <button
                   type="button"
-                  tabIndex={-1}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+                  tabIndex={-1}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black transition-colors p-1"
+                  title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Remember Me & Forgot Password Row */}
-            <div className="flex items-center justify-between pt-1">
-              <div className="flex items-center gap-2">
-                <input
-                  id="remember"
-                  type="checkbox"
-                  defaultChecked
-                  className="w-4 h-4 rounded border-stone-300 text-black focus:ring-black accent-black cursor-pointer"
-                />
-                <label htmlFor="remember" className="text-xs text-stone-600 cursor-pointer">
-                  Ghi nhớ đăng nhập
-                </label>
+            {/* Error Message Box */}
+            {formError && (
+              <div className="border border-red-500 bg-white p-4 text-xs sm:text-sm text-red-600 leading-relaxed rounded-none">
+                {formError}
               </div>
+            )}
+
+            {/* Success Message Box */}
+            {isSuccess && (
+              <div className="border border-emerald-500 bg-emerald-50/50 p-4 text-xs sm:text-sm text-emerald-800 leading-relaxed rounded-none">
+                Đăng nhập thành công! Đang chuyển hướng...
+              </div>
+            )}
+
+            {/* Remember Me & Forgot Password */}
+            <div className="flex items-center justify-between text-xs sm:text-sm pt-1">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none text-gray-700">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded-none accent-black cursor-pointer text-black"
+                />
+                <span>Ghi nhớ đăng nhập</span>
+              </label>
 
               <Link
                 href="/auth/forgot-password"
-                className="text-xs text-stone-500 hover:text-black font-semibold transition-colors"
+                className="text-gray-500 hover:text-black font-medium transition-colors"
               >
                 Quên mật khẩu?
               </Link>
@@ -219,30 +197,20 @@ function SignInContent() {
             <button
               type="submit"
               disabled={loading || isSuccess}
-              className="w-full py-4 px-6 rounded-2xl bg-black hover:bg-stone-800 text-white font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 transition-transform active:scale-[0.98] cursor-pointer disabled:opacity-50"
+              className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-4 text-xs sm:text-sm tracking-widest uppercase transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-4"
             >
-              <LogIn className="w-4 h-4 text-[#D4F442]" />
-              <span>{loading ? 'Đang gửi xác thực OIDC...' : 'Đăng Nhập'}</span>
+              {loading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP'}
             </button>
           </form>
 
-          {/* Footer Link to Register */}
-          <div className="pt-2 text-center text-xs text-stone-500 border-t border-stone-100">
-            Chưa có tài khoản?{' '}
-            <Link
-              href="/auth/register"
-              className="font-bold text-stone-900 hover:underline inline-flex items-center gap-1"
-            >
-              Đăng ký thành viên mới
-            </Link>
-          </div>
-        </motion.div>
+          {/* Footer note */}
+          <p className="text-center text-xs text-gray-400 mt-10">
+            © {new Date().getFullYear()} Pet Zone. Giao thức xác thực an toàn chuẩn OpenID Connect.
+          </p>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="p-6 text-center text-xs text-stone-400">
-        © {new Date().getFullYear()} Pet Zone. Giao thức xác thực an toàn chuẩn OpenID Connect & Keycloak.
-      </footer>
+      <div className="p-4" />
     </div>
   );
 }
@@ -251,7 +219,7 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#FAF9F5] flex items-center justify-center text-stone-400 text-sm">
+        <div className="min-h-screen bg-white flex items-center justify-center text-stone-400 text-sm">
           Đang tải trang đăng nhập...
         </div>
       }

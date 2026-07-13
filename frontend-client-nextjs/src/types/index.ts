@@ -8,7 +8,7 @@ export interface PaginatedResult<T> {
   size: number;
 }
 
-export interface Product {
+export interface BaseItem {
   id: string;
   name: string;
   category: string;
@@ -26,6 +26,55 @@ export interface Product {
   colors?: { name: string; hex: string }[];
   inStock: boolean;
   specs?: { [key: string]: string };
+  modelUrl?: string;
+  has3DModel?: boolean;
+}
+
+/**
+ * Pet entity - represents a living animal with specific biological attributes
+ */
+export interface Pet extends BaseItem {
+  isPet: true;
+  petName: string;
+  breedName?: string;
+  petTypeId?: string;
+  petTypeName?: string;
+  soldCount?: number;
+}
+
+/**
+ * Product entity - represents physical retail merchandise (food, clothing, accessories, housing)
+ */
+export interface Product extends BaseItem {
+  isPet?: false;
+  brand?: string;
+  stockQuantity?: number;
+  soldCount?: number;
+}
+
+/**
+ * Polymorphic union type representing any purchasable item across the store
+ */
+export type StoreItem = Product | Pet;
+
+/**
+ * Type guard to safely check whether a StoreItem is a Pet
+ */
+export function isPetItem(item: StoreItem): item is Pet {
+  return Boolean(
+    item.isPet ||
+    item.categorySlug === 'thu-cung' ||
+    item.category?.toLowerCase().includes('thú cưng')
+  );
+}
+
+export interface PetType {
+  id: string;
+  name: string;
+  description?: string;
+  iconUrl?: string;
+  isActive?: boolean;
+  displayOrder?: number;
 }
 
 export interface Category {
@@ -41,7 +90,7 @@ export interface Category {
 }
 
 export interface CartItem {
-  product: Product;
+  product: StoreItem;
   quantity: number;
   selectedColor?: string;
 }

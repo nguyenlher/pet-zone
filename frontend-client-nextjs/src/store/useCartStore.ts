@@ -2,22 +2,22 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Product, CartItem } from '@/types';
+import { StoreItem, CartItem, isPetItem } from '@/types';
 
 export interface CartStoreState {
   cart: CartItem[];
   isCartOpen: boolean;
-  quickViewProduct: Product | null;
+  quickViewProduct: StoreItem | null;
   toastMessage: string | null;
 
   // Actions
-  addToCart: (product: Product, quantity?: number, selectedColor?: string) => void;
+  addToCart: (product: StoreItem, quantity?: number, selectedColor?: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, delta: number) => void;
   clearCart: () => void;
   restoreCart: (items: CartItem[]) => void;
   setIsCartOpen: (open: boolean) => void;
-  setQuickViewProduct: (product: Product | null) => void;
+  setQuickViewProduct: (product: StoreItem | null) => void;
   setToastMessage: (msg: string | null) => void;
 }
 
@@ -33,18 +33,36 @@ export const useCartStore = create<CartStoreState>()(
 
       addToCart: (product, quantity = 1, selectedColor) => {
         set((state) => {
+          const isPet = isPetItem(product);
+
           const existingIndex = state.cart.findIndex(
             (item) => item.product.id === product.id && item.selectedColor === selectedColor
           );
+
+          if (isPet && existingIndex > -1) {
+            // Pet is already in cart, do not add more / do not increase quantity
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+              set({ toastMessage: null });
+            }, 3500);
+
+            return {
+              toastMessage: `"${product.name}" đã có trong giỏ hàng (thú cưng là cá thể độc lập duy nhất).`,
+            };
+          }
+
           let nextCart: CartItem[];
           if (existingIndex > -1) {
             nextCart = [...state.cart];
             nextCart[existingIndex] = {
               ...nextCart[existingIndex],
-              quantity: nextCart[existingIndex].quantity + quantity,
+              quantity: isPet ? 1 : nextCart[existingIndex].quantity + quantity,
             };
           } else {
-            nextCart = [...state.cart, { product, quantity, selectedColor }];
+            nextCart = [
+              ...state.cart,
+              { product, quantity: isPet ? 1 : quantity, selectedColor },
+            ];
           }
 
           // Trigger toast with auto-clear
@@ -68,15 +86,25 @@ export const useCartStore = create<CartStoreState>()(
 
       updateQuantity: (productId, delta) => {
         set((state) => ({
-          cart: state.cart
-            .map((item) => {
-              if (item.product.id === productId) {
-                const newQty = item.quantity + delta;
-                return newQty > 0 ? { ...item, quantity: newQty } : null;
+          cart: state.cart.map((item) => {
+            if (item.product.id === productId) {
+              const isPet = Boolean(
+                item.product.isPet ||
+                item.product.categorySlug === 'thu-cung' ||
+                item.product.category?.toLowerCase().includes('thú cưng')
+              );
+
+              if (isPet) {
+                // Pets are unique individuals: quantity is strictly 1
+                return item;
               }
-              return item;
-            })
-            .filter(Boolean) as CartItem[],
+
+              // Normal products: minimum quantity is 1 (minus is disabled at 1, does not remove)
+              const newQty = Math.max(1, item.quantity + delta);
+              return { ...item, quantity: newQty };
+            }
+            return item;
+          }),
         }));
       },
 

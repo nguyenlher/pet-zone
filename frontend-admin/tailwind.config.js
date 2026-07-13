@@ -7,13 +7,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
-        primary: '#10B981',
-        amber: {
-          400: '#FBBF24',
-          500: '#F59E0B',
+        primary: {
+          DEFAULT: '#000000',
+          hover: '#171717',
         },
       },
       keyframes: {
@@ -27,8 +27,8 @@ export default {
         },
       },
       animation: {
-        slideIn: 'slideIn 0.3s ease-in-out',
-        fadeIn: 'fadeIn 0.2s ease-in-out',
+        slideIn: 'slideIn 0.25s ease-out',
+        fadeIn: 'fadeIn 0.2s ease-out',
       },
     },
   },

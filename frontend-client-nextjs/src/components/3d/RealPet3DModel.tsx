@@ -10,6 +10,8 @@ interface RealPet3DModelProps {
   mousePos?: { x: number; y: number };
   autoRotate?: boolean;
   scaleMultiplier?: number;
+  position?: [number, number, number];
+  centerTop?: boolean;
 }
 
 export const RealPet3DModel: React.FC<RealPet3DModelProps> = ({
@@ -17,6 +19,8 @@ export const RealPet3DModel: React.FC<RealPet3DModelProps> = ({
   mousePos = { x: 0, y: 0 },
   autoRotate = true,
   scaleMultiplier = 1,
+  position = [0, -0.4, 0],
+  centerTop = true,
 }) => {
   const { scene } = useGLTF(modelUrl);
   const groupRef = useRef<THREE.Group>(null);
@@ -72,9 +76,9 @@ export const RealPet3DModel: React.FC<RealPet3DModelProps> = ({
   });
 
   return (
-    <group ref={groupRef} position={[0, -0.4, 0]}>
+    <group ref={groupRef} position={position}>
       <Float speed={2} rotationIntensity={0.15} floatIntensity={0.25}>
-        <Center top cacheKey={modelUrl}>
+        <Center top={centerTop} cacheKey={modelUrl}>
           <primitive object={clonedScene} scale={normalizedScale} />
         </Center>
       </Float>

@@ -48,35 +48,32 @@ export const PetModelViewer: React.FC = () => {
         setAutoRotate(true);
         setMousePos({ x: 0, y: 0 });
       }}
-      className="relative w-full h-[460px] sm:h-[520px] lg:h-[600px] rounded-3xl bg-gradient-to-b from-[#F5F3EF] via-[#ECE9E2] to-[#E5E1D8] border border-stone-200/80 shadow-inner overflow-hidden select-none group"
+      className="relative w-full h-[460px] sm:h-[520px] lg:h-[600px] rounded-none bg-neutral-50 border border-neutral-200 overflow-hidden select-none group"
     >
-      {/* Subtle Background Ambient Radial Glow */}
-      <div className="absolute inset-0 opacity-40 blur-3xl pointer-events-none bg-[radial-gradient(circle_at_50%_50%,_#D4F442_0%,_transparent_65%)]" />
-
       {/* Floating 3D Badge: Pet Name & Breed */}
-      <div className="absolute top-5 left-5 z-10 flex flex-col gap-1.5">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-stone-200/90 shadow-sm text-xs font-bold text-stone-900">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="absolute top-4 left-4 z-10 flex flex-col gap-1">
+        <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-neutral-200 text-xs font-bold text-black uppercase tracking-wider">
+          <span className="w-1.5 h-1.5 bg-black" />
           <span>{currentPet.name} — {currentPet.breed}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-600 font-semibold">
+          <span className="text-[10px] px-1 py-0.5 bg-neutral-100 text-neutral-600 font-medium">
             {currentPet.type === 'DOG' ? 'Chó' : 'Mèo'} 3D
           </span>
         </div>
-        <span className="text-[11px] font-medium text-stone-500 pl-1 flex items-center gap-1">
-          <RotateCw className="w-3 h-3 text-stone-400 animate-spin" style={{ animationDuration: '6s' }} />
+        <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-400 pl-0.5 flex items-center gap-1">
+          <RotateCw className="w-2.5 h-2.5 text-neutral-400" />
           Rê chuột để đổi góc nhìn
         </span>
       </div>
 
-      {/* Button: Change Pet (Đổi bé khác) */}
-      <div className="absolute top-5 right-5 z-10">
+      {/* Button: Change Pet */}
+      <div className="absolute top-4 right-4 z-10">
         <button
           onClick={handleNextPet}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 hover:bg-white text-stone-700 hover:text-black border border-stone-200/90 shadow-sm hover:shadow text-xs font-semibold transition-all cursor-pointer hover:scale-105 active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-neutral-100 text-black border border-neutral-200 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           title="Xem ngẫu nhiên bé thú cưng khác"
         >
-          <Shuffle className="w-3.5 h-3.5 text-stone-500" />
-          <span>Đổi bé khác</span>
+          <Shuffle className="w-3.5 h-3.5" />
+          <span>Đổi mẫu</span>
         </button>
       </div>
 

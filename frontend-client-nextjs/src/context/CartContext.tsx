@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useCartStore } from '@/store/useCartStore';
-import { Product, CartItem } from '@/types';
+import { StoreItem, CartItem } from '@/types';
 
 export interface CartContextType {
   cart: CartItem[];
-  addToCart: (product: Product, quantity?: number, selectedColor?: string) => void;
+  addToCart: (product: StoreItem, quantity?: number, selectedColor?: string) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, delta: number) => void;
   clearCart: () => void;
@@ -15,8 +15,8 @@ export interface CartContextType {
   subtotal: number;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
-  quickViewProduct: Product | null;
-  setQuickViewProduct: (product: Product | null) => void;
+  quickViewProduct: StoreItem | null;
+  setQuickViewProduct: (product: StoreItem | null) => void;
   toastMessage: string | null;
   setToastMessage: (msg: string | null) => void;
   isHydrated?: boolean;

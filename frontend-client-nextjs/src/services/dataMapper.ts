@@ -1,4 +1,5 @@
-import { Product, CategorySlug } from '../types';
+import { Product, Pet, CategorySlug } from '../types';
+import { PET_3D_MODELS } from '../constants/pet3dModels';
 
 export interface BackendProduct {
   id: string;
@@ -205,7 +206,7 @@ export function mapBackendProductToProduct(bp: BackendProduct): Product {
     price: Number(bp.price),
     rating: bp.avgRating ? Number(bp.avgRating) : 4.8,
     reviewsCount: bp.totalReviews ?? 15,
-    badge: bp.soldCount && bp.soldCount > 30 ? 'Bán chạy' : bp.brand || undefined,
+    badge: bp.soldCount !== undefined ? `Đã bán ${bp.soldCount}` : bp.brand || undefined,
     isNew: false,
     image,
     hoverImage,
@@ -217,24 +218,44 @@ export function mapBackendProductToProduct(bp: BackendProduct): Product {
       'Số lượng trong kho': `${bp.stockQuantity || 0} sản phẩm`,
       'Đã bán': `${bp.soldCount || 0} lượt`,
     },
+    soldCount: bp.soldCount ?? 0,
   };
 }
 
-export function mapBackendPetToProduct(pet: BackendPet): Product {
+export function mapBackendPetToProduct(pet: BackendPet): Pet {
   const isAvailable = pet.status === 'AVAILABLE';
   const imgUrl =
     pet.thumbnailUrl ||
     'https://res.cloudinary.com/dehn8lwxv/image/upload/v1778158475/super-petmark-3d/images/golden_retrieve_dtcl8d.jpg';
 
+  const breedSearch = `${pet.breedName || ''} ${pet.name || ''}`.toLowerCase();
+  const matched3D =
+    PET_3D_MODELS.find(
+      (m) =>
+        breedSearch.includes(m.breed.toLowerCase()) ||
+        breedSearch.includes(m.name.toLowerCase()) ||
+        breedSearch.includes(m.id.toLowerCase()) ||
+        m.breed.toLowerCase().includes(breedSearch)
+    ) || (pet.petTypeName?.toLowerCase().includes('mèo') ? PET_3D_MODELS[12] : PET_3D_MODELS[0]);
+
+  const petName = pet.name || 'Thú Cưng';
+  const rawBreedName = pet.breedName || 'Thú Cưng';
+  const typeName = pet.petTypeName || (rawBreedName.toLowerCase().includes('mèo') ? 'Mèo' : 'Chó');
+
+  let fullBreedName = rawBreedName;
+  if (!rawBreedName.toLowerCase().startsWith('chó') && !rawBreedName.toLowerCase().startsWith('mèo')) {
+    fullBreedName = `${typeName} ${rawBreedName}`;
+  }
+
   return {
     id: pet.id,
-    name: `${pet.name} (${pet.breedName || 'Thú Cưng'})`,
+    name: fullBreedName,
     category: 'Thú Cưng',
     categorySlug: 'thu-cung',
     price: Number(pet.price),
     rating: 5.0,
     reviewsCount: pet.viewCount ? Math.floor(pet.viewCount / 2) + 5 : 24,
-    badge: pet.has3DModel ? 'Xem 3D' : pet.breedName || 'Thuần Chủng',
+    badge: petName.toUpperCase(),
     isNew: true,
     image: imgUrl,
     hoverImage: imgUrl,
@@ -255,5 +276,12 @@ export function mapBackendPetToProduct(pet: BackendPet): Product {
       'Màu lông': pet.colors?.join(', ') || 'Tự nhiên',
       'Bảo hành': 'Sức khỏe & Tiêm phòng đầy đủ',
     },
+    isPet: true,
+    has3DModel: true,
+    modelUrl: matched3D?.modelUrl,
+    petName: pet.name,
+    breedName: pet.breedName,
+    petTypeId: pet.petTypeId,
+    petTypeName: typeName,
   };
 }

@@ -61,21 +61,21 @@ export default function OrderLookupForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-3">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-          <span className="font-medium leading-relaxed">{error}</span>
+        <div className="p-4 rounded-none bg-neutral-50 border border-neutral-300 text-neutral-900 text-xs sm:text-sm flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 text-black shrink-0 mt-0.5" />
+          <span className="font-mono text-xs leading-relaxed">{error}</span>
         </div>
       )}
 
       {/* Order ID Input */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">
-          Mã đơn hàng (Order ID) <span className="text-rose-500">*</span>
+        <label className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
+          Mã đơn hàng (Order ID) <span className="text-neutral-400">*</span>
         </label>
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
             <Hash className="w-4 h-4" />
           </div>
           <input
@@ -87,21 +87,21 @@ export default function OrderLookupForm() {
               if (error) setError(null);
             }}
             placeholder="Ví dụ: 456afe14-d13d-4c8c-a7b6-..."
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-900/5 focus:border-stone-900 font-mono text-xs sm:text-sm text-stone-900 transition-all placeholder:font-sans placeholder:text-stone-400"
+            className="w-full pl-10 pr-4 py-3 rounded-none border border-neutral-200 bg-white focus:outline-none focus:border-black font-mono text-xs sm:text-sm text-black transition-colors placeholder:font-sans placeholder:text-neutral-400"
           />
         </div>
-        <p className="mt-1.5 text-[11px] text-stone-400">
+        <p className="mt-1.5 text-[11px] text-neutral-500 font-mono">
           Mã định danh gồm chuỗi ký tự được cung cấp ngay sau khi bạn đặt hàng thành công.
         </p>
       </div>
 
       {/* Phone Input */}
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-stone-600 mb-1.5">
-          Số điện thoại nhận hàng <span className="text-rose-500">*</span>
+        <label className="block text-xs font-bold uppercase tracking-wider text-black mb-2">
+          Số điện thoại nhận hàng <span className="text-neutral-400">*</span>
         </label>
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-neutral-400">
             <Phone className="w-4 h-4" />
           </div>
           <input
@@ -113,10 +113,10 @@ export default function OrderLookupForm() {
               if (error) setError(null);
             }}
             placeholder="Ví dụ: 0912345678"
-            className="w-full pl-10 pr-4 py-3 rounded-2xl border border-stone-200 bg-stone-50/50 focus:bg-white focus:outline-none focus:ring-4 focus:ring-stone-900/5 focus:border-stone-900 text-sm text-stone-900 transition-all placeholder:text-stone-400"
+            className="w-full pl-10 pr-4 py-3 rounded-none border border-neutral-200 bg-white focus:outline-none focus:border-black text-sm text-black transition-colors placeholder:text-neutral-400"
           />
         </div>
-        <p className="mt-1.5 text-[11px] text-stone-400">
+        <p className="mt-1.5 text-[11px] text-neutral-500 font-mono">
           Số điện thoại dùng làm lớp bảo mật xác thực đúng chủ sở hữu của đơn hàng.
         </p>
       </div>
@@ -125,17 +125,17 @@ export default function OrderLookupForm() {
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full py-3.5 sm:py-4 px-6 rounded-full bg-stone-900 hover:bg-black text-white font-extrabold text-sm shadow-xl transition-all flex items-center justify-center gap-2.5 active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+        className="w-full py-4 px-6 rounded-none bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         {isLoading ? (
           <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border border-white border-t-transparent animate-spin" />
             <span>Đang tìm kiếm đơn hàng...</span>
           </>
         ) : (
           <>
             <span>Kiểm tra tiến độ đơn hàng</span>
-            <Search className="w-4 h-4 text-[#D4F442]" />
+            <Search className="w-4 h-4 text-white" />
           </>
         )}
       </button>

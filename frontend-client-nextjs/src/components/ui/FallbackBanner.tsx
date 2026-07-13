@@ -28,15 +28,15 @@ export const FallbackBanner: React.FC = () => {
   return (
     <div
       role="alert"
-      className="relative z-50 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-white text-xs px-4 py-2 shadow-md flex items-center justify-between gap-3 transition-all animate-in fade-in slide-in-from-top-2"
+      className="relative z-50 bg-black text-white text-xs px-4 py-2 border-b border-neutral-800 flex items-center justify-between gap-3 transition-all"
     >
       <div className="flex items-center gap-2 max-w-4xl mx-auto overflow-hidden">
-        <AlertTriangle className="w-4 h-4 shrink-0 text-amber-200 animate-pulse" />
-        <span className="font-medium truncate">
-          <strong className="font-bold">Chế độ Fallback:</strong> Không thể kết nối tới API Gateway (8090). Đang tạm thời hiển thị dữ liệu dự phòng để đảm bảo trải nghiệm.
+        <AlertTriangle className="w-4 h-4 shrink-0 text-white" />
+        <span className="font-mono text-xs truncate">
+          <strong className="font-bold uppercase tracking-wider">Fallback Mode:</strong> Không thể kết nối tới API Gateway. Đang sử dụng dữ liệu dự phòng.
         </span>
         {fallbackUrl && (
-          <span className="hidden md:inline-block px-2 py-0.5 rounded bg-black/20 text-[10px] font-mono text-amber-100 truncate">
+          <span className="hidden md:inline-block px-2 py-0.5 border border-neutral-700 bg-neutral-900 text-[10px] font-mono text-neutral-400 truncate">
             {fallbackUrl}
           </span>
         )}
@@ -46,7 +46,7 @@ export const FallbackBanner: React.FC = () => {
         <button
           onClick={handleRetry}
           disabled={isRetrying}
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white/20 hover:bg-white/30 active:scale-95 text-white font-semibold transition-all disabled:opacity-50 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-none border border-neutral-700 hover:border-white bg-transparent text-white font-mono text-[10px] uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer"
           title="Kiểm tra kết nối lại tới API Gateway và tải lại trang"
         >
           <RefreshCw className={`w-3 h-3 ${isRetrying ? 'animate-spin' : ''}`} />
@@ -55,7 +55,7 @@ export const FallbackBanner: React.FC = () => {
 
         <button
           onClick={() => setIsDismissed(true)}
-          className="p-1 rounded-md hover:bg-white/20 text-white/80 hover:text-white transition-colors cursor-pointer"
+          className="p-1 rounded-none text-neutral-400 hover:text-white transition-colors cursor-pointer"
           title="Tạm ẩn cảnh báo"
         >
           <X className="w-3.5 h-3.5" />

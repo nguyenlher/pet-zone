@@ -46,6 +46,25 @@ export const productService = {
   },
 
   /**
+   * Get top selling products by sold count (from /public/products/top-selling)
+   */
+  getTopSellingProducts: async (limit = 10): Promise<Product[]> => {
+    try {
+      const data = await apiFetch<BackendProduct[]>(`/public/products/top-selling?limit=${limit}`);
+      if (Array.isArray(data) && data.length > 0) {
+        return data.map(mapBackendProductToProduct);
+      }
+    } catch {
+      // Fallback: fetch products and sort by soldCount desc
+    }
+    const pageData = await productService.getAllProducts(0, 50);
+    const sorted = [...(pageData.content || [])]
+      .sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
+      .slice(0, limit);
+    return sorted.map(mapBackendProductToProduct);
+  },
+
+  /**
    * Get products with SQL filters (category, minPrice, maxPrice, status, keyword, pageable)
    */
   getProductsWithFilters: async (params: {

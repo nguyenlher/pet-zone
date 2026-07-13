@@ -1,8 +1,25 @@
 import { apiFetch } from './apiClient';
 import { BackendPet, BackendPage, mapBackendPetToProduct } from './dataMapper';
-import { Product } from '../types';
+import { Pet, PetType } from '../types';
 
 export const petService = {
+  /**
+   * Get all active pet types from API Gateway
+   */
+  getActivePetTypes: async (): Promise<PetType[]> => {
+    try {
+      return await apiFetch<PetType[]>('/public/pet-types/active');
+    } catch {
+      // Fallback: try getting all pet types if /active is not responding
+      try {
+        const types = await apiFetch<PetType[]>('/public/pet-types');
+        return (types || []).filter((t) => t.isActive !== false);
+      } catch {
+        return [];
+      }
+    }
+  },
+
   /**
    * Get all public pets from API Gateway
    */
@@ -18,9 +35,9 @@ export const petService = {
   },
 
   /**
-   * Get pets formatted as store Products
+   * Get pets formatted as store Pet items
    */
-  getPetProducts: async (page = 0, size = 50): Promise<Product[]> => {
+  getPetProducts: async (page = 0, size = 50): Promise<Pet[]> => {
     const pageData = await petService.getAllPets(page, size);
     return (pageData.content || []).map(mapBackendPetToProduct);
   },

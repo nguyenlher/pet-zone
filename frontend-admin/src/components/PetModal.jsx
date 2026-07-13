@@ -79,6 +79,7 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
   useEffect(() => {
     if (!isOpen) {
       // Reset form when modal closes
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         name: '',
         breedId: '',
@@ -324,12 +325,15 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl overflow-hidden my-8 max-h-[calc(100vh-4rem)]">
-        <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50 sticky top-0 z-10 bg-white">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors cursor-pointer p-1.5 hover:bg-gray-200 rounded-lg">
-            <X size={20} />
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 backdrop-blur-[1px] p-4 overflow-y-auto">
+      <div className="bg-white rounded-none border border-neutral-200 w-full max-w-2xl shadow-2xl overflow-hidden my-8 max-h-[calc(100vh-4rem)]">
+        <div className="flex justify-between items-center p-5 border-b border-neutral-200 sticky top-0 z-10 bg-white">
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-widest text-black">{title}</h2>
+            <p className="text-[10px] text-neutral-400 uppercase tracking-wider font-mono mt-0.5">Pet configuration &amp; 3D asset metadata</p>
+          </div>
+          <button onClick={onClose} className="text-neutral-400 hover:text-black transition-colors cursor-pointer p-1.5 hover:bg-neutral-100 rounded-none">
+            <X size={18} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(100vh-12rem)]">
@@ -337,19 +341,19 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
             {/* Basic Info */}
             <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Pet Name *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Pet Name *</label>
                 <input
                   type="text"
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs placeholder:text-neutral-400"
                   placeholder="e.g. Max, Bella..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Price (VND) *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Price (VND) *</label>
                 <input
                   type="number"
                   name="price"
@@ -358,7 +362,7 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                   required
                   min="0"
                   step="1000"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs font-mono placeholder:text-neutral-400"
                   placeholder="e.g. 5000000"
                 />
               </div>
@@ -366,17 +370,17 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
 
             <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Pet Type</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Pet Type</label>
                 <select
                   value={isNewPetType ? 'NEW' : selectedPetType}
                   onChange={handlePetTypeChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs"
                 >
                   <option value="">Select Type</option>
                   {petTypes.map(type => (
                     <option key={type.id} value={String(type.id)}>{type.name}</option>
                   ))}
-                  <option value="NEW" className="text-emerald-600 font-semibold">+ Add New Pet Type...</option>
+                  <option value="NEW" className="font-bold">+ Add New Pet Type...</option>
                 </select>
                 {isNewPetType && (
                   <input
@@ -384,25 +388,25 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                     value={newPetTypeName}
                     onChange={e => setNewPetTypeName(e.target.value)}
                     placeholder="Enter new pet type name..."
-                    className="mt-2 w-full px-4 py-2.5 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                    className="mt-2 w-full px-3.5 py-2 bg-white border border-neutral-900 rounded-none focus:outline-none text-xs"
                     required={isNewPetType}
                   />
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Breed *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Breed *</label>
                 <select
                   name="breedId"
                   value={isNewBreed ? 'NEW' : formData.breedId}
                   onChange={handleBreedChange}
                   required={!isNewBreed}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs"
                 >
                   <option value="">Select Breed</option>
                   {filteredBreeds.map(breed => (
                     <option key={breed.id} value={String(breed.id)}>{breed.name}</option>
                   ))}
-                  <option value="NEW" className="text-emerald-600 font-semibold">+ Add New Breed...</option>
+                  <option value="NEW" className="font-bold">+ Add New Breed...</option>
                 </select>
                 {isNewBreed && (
                   <input
@@ -410,7 +414,7 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                     value={newBreedName}
                     onChange={e => setNewBreedName(e.target.value)}
                     placeholder="Enter new breed name..."
-                    className="mt-2 w-full px-4 py-2.5 bg-white border border-emerald-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                    className="mt-2 w-full px-3.5 py-2 bg-white border border-neutral-900 rounded-none focus:outline-none text-xs"
                     required={isNewBreed}
                   />
                 )}
@@ -419,12 +423,12 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
 
             <div className="grid grid-cols-3 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Gender *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Gender *</label>
                 <select
                   name="gender"
                   value={formData.gender}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs"
                 >
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
@@ -432,33 +436,33 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Status *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Status *</label>
                 <select
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs"
                 >
-                  <option value="AVAILABLE">Available</option>
-                  <option value="SOLD">Sold</option>
-                  <option value="PENDING">Pending</option>
+                  <option value="AVAILABLE">Sẵn sàng đón (Available)</option>
+                  <option value="SOLD">Đã bán (Sold)</option>
+                  <option value="RESERVED">Đã giữ chỗ (Reserved)</option>
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Birth Date</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Birth Date</label>
                 <input
                   type="date"
                   name="birthDate"
                   value={formData.birthDate}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs font-mono"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Weight (kg)</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Weight (kg)</label>
                 <input
                   type="number"
                   name="weight"
@@ -466,15 +470,15 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                   onChange={handleChange}
                   step="0.1"
                   min="0.1"
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs font-mono"
                 />
               </div>
               <div className="relative">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Colors</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Colors</label>
                 <button
                   type="button"
                   onClick={() => setShowColorPicker(!showColorPicker)}
-                  className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm text-left flex items-center justify-between min-h-[44px]"
+                  className="w-full px-3.5 py-2 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs text-left flex items-center justify-between min-h-[40px]"
                 >
                   <div className="flex flex-wrap gap-1">
                     {formData.colors && formData.colors.length > 0 ? (
@@ -482,23 +486,23 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                         const colorDef = PET_COLORS.find(c => c.id === cId);
                         if (!colorDef) return null;
                         return (
-                          <span key={cId} className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-200 px-2 py-0.5 rounded-full text-xs font-medium text-gray-700">
-                            <span className="w-2 h-2 rounded-full border border-gray-200 shadow-sm" style={{ background: colorDef.color }} />
+                          <span key={cId} className="inline-flex items-center gap-1.5 bg-neutral-100 border border-neutral-300 px-1.5 py-0.5 text-[10px] font-mono uppercase text-black">
+                            <span className="w-2 h-2 border border-neutral-300" style={{ background: colorDef.color }} />
                             {colorDef.label}
                           </span>
                         );
                       })
                     ) : (
-                      <span className="text-gray-400">Select colors...</span>
+                      <span className="text-neutral-400">Select colors...</span>
                     )}
                   </div>
-                  <span className="text-gray-400 text-xs ml-2">▼</span>
+                  <span className="text-neutral-400 text-xs ml-2">▼</span>
                 </button>
 
                 {showColorPicker && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setShowColorPicker(false)}></div>
-                    <div className="absolute z-20 mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-lg p-3 top-full left-0">
+                    <div className="absolute z-20 mt-1 w-full bg-white border border-neutral-200 rounded-none shadow-lg p-3 top-full left-0">
                       <div className="flex flex-wrap gap-2">
                         {PET_COLORS.map(color => {
                           const isSelected = (formData.colors || []).includes(color.id);
@@ -510,14 +514,14 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                                 e.stopPropagation();
                                 toggleColor(color.id);
                               }}
-                              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${
+                              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-none border text-xs font-mono uppercase transition-colors ${
                                 isSelected 
-                                  ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-500' 
-                                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                                  ? 'border-black bg-black text-white' 
+                                  : 'border-neutral-200 bg-white text-neutral-700 hover:border-black'
                               }`}
                             >
                               <span 
-                                className="w-3 h-3 rounded-full border border-gray-200 shadow-sm" 
+                                className="w-2.5 h-2.5 border border-neutral-300" 
                                 style={{ background: color.color }}
                               />
                               {color.label}
@@ -533,12 +537,12 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
 
             <div className="grid grid-cols-3 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Fur Type</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Fur Type</label>
                 <select
                   name="furType"
                   value={formData.furType}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs"
                 >
                   <option value="SHORT">Short</option>
                   <option value="LONG">Long</option>
@@ -547,12 +551,12 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Health Status</label>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Health Status</label>
                 <select
                   name="healthStatus"
                   value={formData.healthStatus}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs"
                 >
                   <option value="EXCELLENT">Excellent</option>
                   <option value="GOOD">Good</option>
@@ -560,49 +564,49 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                   <option value="NEEDS_CARE">Needs Care</option>
                 </select>
               </div>
-              <div className="flex items-center pt-7">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="flex items-center pt-6">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     name="vaccinated"
                     checked={formData.vaccinated}
                     onChange={handleChange}
-                    className="w-5 h-5 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500 cursor-pointer"
+                    className="w-4 h-4 rounded-none accent-black cursor-pointer"
                   />
-                  <span className="text-sm font-medium text-gray-700">Vaccinated</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-black">Vaccinated</span>
                 </label>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Description</label>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-600 mb-1.5">Description</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
                 rows={3}
-                className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm resize-none"
+                className="w-full px-3.5 py-2.5 bg-white border border-neutral-200 rounded-none focus:outline-none focus:border-black transition-colors text-xs resize-none placeholder:text-neutral-400"
                 placeholder="Write a little bit about the pet..."
               />
             </div>
 
             {/* Image Upload Section */}
-            <div className="pt-4 border-t border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <ImageIcon size={16} className="text-emerald-500" />
+            <div className="pt-4 border-t border-neutral-200">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-black mb-3 flex items-center gap-2">
+                <ImageIcon size={14} className="text-neutral-700" />
                 Pet Images
               </h3>
               
-              <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100/50">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload Images</label>
+              <div className="bg-neutral-50 p-4 rounded-none border border-neutral-200">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Upload Images</label>
                 <div className="flex items-center gap-3">
                   <label className="flex-1 cursor-pointer">
-                    <div className="flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-all">
-                      <UploadCloud size={18} className="text-gray-400" />
-                      <span className="text-sm text-gray-600">
+                    <div className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-dashed border-neutral-300 rounded-none hover:border-black transition-colors">
+                      <UploadCloud size={16} className="text-neutral-400" />
+                      <span className="text-xs text-neutral-600 uppercase tracking-wider font-mono">
                         {selectedImageFiles.length > 0 
-                          ? `${selectedImageFiles.length} file(s) selected` 
-                          : 'Click to select images'}
+                          ? `${selectedImageFiles.length} FILE(S) SELECTED` 
+                          : 'CLICK TO SELECT IMAGES'}
                       </span>
                     </div>
                     <input
@@ -619,16 +623,16 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                 {uploadedImages.length > 0 && (
                   <div className="mt-3 grid grid-cols-4 gap-2">
                     {uploadedImages.map((url, index) => (
-                      <div key={index} className="relative group">
+                      <div key={index} className="relative group border border-neutral-200 bg-white">
                         <img 
                           src={url} 
                           alt={`Upload ${index + 1}`} 
-                          className="w-full h-20 object-cover rounded-lg border border-gray-200"
+                          className="w-full h-20 object-cover"
                         />
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-1 right-1 p-1 bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <Trash2 size={12} />
                         </button>
@@ -637,30 +641,30 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                   </div>
                 )}
                 
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-[11px] text-neutral-400 mt-2 font-mono">
                   Select multiple images. They will be uploaded when you save the pet.
                 </p>
               </div>
             </div>
 
             {/* 3D Model Section */}
-            <div className="pt-4 border-t border-gray-100">
-              <h3 className="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                <UploadCloud size={16} className="text-emerald-500" />
-                3D Model
+            <div className="pt-4 border-t border-neutral-200">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-black mb-3 flex items-center gap-2">
+                <UploadCloud size={14} className="text-neutral-700" />
+                3D Model Asset
               </h3>
               
-              <div className="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100/50">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Upload 3D Model (.glb, .gltf)</label>
+              <div className="bg-neutral-50 p-4 rounded-none border border-neutral-200">
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-neutral-500 mb-2">Upload 3D Model (.glb, .gltf)</label>
                 <label className="cursor-pointer block">
-                  <div className="flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-all">
-                    <UploadCloud size={18} className={selectedModelFile || formData.model3dUrl ? "text-emerald-500" : "text-gray-400"} />
-                    <span className={`text-sm ${selectedModelFile || formData.model3dUrl ? "text-emerald-600 font-medium" : "text-gray-600"}`}>
+                  <div className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-dashed border-neutral-300 rounded-none hover:border-black transition-colors">
+                    <UploadCloud size={16} className={selectedModelFile || formData.model3dUrl ? "text-black" : "text-neutral-400"} />
+                    <span className="text-xs font-mono uppercase tracking-wider text-black">
                       {selectedModelFile 
-                        ? `Selected: ${selectedModelFile.name}` 
+                        ? `SELECTED: ${selectedModelFile.name}` 
                         : formData.model3dUrl 
-                          ? 'Model uploaded ✓' 
-                          : 'Click to select 3D model'}
+                          ? 'MODEL ATTACHED ✓' 
+                          : 'CLICK TO SELECT 3D MODEL'}
                     </span>
                   </div>
                   <input
@@ -671,18 +675,18 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
                   />
                 </label>
                 
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-[11px] text-neutral-400 mt-2 font-mono">
                   Select a 3D model file (.glb or .gltf). It will be uploaded when you save the pet.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="mt-8 flex justify-end gap-3 pt-5 border-t border-gray-100">
+          <div className="mt-8 flex justify-end gap-3 pt-5 border-t border-neutral-200">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="px-5 py-2.5 border border-neutral-200 rounded-none text-xs font-bold uppercase tracking-wider text-neutral-700 hover:border-black transition-colors cursor-pointer bg-white"
               disabled={uploadingImage || uploadingModel}
             >
               Cancel
@@ -690,11 +694,11 @@ export default function PetModal({ isOpen, onClose, onSubmit, initialData = null
             <button
               type="submit"
               disabled={uploadingImage || uploadingModel}
-              className="px-5 py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-semibold hover:bg-emerald-600 shadow-sm shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2.5 bg-black text-white rounded-none text-xs font-bold uppercase tracking-widest hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {uploadingImage || uploadingModel ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" />
+                  <Loader2 size={14} className="animate-spin" />
                   Uploading...
                 </>
               ) : (

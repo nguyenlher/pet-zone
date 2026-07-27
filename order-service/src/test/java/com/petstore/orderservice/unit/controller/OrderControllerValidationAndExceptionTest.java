@@ -148,4 +148,31 @@ class OrderControllerValidationAndExceptionTest {
                 .andExpect(jsonPath("$.success").value(false))
                 .andExpect(jsonPath("$.message", containsString("Cannot cancel confirmed order")));
     }
+
+    @Test
+    @DisplayName("Admin deleteOrder success returns 200 OK")
+    void deleteOrder_success_returns200() throws Exception {
+        UUID orderId = UUID.randomUUID();
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete(OrderApiPath.ORDER_BASE + "/" + orderId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("Order deleted successfully"));
+    }
+
+    @Test
+    @DisplayName("Admin deleteOrder on active order returns 400 Bad Request")
+    void deleteOrder_invalidState_returns400() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        org.mockito.Mockito.doThrow(new IllegalStateException("Only orders with status CANCELLED or PAYMENT_FAILED can be deleted"))
+                .when(orderService).deleteOrder(orderId);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete(OrderApiPath.ORDER_BASE + "/" + orderId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message", containsString("Only orders with status CANCELLED or PAYMENT_FAILED can be deleted")));
+    }
 }
+

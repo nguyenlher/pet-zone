@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.petstore.orderservice.api.dto.OrderStatisticsDto;
+import com.petstore.orderservice.domain.model.enums.OrderStatus;
 import com.petstore.orderservice.domain.repository.OrderStatisticsRepository;
 import com.petstore.orderservice.domain.service.OrderStatisticsService;
 
@@ -27,9 +28,9 @@ public class OrderStatisticsServiceImpl implements OrderStatisticsService {
         int limit = topPetsLimit != null ? topPetsLimit : 10;
         
         Long totalOrders = orderStatisticsRepository.countTotalOrders();
-        Long completedOrders = orderStatisticsRepository.countOrdersByStatus("COMPLETED");
-        Long pendingOrders = orderStatisticsRepository.countOrdersByStatus("PENDING");
-        Long cancelledOrders = orderStatisticsRepository.countOrdersByStatus("CANCELLED");
+        Long completedOrders = orderStatisticsRepository.countOrdersByStatus(OrderStatus.DELIVERED.name());
+        Long pendingOrders = orderStatisticsRepository.countOrdersByStatus(OrderStatus.PENDING.name());
+        Long cancelledOrders = orderStatisticsRepository.countOrdersByStatus(OrderStatus.CANCELLED.name());
         
         Map<String, Long> statusDistribution = orderStatisticsRepository.getOrderStatusDistribution(startDate, endDate);
         

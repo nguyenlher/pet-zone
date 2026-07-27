@@ -42,11 +42,17 @@ public class UserClient {
     }
 
     public UserDTO getUserById(UUID userId) {
+        if (userId == null) {
+            return null;
+        }
         try {
             return userRestClient.get()
-                    .uri("/api/public/users/{userId}", userId)
+                    .uri("/public/users/{userId}", userId)
                     .retrieve()
                     .body(UserDTO.class);
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+            log.warn("User not found with id: {}", userId);
+            return null;
         } catch (Exception e) {
             log.error("Failed to get user by id: {}", userId, e);
             // Return null instead of throwing exception to avoid breaking order listing

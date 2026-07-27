@@ -1,6 +1,8 @@
 package com.petstore.orderservice.api.controller.publ;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -10,7 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,8 +27,10 @@ import jakarta.validation.Valid;
 import com.petstore.orderservice.api.dto.UserDTO;
 import com.petstore.orderservice.api.dto.request.CancelOrderRequest;
 import com.petstore.orderservice.api.dto.request.CreateOrderRequest;
+import com.petstore.orderservice.api.dto.request.UpdateOrderStatusRequest;
 import com.petstore.orderservice.api.dto.response.CancelOrderResponse;
 import com.petstore.orderservice.api.dto.response.CreateOrderResponse;
+import com.petstore.orderservice.api.dto.response.MessageResponse;
 import com.petstore.orderservice.api.dto.response.OrderItemResponse;
 import com.petstore.orderservice.api.dto.response.ShippingDetailResponse;
 import com.petstore.orderservice.domain.model.Order;
@@ -154,18 +160,58 @@ public class OrderController {
     public ResponseEntity<Page<CreateOrderResponse>> getAllOrders(Pageable pageable) {
         log.info("Admin API: Getting all orders");
         Page<Order> orders = orderService.getAllOrders(pageable);
+        Map<UUID, UserDTO> userCache = new HashMap<>();
         Page<CreateOrderResponse> response = orders.map(order -> {
             CreateOrderResponse orderResponse = toCreateOrderResponse(order);
-            // Fetch user information
-            try {
-                UserDTO user = userClient.getUserById(order.getUserId());
-                orderResponse.setUser(user);
-            } catch (Exception e) {
-                log.warn("Failed to fetch user info for order: {}, userId: {}", order.getId(), order.getUserId(), e);
+            // Fetch user information with cache to prevent repeated calls
+            if (order.getUserId() != null) {
+                try {
+                    UserDTO user = userCache.computeIfAbsent(order.getUserId(), userClient::getUserById);
+                    orderResponse.setUser(user);
+                } catch (Exception e) {
+                    log.warn("Failed to fetch user info for order: {}, userId: {}", order.getId(), order.getUserId(), e);
+                }
             }
             return orderResponse;
         });
         return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<CreateOrderResponse> updateOrderStatus(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateOrderStatusRequest request) {
+        log.info("Admin API: Updating order status - orderId: {}, newStatus: {}", id, request.getStatus());
+        Order order = orderService.updateOrderStatus(id, request.getStatus());
+        CreateOrderResponse response = toCreateOrderResponse(order);
+        if (order.getUserId() != null) {
+            try {
+                UserDTO user = userClient.getUserById(order.getUserId());
+                response.setUser(user);
+            } catch (Exception e) {
+                log.warn("Failed to fetch user info for order: {}", order.getId(), e);
+            }
+        }
+        return ResponseEntity.ok(response);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MessageResponse> deleteOrder(@PathVariable UUID id) {
+        log.info("Admin API: Deleting order - orderId: {}", id);
+        try {
+            orderService.deleteOrder(id);
+            return ResponseEntity.ok(MessageResponse.builder()
+                    .message("Order deleted successfully")
+                    .success(true)
+                    .build());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(MessageResponse.builder()
+                    .message(e.getMessage())
+                    .success(false)
+                    .build());
+        }
     }
 
     private CreateOrderResponse toCreateOrderResponse(Order order) {

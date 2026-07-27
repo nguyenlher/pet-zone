@@ -26,6 +26,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
 
   try {
     const response = await fetch(fullUrl, {
+      credentials: options.credentials || 'omit',
       ...options,
       signal: controller.signal,
       headers: {
@@ -38,7 +39,8 @@ export async function apiFetch<T>(endpoint: string, options: RequestOptions = {}
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`HTTP Error ${response.status}: ${response.statusText}`);
+      const errorBody = await response.text().catch(() => '');
+      throw new Error(`HTTP Error ${response.status}: ${response.statusText} (${fullUrl})${errorBody ? ` - ${errorBody}` : ''}`);
     }
 
     const data = await response.json();

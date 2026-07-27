@@ -1,5 +1,6 @@
 server:
   port: ${SERVER_PORT:8081}
+  max-http-request-header-size: ${SERVER_MAX_HTTP_REQUEST_HEADER_SIZE:64KB}
 spring:
   application:
     name: user-service

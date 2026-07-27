@@ -2,10 +2,7 @@ package com.petstore.orderservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
-
-@SpringBootApplication(excludeName = "org.redisson.spring.starter.RedissonAutoConfiguration")
-@EnableScheduling
+@SpringBootApplication
 public class OrderServiceApplication {
 
     public static void main(String[] args) {

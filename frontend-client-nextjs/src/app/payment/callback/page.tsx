@@ -25,9 +25,18 @@ export default async function PaymentCallbackPage({ searchParams }: PaymentCallb
     }
   }
 
+  const extractOrderIdFromInfo = (orderInfo?: string): string => {
+    if (!orderInfo) return '';
+    const uuidRegex = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/;
+    const match = orderInfo.match(uuidRegex);
+    return match ? match[0] : '';
+  };
+
+  const fallbackOrderId = extractOrderIdFromInfo(queryParams['vnp_OrderInfo']) || queryParams['vnp_TxnRef'] || '';
+
   let result = {
     success: false,
-    orderId: queryParams['vnp_TxnRef'] || '',
+    orderId: fallbackOrderId,
     message: 'Không tìm thấy thông tin giao dịch.',
     transactionId: queryParams['vnp_TransactionNo'] || '',
   };
@@ -36,7 +45,7 @@ export default async function PaymentCallbackPage({ searchParams }: PaymentCallb
     const callbackRes = await verifyVNPayCallback(queryParams);
     result = {
       success: callbackRes.success === true,
-      orderId: (callbackRes.orderId as string) || queryParams['vnp_TxnRef'] || '',
+      orderId: (callbackRes.orderId as string) || fallbackOrderId,
       message: callbackRes.message || (callbackRes.success ? 'Thanh toán thành công' : 'Giao dịch không thành công'),
       transactionId: callbackRes.transactionId || queryParams['vnp_TransactionNo'] || '',
     };
@@ -46,7 +55,7 @@ export default async function PaymentCallbackPage({ searchParams }: PaymentCallb
     const isVnPay00 = queryParams['vnp_ResponseCode'] === '00';
     result = {
       success: isVnPay00,
-      orderId: queryParams['vnp_TxnRef'] || '',
+      orderId: fallbackOrderId,
       message: isVnPay00
         ? 'Thanh toán hoàn tất, đơn hàng đang được cập nhật.'
         : 'Thanh toán không thành công hoặc đã bị hủy.',

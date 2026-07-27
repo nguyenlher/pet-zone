@@ -30,6 +30,7 @@ import com.petstore.orderservice.domain.model.enums.ItemType;
 import com.petstore.orderservice.domain.model.enums.OrderStatus;
 import com.petstore.orderservice.domain.publisher.OrderPublisher;
 import com.petstore.orderservice.domain.repository.OrderRepository;
+import com.petstore.orderservice.domain.service.OrderDelayQueueService;
 import com.petstore.orderservice.domain.service.OrderPersistenceService;
 import com.petstore.orderservice.domain.service.impl.OrderServiceImpl;
 import com.petstore.orderservice.exception.InsufficientStockException;
@@ -50,6 +51,12 @@ class OrderServiceImplTest {
     @Mock
     private OrderPublisher orderPublisher;
 
+    @Mock
+    private OrderDelayQueueService orderDelayQueueService;
+
+    @Mock
+    private org.redisson.api.RedissonClient redissonClient;
+
     private OrderServiceImpl orderService;
 
     private UUID userId;
@@ -64,7 +71,9 @@ class OrderServiceImplTest {
                 petServiceClient,
                 orderRepository,
                 orderPersistenceService,
-                orderPublisher
+                orderPublisher,
+                orderDelayQueueService,
+                redissonClient
         );
 
         userId = UUID.randomUUID();

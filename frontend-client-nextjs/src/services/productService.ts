@@ -57,11 +57,15 @@ export const productService = {
     } catch {
       // Fallback: fetch products and sort by soldCount desc
     }
-    const pageData = await productService.getAllProducts(0, 50);
-    const sorted = [...(pageData.content || [])]
-      .sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
-      .slice(0, limit);
-    return sorted.map(mapBackendProductToProduct);
+    try {
+      const pageData = await productService.getAllProducts(0, 50);
+      const sorted = [...(pageData.content || [])]
+        .sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0))
+        .slice(0, limit);
+      return sorted.map(mapBackendProductToProduct);
+    } catch {
+      return [];
+    }
   },
 
   /**

@@ -33,6 +33,13 @@ import com.petstore.orderservice.infra.client.PetServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.petstore.orderservice.domain.service.OrderDelayQueueService;
+import org.springframework.beans.factory.annotation.Value;
+
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
+import java.util.concurrent.TimeUnit;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -42,6 +49,11 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderPersistenceService orderPersistenceService;
     private final OrderPublisher orderPublisher;
+    private final OrderDelayQueueService orderDelayQueueService;
+    private final RedissonClient redissonClient;
+
+    @Value("${app.order.payment-timeout-minutes:15}")
+    private long paymentTimeoutMinutes = 15;
 
     @Override
     public Order createOrder(UUID userId, List<OrderItem> items, OrderShippingDetail shippingDetail, String discountCode) {
@@ -130,6 +142,11 @@ public class OrderServiceImpl implements OrderService {
             orderPublisher.publishOrderCreated(savedOrder);
         } catch (Exception e) {
             log.error("Failed to publish order created event for order: {}", savedOrder.getId(), e);
+        }
+
+        // 10. Schedule payment timeout in Redis Delay Queue if order requires online payment
+        if (savedOrder.getStatus() == OrderStatus.PENDING_PAYMENT) {
+            orderDelayQueueService.schedulePaymentTimeout(savedOrder.getId(), paymentTimeoutMinutes);
         }
 
         return savedOrder;
@@ -255,6 +272,7 @@ public class OrderServiceImpl implements OrderService {
         existingOrder.setStatus(OrderStatus.CANCELLED);
         existingOrder.setUpdatedAt(LocalDateTime.now());
         Order savedOrder = orderRepository.save(existingOrder);
+        orderDelayQueueService.cancelPaymentTimeout(orderId);
 
         // Publish order cancelled event
         try {
@@ -281,18 +299,42 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByUserId(userId, pageable);
     }
 
-    // Method để update order status từ Kafka event
+    // Method to update order status from Kafka payment event with distributed locking
     @Transactional
     public void updateOrderStatusFromPayment(UUID orderId, OrderStatus newStatus) {
-        Optional<Order> orderOpt = orderRepository.findById(orderId);
-        if (orderOpt.isPresent()) {
-            Order order = orderOpt.get();
-            order.setStatus(newStatus);
-            order.setUpdatedAt(LocalDateTime.now());
-            orderRepository.save(order);
-            log.info("Updated order {} status to {}", orderId, newStatus);
-        } else {
-            log.error("Order not found for payment update: {}", orderId);
+        RLock lock = redissonClient.getLock("order:lock:" + orderId);
+        boolean acquired = false;
+        try {
+            acquired = lock.tryLock(5, 15, TimeUnit.SECONDS);
+            if (!acquired) {
+                log.warn("Could not acquire distributed lock for order: {} during payment status update", orderId);
+                throw new IllegalStateException("Could not acquire distributed lock for order: " + orderId);
+            }
+
+            Optional<Order> orderOpt = orderRepository.findById(orderId);
+            if (orderOpt.isPresent()) {
+                Order order = orderOpt.get();
+                if (order.getStatus() == OrderStatus.CANCELLED) {
+                    log.warn("Order {} was already CANCELLED (e.g. timed out). Ignoring payment status update to {}",
+                            orderId, newStatus);
+                    return;
+                }
+                order.setStatus(newStatus);
+                order.setUpdatedAt(LocalDateTime.now());
+                orderRepository.save(order);
+                orderDelayQueueService.cancelPaymentTimeout(orderId);
+                log.info("Updated order {} status to {}", orderId, newStatus);
+            } else {
+                log.error("Order not found for payment update: {}", orderId);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("Interrupted while waiting for lock during payment update for order: {}", orderId, e);
+            throw new IllegalStateException("Interrupted while waiting for lock on order: " + orderId, e);
+        } finally {
+            if (acquired && lock.isHeldByCurrentThread()) {
+                lock.unlock();
+            }
         }
     }
 
@@ -311,6 +353,7 @@ public class OrderServiceImpl implements OrderService {
                 order.setStatus(OrderStatus.PAYMENT_FAILED);
                 order.setUpdatedAt(LocalDateTime.now());
                 orderRepository.save(order);
+                orderDelayQueueService.cancelPaymentTimeout(orderId);
                 
                 // Publish order cancelled event for other services (e.g., inventory service)
                 try {
@@ -327,4 +370,32 @@ public class OrderServiceImpl implements OrderService {
             log.error("Order not found for payment failure cancellation: {}", orderId);
         }
     }
+
+    @Override
+    @Transactional
+    public Order updateOrderStatus(UUID orderId, OrderStatus status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+        order.setStatus(status);
+        order.setUpdatedAt(LocalDateTime.now());
+        Order updatedOrder = orderRepository.save(order);
+        log.info("Order status updated successfully - orderId: {}, newStatus: {}", orderId, status);
+        return updatedOrder;
+    }
+
+    @Override
+    @Transactional
+    public void deleteOrder(UUID orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found: " + orderId));
+
+        // Allow deletion only for terminal cancel/failed states
+        if (order.getStatus() != OrderStatus.CANCELLED && order.getStatus() != OrderStatus.PAYMENT_FAILED) {
+            throw new IllegalStateException("Only orders with status CANCELLED or PAYMENT_FAILED can be deleted");
+        }
+
+        orderRepository.deleteById(orderId);
+        log.info("Order {} deleted successfully", orderId);
+    }
 }
+

@@ -100,6 +100,9 @@ services:
       KEYCLOAK_REALM: super-petmark-3d
       KEYCLOAK_CLIENT_ID: user-service
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      CAPTCHA_ENABLED: ${CAPTCHA_ENABLED:-true}
+      CAPTCHA_SECRET_KEY: ${CAPTCHA_SECRET_KEY}
+      CAPTCHA_VERIFY_URL: ${CAPTCHA_VERIFY_URL:-https://challenges.cloudflare.com/turnstile/v0/siteverify}
     depends_on:
       - postgres
       - redis
@@ -185,10 +188,11 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       API_KEY: ${API_KEY}
       ORDER_SERVICE_URL: http://order-service:8084
-      VNPAY_RETURN_URL: ${VNPAY_RETURN_URL}
       VNPAY_TMN_CODE: ${VNPAY_TMN_CODE}
       VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET}
       VNPAY_PAY_URL: ${VNPAY_PAY_URL:-https://sandbox.vnpayment.vn/paymentv2/vpcpay.html}
+      VNPAY_RETURN_URL: ${VNPAY_RETURN_URL}
+      VNPAY_IPN_URL: ${VNPAY_IPN_URL}
     depends_on:
       - postgres
       - kafka

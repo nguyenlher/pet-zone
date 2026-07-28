@@ -1,5 +1,6 @@
 server:
   port: 8090
+  max-http-request-header-size: ${SERVER_MAX_HTTP_REQUEST_HEADER_SIZE:64KB}
 
 spring:
   application:
@@ -180,6 +181,7 @@ spring:
 
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+        - RemoveRequestHeader=Cookie
 
   data:
     redis:

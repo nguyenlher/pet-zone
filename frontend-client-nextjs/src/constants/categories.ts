@@ -6,7 +6,7 @@ export const STORE_CATEGORIES: Category[] = [
     name: 'Thú Cưng',
     slug: 'thu-cung',
     count: '19+ bé thuần chủng',
-    description: 'Chó cảnh, mèo cảnh thuần chủng tuyển chọn, bảo hành sức khỏe & sổ tiêm đầy đủ',
+    description: 'Thú cưng thuần chủng tuyển chọn, bảo hành sức khỏe & sổ tiêm đầy đủ',
     icon: 'Dog',
     bgColor: 'bg-[#FBECE6] hover:bg-[#F8DEC5]',
     accentColor: '#E65C38',

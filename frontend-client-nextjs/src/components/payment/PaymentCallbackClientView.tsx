@@ -55,59 +55,55 @@ export default function PaymentCallbackClientView({
   };
 
   return (
-    <main className="min-h-screen bg-[#FAFAF8] text-stone-900 pt-28 md:pt-36 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Ambient glows */}
-      <div className="absolute top-24 left-1/3 w-96 h-96 bg-emerald-100/30 rounded-full blur-3xl pointer-events-none -z-10" />
-      <div className="absolute top-80 right-10 w-96 h-96 bg-amber-100/30 rounded-full blur-3xl pointer-events-none -z-10" />
-
-      <div className="max-w-lg mx-auto bg-white rounded-3xl border border-stone-200/90 shadow-xl p-8 sm:p-10 text-center">
+    <main className="min-h-screen bg-white text-black pt-28 md:pt-36 pb-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-lg mx-auto border border-neutral-200 p-8 sm:p-12 text-center">
         {result.success ? (
           <>
-            <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-inner">
-              <CheckCircle2 className="w-10 h-10" />
+            <div className="w-12 h-12 mx-auto mb-6 bg-black text-white flex items-center justify-center">
+              <CheckCircle2 className="w-6 h-6" />
             </div>
-            <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-emerald-100 text-emerald-800 rounded-full mb-3">
+            <span className="inline-block text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1 bg-neutral-100 text-black border border-neutral-300 mb-4">
               Giao dịch VNPay thành công
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-2 tracking-tight">
-              Thanh Toán Hoàn Tất!
+            <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-wider text-black mb-3">
+              Thanh toán hoàn tất
             </h1>
-            <p className="text-stone-500 text-xs sm:text-sm mb-6 leading-relaxed">
-              Đơn hàng của bạn đã được thanh toán trực tuyến qua cổng VNPay. Chúng tôi sẽ nhanh chóng đóng gói và vận chuyển đến bạn.
+            <p className="text-neutral-500 text-xs sm:text-sm mb-6 leading-relaxed font-mono">
+              Đơn hàng của bạn đã được thanh toán trực tuyến qua cổng VNPay. Chúng tôi sẽ nhanh chóng chuẩn bị và vận chuyển đến bạn.
             </p>
 
-            <div className="bg-stone-50 rounded-2xl p-4 sm:p-5 mb-6 text-left text-xs space-y-2.5 font-mono text-stone-700 border border-stone-200/60">
+            <div className="border border-neutral-200 bg-neutral-50 p-5 mb-8 text-left text-xs space-y-2.5 font-mono text-neutral-800">
               {result.orderId && (
                 <div className="flex justify-between">
-                  <span className="text-stone-400 font-sans">Mã đơn hàng:</span>
-                  <span className="font-bold text-stone-900">{result.orderId}</span>
+                  <span className="text-neutral-500 uppercase text-[11px]">Mã đơn hàng:</span>
+                  <span className="font-bold text-black">{result.orderId}</span>
                 </div>
               )}
               {result.transactionId && (
                 <div className="flex justify-between">
-                  <span className="text-stone-400 font-sans">Mã GD VNPay:</span>
-                  <span className="font-semibold text-stone-800">{result.transactionId}</span>
+                  <span className="text-neutral-500 uppercase text-[11px]">Mã GD VNPay:</span>
+                  <span className="font-medium text-black">{result.transactionId}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-stone-400 font-sans">Phương thức:</span>
-                <span className="font-bold text-blue-600 font-sans">Cổng VNPay (QR / ATM / Thẻ)</span>
+                <span className="text-neutral-500 uppercase text-[11px]">Phương thức:</span>
+                <span className="font-bold text-black uppercase">Cổng VNPay</span>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col sm:flex-row gap-4">
               {result.orderId ? (
                 <Link
                   href={`/order/${result.orderId}`}
-                  className="flex-1 py-3.5 px-6 rounded-full bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all text-center inline-flex items-center justify-center gap-2 group"
+                  className="flex-1 py-4 px-6 bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-widest transition-colors text-center inline-flex items-center justify-center gap-2 group"
                 >
                   <span>Xem chi tiết đơn hàng</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
               ) : (
                 <Link
                   href="/"
-                  className="flex-1 py-3.5 px-6 rounded-full bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all text-center"
+                  className="flex-1 py-4 px-6 bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-widest transition-colors text-center"
                 >
                   Về trang chủ
                 </Link>
@@ -116,40 +112,40 @@ export default function PaymentCallbackClientView({
           </>
         ) : (
           <>
-            <div className="w-16 h-16 mx-auto mb-5 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shadow-inner">
-              <XCircle className="w-10 h-10" />
+            <div className="w-12 h-12 mx-auto mb-6 border border-neutral-300 bg-neutral-100 text-black flex items-center justify-center">
+              <XCircle className="w-6 h-6" />
             </div>
-            <span className="inline-block text-xs font-bold uppercase tracking-wider px-3.5 py-1 bg-rose-100 text-rose-800 rounded-full mb-3">
+            <span className="inline-block text-[10px] font-mono font-bold uppercase tracking-widest px-3 py-1 bg-neutral-100 text-black border border-neutral-300 mb-4">
               Thanh toán chưa hoàn tất
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-2 tracking-tight">
-              Giao Dịch Không Thành Công
+            <h1 className="text-xl sm:text-2xl font-bold uppercase tracking-wider text-black mb-3">
+              Giao dịch không thành công
             </h1>
-            <p className="text-stone-500 text-xs sm:text-sm mb-5 leading-relaxed">
+            <p className="text-neutral-500 text-xs sm:text-sm mb-6 leading-relaxed font-mono">
               {result.message || 'Giao dịch qua VNPay chưa hoàn tất hoặc bị gián đoạn.'}
             </p>
 
             {/* Explanatory alert */}
-            <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-left text-xs text-amber-800 space-y-1.5 mb-6">
-              <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="p-4 border border-neutral-300 bg-neutral-50 text-left text-xs text-neutral-800 space-y-2 mb-6">
+              <div className="flex items-center gap-2 font-bold uppercase text-[11px] text-black">
+                <AlertTriangle className="w-4 h-4 text-black shrink-0" />
                 <span>Đơn hàng của bạn vẫn được lưu trữ an toàn</span>
               </div>
-              <p className="text-amber-700 leading-relaxed pl-5">
+              <p className="text-neutral-600 leading-relaxed font-mono text-[11px]">
                 Nếu cổng VNPay Sandbox báo lỗi &quot;Website chưa được phê duyệt&quot; (mã 71), bạn có thể đổi sang hình thức <strong>Thanh toán khi nhận hàng (COD)</strong> hoặc kiểm tra lại thông tin đơn hàng bên dưới.
               </p>
             </div>
 
             {result.orderId && (
-              <div className="bg-stone-50 rounded-2xl p-4 mb-6 text-left text-xs space-y-2 font-mono text-stone-700 border border-stone-200/60">
+              <div className="border border-neutral-200 bg-neutral-50 p-4 mb-6 text-left text-xs space-y-2 font-mono text-neutral-800">
                 <div className="flex justify-between">
-                  <span className="text-stone-400 font-sans">Mã đơn đã tạo:</span>
-                  <span className="font-bold text-stone-900">{result.orderId}</span>
+                  <span className="text-neutral-500 uppercase text-[11px]">Mã đơn:</span>
+                  <span className="font-bold text-black">{result.orderId}</span>
                 </div>
                 {responseCode && (
                   <div className="flex justify-between">
-                    <span className="text-stone-400 font-sans">Mã lỗi VNPay:</span>
-                    <span className="font-semibold text-rose-600">{responseCode}</span>
+                    <span className="text-neutral-500 uppercase text-[11px]">Mã phản hồi:</span>
+                    <span className="font-bold text-black">{responseCode}</span>
                   </div>
                 )}
               </div>
@@ -160,9 +156,9 @@ export default function PaymentCallbackClientView({
                 <button
                   type="button"
                   onClick={handleRestoreCartAndRetry}
-                  className="w-full py-3.5 px-6 rounded-full bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all text-center inline-flex items-center justify-center gap-2 group cursor-pointer"
+                  className="w-full py-4 px-6 bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-widest transition-colors text-center inline-flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <RotateCcw className="w-4 h-4 transition-transform group-hover:-rotate-45" />
+                  <RotateCcw className="w-4 h-4" />
                   <span>Khôi phục giỏ hàng & Đổi sang COD</span>
                 </button>
               )}
@@ -170,15 +166,15 @@ export default function PaymentCallbackClientView({
               {result.orderId ? (
                 <Link
                   href={`/order/${result.orderId}`}
-                  className="w-full py-3.5 px-6 rounded-full border border-stone-200 hover:bg-stone-50 text-stone-800 font-bold text-xs uppercase tracking-wider transition-all text-center inline-flex items-center justify-center gap-2"
+                  className="w-full py-3.5 px-6 border border-neutral-300 hover:bg-neutral-100 text-black font-bold text-xs uppercase tracking-widest transition-colors text-center inline-flex items-center justify-center gap-2"
                 >
-                  <Package className="w-4 h-4 text-stone-500" />
+                  <Package className="w-4 h-4 text-black" />
                   <span>Xem trạng thái đơn hàng này</span>
                 </Link>
               ) : (
                 <Link
                   href="/checkout"
-                  className="w-full py-3.5 px-6 rounded-full bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider shadow-md transition-all text-center"
+                  className="w-full py-4 px-6 bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-widest transition-colors text-center"
                 >
                   Thử lại tại trang Thanh toán
                 </Link>
@@ -186,7 +182,7 @@ export default function PaymentCallbackClientView({
 
               <Link
                 href="/order/lookup"
-                className="text-xs font-semibold text-stone-500 hover:text-stone-900 transition-colors pt-1"
+                className="text-xs font-mono uppercase tracking-wider text-neutral-500 hover:text-black transition-colors pt-2"
               >
                 Tra cứu đơn hàng bằng số điện thoại
               </Link>

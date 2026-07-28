@@ -1,13 +1,12 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { motion, useSpring } from 'framer-motion';
+import { motion, useSpring, HTMLMotionProps } from 'framer-motion';
 
-interface MagneticButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface MagneticButtonProps extends HTMLMotionProps<'button'> {
   children: React.ReactNode;
   className?: string;
   strength?: number; // 0.1 to 0.5
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export const MagneticButton: React.FC<MagneticButtonProps> = ({
@@ -57,7 +56,7 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
       onClick={onClick}
       whileTap={{ scale: 0.96 }}
       className={`relative inline-flex items-center justify-center transition-shadow cursor-pointer select-none ${className}`}
-      {...(props as any)}
+      {...props}
     >
       <span className="relative z-10 flex items-center justify-center gap-2">
         {children}

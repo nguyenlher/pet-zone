@@ -1,5 +1,6 @@
 server:
   port: ${SERVER_PORT:8081}
+  max-http-request-header-size: ${SERVER_MAX_HTTP_REQUEST_HEADER_SIZE:64KB}
 spring:
   application:
     name: user-service
@@ -38,3 +39,10 @@ keycloak:
 
 api:
   key: ${API_KEY}
+
+app:
+  security:
+    captcha:
+      enabled: ${CAPTCHA_ENABLED:true}
+      secret-key: ${CAPTCHA_SECRET_KEY:1x0000000000000000000000000000000AA}
+      verify-url: ${CAPTCHA_VERIFY_URL:https://challenges.cloudflare.com/turnstile/v0/siteverify}

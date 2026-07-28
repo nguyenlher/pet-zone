@@ -34,6 +34,7 @@ spring:
 
 server:
   port: ${SERVER_PORT:8085}
+  max-http-request-header-size: ${SERVER_MAX_HTTP_REQUEST_HEADER_SIZE:64KB}
 
 services:
   order-service:

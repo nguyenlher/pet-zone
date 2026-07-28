@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import com.petstore.orderservice.domain.model.Order;
 import com.petstore.orderservice.domain.model.OrderItem;
 import com.petstore.orderservice.domain.model.OrderShippingDetail;
+import com.petstore.orderservice.domain.model.enums.OrderStatus;
 
 public interface OrderService {
     Order createOrder(UUID userId, List<OrderItem> items, OrderShippingDetail shippingDetail, String discountCode);
@@ -16,4 +17,7 @@ public interface OrderService {
     Order getOrderById(UUID orderId);
     Page<Order> getUserOrders(UUID userId, Pageable pageable);
     Page<Order> getAllOrders(Pageable pageable);
+    Order updateOrderStatus(UUID orderId, OrderStatus status);
+    void deleteOrder(UUID orderId);
 }
+

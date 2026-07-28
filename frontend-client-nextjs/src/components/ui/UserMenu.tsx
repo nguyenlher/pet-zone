@@ -6,14 +6,11 @@ import { useSession, signOut } from 'next-auth/react';
 import {
   User,
   LogOut,
-  Settings,
   ShoppingBag,
   Heart,
-  KeyRound,
   UserPlus,
   LogIn,
   ChevronDown,
-  ShieldCheck,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,7 +32,7 @@ export const UserMenu: React.FC = () => {
 
   // If session expired or refresh failed, silently clean up session cookie
   useEffect(() => {
-    if ((session as any)?.error === 'RefreshAccessTokenError') {
+    if ((session as { error?: string } | null)?.error === 'RefreshAccessTokenError') {
       signOut({ redirect: false });
     }
   }, [session]);
@@ -48,25 +45,25 @@ export const UserMenu: React.FC = () => {
         // Authenticated User Avatar Button
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 p-1.5 sm:px-3 sm:py-1.5 rounded-full border border-stone-200 bg-white hover:bg-stone-50 transition-colors shadow-sm cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 border border-neutral-200 bg-white hover:bg-neutral-50 text-black text-xs font-semibold rounded-none transition-colors cursor-pointer"
           aria-label="Menu tài khoản"
         >
           {user.image ? (
             <img
               src={user.image}
               alt={user.name || 'User'}
-              className="w-7 h-7 rounded-full object-cover border border-stone-200"
+              className="w-5 h-5 rounded-none object-cover border border-neutral-200"
             />
           ) : (
-            <div className="w-7 h-7 rounded-full bg-stone-900 text-[#D4F442] flex items-center justify-center text-xs font-bold uppercase">
+            <div className="w-5 h-5 bg-black text-white flex items-center justify-center text-[10px] font-bold uppercase rounded-none">
               {user.name ? user.name.charAt(0) : 'U'}
             </div>
           )}
-          <span className="text-xs font-bold text-stone-800 hidden sm:inline max-w-[100px] truncate">
-            {user.name || 'Chủ nuôi'}
+          <span className="text-xs font-semibold text-black hidden sm:inline max-w-[100px] truncate">
+            {user.name || 'Tài khoản'}
           </span>
           <ChevronDown
-            className={`w-3.5 h-3.5 text-stone-500 transition-transform hidden sm:inline ${
+            className={`w-3.5 h-3.5 text-neutral-500 transition-transform hidden sm:inline ${
               isOpen ? 'rotate-180' : ''
             }`}
           />
@@ -75,13 +72,13 @@ export const UserMenu: React.FC = () => {
         // Unauthenticated User Button
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-2 rounded-full border border-stone-200/90 bg-white/90 hover:bg-white text-stone-800 hover:text-black transition-all shadow-sm cursor-pointer"
+          className="flex items-center gap-2 px-3 py-2 border border-neutral-200 bg-white hover:bg-neutral-50 text-black text-xs font-bold uppercase tracking-wider rounded-none transition-colors cursor-pointer"
           aria-label="Tài khoản & Đăng nhập"
         >
-          <User className="w-4 h-4" />
-          <span className="text-xs font-bold hidden sm:inline">Tài Khoản</span>
+          <User className="w-3.5 h-3.5" />
+          <span className="text-xs font-bold uppercase tracking-wider hidden sm:inline">Tài Khoản</span>
           <ChevronDown
-            className={`w-3 h-3 text-stone-400 transition-transform ${
+            className={`w-3 h-3 text-neutral-400 transition-transform ${
               isOpen ? 'rotate-180' : ''
             }`}
           />
@@ -92,115 +89,100 @@ export const UserMenu: React.FC = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="absolute right-0 mt-2 w-64 rounded-3xl bg-white border border-stone-200/90 shadow-2xl p-2 z-50 overflow-hidden text-stone-700"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15, ease: 'easeOut' }}
+            className="absolute right-0 mt-1 w-60 bg-white border border-neutral-200 shadow-xl p-0 z-50 rounded-none text-neutral-800"
           >
             {status === 'authenticated' && user ? (
               // Authenticated Dropdown Menu
-              <div className="space-y-1">
+              <div>
                 {/* User Header */}
-                <div className="p-3 bg-stone-50 rounded-2xl mb-1 border border-stone-100">
-                  <div className="flex items-center gap-2.5">
-                    {user.image ? (
-                      <img
-                        src={user.image}
-                        alt="Avatar"
-                        className="w-9 h-9 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-9 h-9 rounded-full bg-black text-[#D4F442] flex items-center justify-center font-bold text-sm">
-                        {user.name ? user.name.charAt(0) : 'P'}
-                      </div>
-                    )}
-                    <div className="flex-1 overflow-hidden">
-                      <p className="font-bold text-stone-900 text-sm truncate">
-                        {user.name || 'Chủ nuôi Pet Zone'}
-                      </p>
-                      <p className="text-[11px] text-stone-400 truncate">{user.email}</p>
+                <div className="p-3.5 bg-neutral-50 border-b border-neutral-100 flex items-center gap-2.5">
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-none object-cover border border-neutral-200"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-bold text-xs rounded-none">
+                      {user.name ? user.name.charAt(0) : 'P'}
                     </div>
-                  </div>
-                  <div className="mt-2 pt-2 border-t border-stone-200/60 flex items-center justify-between text-[11px] font-semibold text-emerald-700">
-                    <span className="inline-flex items-center gap-1">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                      Thành viên Pet Zone
-                    </span>
+                  )}
+                  <div className="flex-1 overflow-hidden">
+                    <p className="font-bold text-black text-xs truncate">
+                      {user.name || 'Thành viên'}
+                    </p>
+                    <p className="text-[11px] text-neutral-500 truncate">{user.email}</p>
                   </div>
                 </div>
 
-                <Link
-                  href="/account/orders"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors"
-                >
-                  <ShoppingBag className="w-4 h-4 text-stone-500" />
-                  <span>Đơn hàng của tôi</span>
-                </Link>
+                <div className="py-1">
+                  <Link
+                    href="/account/orders"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>Đơn hàng của tôi</span>
+                  </Link>
 
-                <Link
-                  href="/category/all"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors"
-                >
-                  <Heart className="w-4 h-4 text-stone-500" />
-                  <span>Danh sách yêu thích</span>
-                </Link>
+                  <Link
+                    href="/category/all"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors"
+                  >
+                    <Heart className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>Danh sách yêu thích</span>
+                  </Link>
+                </div>
 
-                <div className="border-t border-stone-100 my-1" />
-
-                <button
-                  onClick={() => {
-                    setIsOpen(false);
-                    signOut({ callbackUrl: '/' });
-                  }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
-                >
-                  <LogOut className="w-4 h-4 text-rose-500" />
-                  <span>Đăng xuất</span>
-                </button>
+                <div className="border-t border-neutral-100 py-1">
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                      signOut({ callbackUrl: '/' });
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-neutral-700 hover:text-black hover:bg-neutral-50 transition-colors cursor-pointer text-left"
+                  >
+                    <LogOut className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>Đăng xuất</span>
+                  </button>
+                </div>
               </div>
             ) : (
               // Unauthenticated Dropdown Menu
-              <div className="space-y-1">
-                <div className="p-3 bg-[#FAF9F5] rounded-2xl mb-1 text-center border border-stone-100">
-                  <p className="text-xs font-extrabold text-stone-900">
-                    Xin chào Sen!
-                  </p>
-                  <p className="text-[11px] text-stone-500 mt-0.5">
-                    Đăng nhập để theo dõi đơn hàng và nhận ưu đãi tích điểm.
-                  </p>
-                </div>
-
+              <div className="p-3.5 space-y-2">
                 <Link
                   href="/auth/signin"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-white bg-black hover:bg-stone-800 transition-colors shadow-sm"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-wider hover:bg-neutral-800 transition-colors rounded-none"
                 >
-                  <LogIn className="w-4 h-4 text-[#D4F442]" />
+                  <LogIn className="w-3.5 h-3.5" />
                   <span>Đăng Nhập</span>
                 </Link>
 
                 <Link
                   href="/auth/register"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs font-bold text-stone-800 hover:bg-stone-100 transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2 border border-neutral-200 text-black text-xs font-bold uppercase tracking-wider hover:bg-neutral-50 transition-colors rounded-none"
                 >
-                  <UserPlus className="w-4 h-4 text-stone-500" />
+                  <UserPlus className="w-3.5 h-3.5 text-neutral-500" />
                   <span>Đăng Ký</span>
                 </Link>
 
-                <div className="border-t border-stone-100 my-1" />
-
-                <Link
-                  href="/order/lookup"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-stone-600 hover:bg-stone-100 transition-colors"
-                >
-                  <ShoppingBag className="w-4 h-4 text-stone-400" />
-                  <span>Tra cứu đơn hàng (khách)</span>
-                </Link>
+                <div className="border-t border-neutral-100 pt-2 mt-2">
+                  <Link
+                    href="/order/lookup"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 px-1 py-1.5 text-xs font-medium text-neutral-500 hover:text-black transition-colors"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-neutral-400" />
+                    <span>Tra cứu đơn hàng (khách)</span>
+                  </Link>
+                </div>
               </div>
             )}
           </motion.div>

@@ -1,6 +1,8 @@
 package com.petstore.orderservice.api.controller.priv;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -71,13 +73,16 @@ public class PrivateOrderController {
     public ResponseEntity<Page<CreateOrderResponse>> getAllOrders(Pageable pageable) {
         log.info("Private API: Admin getting all orders");
         Page<Order> orders = orderService.getAllOrders(pageable);
+        Map<UUID, UserDTO> userCache = new HashMap<>();
         Page<CreateOrderResponse> response = orders.map(order -> {
             CreateOrderResponse orderResponse = toCreateOrderResponse(order);
-            try {
-                UserDTO user = userClient.getUserById(order.getUserId());
-                orderResponse.setUser(user);
-            } catch (Exception e) {
-                log.warn("Failed to fetch user info for order: {}", order.getId(), e);
+            if (order.getUserId() != null) {
+                try {
+                    UserDTO user = userCache.computeIfAbsent(order.getUserId(), userClient::getUserById);
+                    orderResponse.setUser(user);
+                } catch (Exception e) {
+                    log.warn("Failed to fetch user info for order: {}", order.getId(), e);
+                }
             }
             return orderResponse;
         });
@@ -93,22 +98,17 @@ public class PrivateOrderController {
             @RequestBody UpdateOrderStatusRequest request) {
         log.info("Private API: Admin updating order status - orderId: {}, newStatus: {}", id, request.getStatus());
         
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
-        
-        // Update status
-        order.setStatus(request.getStatus());
-        order.setUpdatedAt(java.time.LocalDateTime.now());
-        order = orderRepository.save(order);
-        
+        Order order = orderService.updateOrderStatus(id, request.getStatus());
         CreateOrderResponse response = toCreateOrderResponse(order);
         
         // Fetch user information
-        try {
-            UserDTO user = userClient.getUserById(order.getUserId());
-            response.setUser(user);
-        } catch (Exception e) {
-            log.warn("Failed to fetch user info for order: {}", order.getId(), e);
+        if (order.getUserId() != null) {
+            try {
+                UserDTO user = userClient.getUserById(order.getUserId());
+                response.setUser(user);
+            } catch (Exception e) {
+                log.warn("Failed to fetch user info for order: {}", order.getId(), e);
+            }
         }
         
         return ResponseEntity.ok(response);
@@ -121,23 +121,18 @@ public class PrivateOrderController {
     public ResponseEntity<MessageResponse> deleteOrder(@PathVariable UUID id) {
         log.info("Private API: Admin deleting order - orderId: {}", id);
         
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found: " + id));
-        
-        // Check if order can be deleted
-        if (order.getStatus() != OrderStatus.CANCELLED && order.getStatus() != OrderStatus.PAYMENT_FAILED) {
+        try {
+            orderService.deleteOrder(id);
+            return ResponseEntity.ok(MessageResponse.builder()
+                    .message("Order deleted successfully")
+                    .success(true)
+                    .build());
+        } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(MessageResponse.builder()
-                    .message("Only orders with status CANCELLED or PAYMENT_FAILED can be deleted")
+                    .message(e.getMessage())
                     .success(false)
                     .build());
         }
-        
-        orderRepository.deleteById(id);
-        
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Order deleted successfully")
-                .success(true)
-                .build());
     }
 
     private CreateOrderResponse toCreateOrderResponse(Order order) {

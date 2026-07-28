@@ -8,22 +8,22 @@ import { Order } from '@/types';
 import { Package, CreditCard, Banknote, ArrowRight, ShoppingBag } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Lịch sử đơn hàng | Super Pet Zone 3D',
-  description: 'Quản lý và theo dõi danh sách đơn hàng của bạn tại Super Pet Zone 3D.',
+  title: 'Lịch sử đơn hàng | Pet Zone',
+  description: 'Quản lý và theo dõi danh sách đơn hàng của bạn tại Pet Zone.',
 };
 
 interface AccountOrdersPageProps {
   searchParams: Promise<{ page?: string }>;
 }
 
-const statusMap: Record<string, { label: string; color: string; bg: string }> = {
-  PENDING: { label: 'Chờ xác nhận', color: 'text-amber-800', bg: 'bg-amber-100' },
-  PENDING_PAYMENT: { label: 'Chờ thanh toán', color: 'text-blue-800', bg: 'bg-blue-100' },
-  PROCESSING: { label: 'Đang xử lý', color: 'text-indigo-800', bg: 'bg-indigo-100' },
-  CONFIRMED: { label: 'Đã xác nhận', color: 'text-emerald-800', bg: 'bg-emerald-100' },
-  DELIVERING: { label: 'Đang giao', color: 'text-sky-800', bg: 'bg-sky-100' },
-  DELIVERED: { label: 'Đã giao thành công', color: 'text-green-800', bg: 'bg-green-100' },
-  CANCELLED: { label: 'Đã hủy', color: 'text-rose-800', bg: 'bg-rose-100' },
+const statusMap: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  PENDING: { label: 'CHỜ XÁC NHẬN', color: 'text-black', bg: 'bg-neutral-100', border: 'border-neutral-300' },
+  PENDING_PAYMENT: { label: 'CHỜ THANH TOÁN', color: 'text-black', bg: 'bg-neutral-100', border: 'border-neutral-300' },
+  PROCESSING: { label: 'ĐANG XỬ LÝ', color: 'text-black', bg: 'bg-neutral-100', border: 'border-neutral-300' },
+  CONFIRMED: { label: 'ĐÃ XÁC NHẬN', color: 'text-white', bg: 'bg-black', border: 'border-black' },
+  DELIVERING: { label: 'ĐANG GIAO', color: 'text-black', bg: 'bg-neutral-100', border: 'border-neutral-300' },
+  DELIVERED: { label: 'ĐÃ GIAO', color: 'text-white', bg: 'bg-black', border: 'border-black' },
+  CANCELLED: { label: 'ĐÃ HỦY', color: 'text-neutral-500', bg: 'bg-neutral-50', border: 'border-neutral-200' },
 };
 
 export default async function AccountOrdersPage({ searchParams }: AccountOrdersPageProps) {
@@ -58,58 +58,59 @@ export default async function AccountOrdersPage({ searchParams }: AccountOrdersP
   }
 
   return (
-    <main className="min-h-screen bg-slate-50/60 py-10 px-4">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <main className="min-h-screen bg-white text-black pt-28 md:pt-36 pb-24 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-neutral-200 pb-6">
           <div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-              <Link href="/" className="hover:text-amber-600 transition-colors">
+            <div className="flex items-center gap-2 text-xs font-mono text-neutral-400 mb-2">
+              <Link href="/" className="hover:text-black transition-colors uppercase">
                 Trang chủ
               </Link>
               <span>/</span>
-              <span className="text-gray-900 font-medium">Tài khoản</span>
+              <span className="text-black font-semibold uppercase">Tài khoản</span>
             </div>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
-              Lịch sử đơn hàng của bạn
+            <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-wider text-black">
+              Lịch sử đơn hàng
             </h1>
           </div>
-          <div className="text-sm text-gray-600 bg-white border border-gray-100 px-4 py-2 rounded-2xl shadow-sm self-start sm:self-auto">
-            Tổng cộng: <span className="font-bold text-gray-900">{totalElements}</span> đơn hàng
+          <div className="text-xs font-mono text-neutral-600 border border-neutral-200 bg-neutral-50 px-4 py-2 self-start sm:self-auto uppercase tracking-wider">
+            Tổng cộng: <span className="font-bold text-black">{totalElements}</span> đơn
           </div>
         </div>
 
         {fetchError && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm">
-            Không thể tải danh sách đơn hàng lúc này. Vui lòng thử lại sau!
+          <div className="p-4 border border-neutral-300 bg-neutral-50 text-black text-xs font-mono">
+            Không thể tải danh sách đơn hàng lúc này. Vui lòng thử lại sau.
           </div>
         )}
 
         {/* Orders list */}
         {orders.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Package className="w-8 h-8" />
+          <div className="border border-neutral-200 p-12 sm:p-16 text-center">
+            <div className="w-12 h-12 mx-auto mb-6 border border-neutral-200 flex items-center justify-center">
+              <Package className="w-6 h-6 text-black" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Bạn chưa có đơn hàng nào</h2>
-            <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
-              Khám phá các sản phẩm và thú cưng 3D để bắt đầu đặt đơn hàng đầu tiên của bạn.
+            <h2 className="text-base font-bold uppercase tracking-wider text-black mb-2">Bạn chưa có đơn hàng nào</h2>
+            <p className="text-neutral-500 text-xs max-w-sm mx-auto mb-8 font-mono">
+              Khám phá bộ sưu tập và thú cưng 3D để bắt đầu đơn hàng đầu tiên của bạn.
             </p>
             <Link
               href="/category/all"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold text-sm shadow-md shadow-orange-500/20 hover:opacity-95 transition-all"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-black hover:bg-neutral-800 text-white font-bold text-xs uppercase tracking-widest transition-colors"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Khám phá sản phẩm</span>
             </Link>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {orders.map((order) => {
               const status = statusMap[order.orderStatus] || {
                 label: order.orderStatus,
-                color: 'text-gray-800',
-                bg: 'bg-gray-100',
+                color: 'text-black',
+                bg: 'bg-neutral-100',
+                border: 'border-neutral-300',
               };
 
               const formattedDate = order.createdAt
@@ -125,67 +126,67 @@ export default async function AccountOrdersPage({ searchParams }: AccountOrdersP
               return (
                 <div
                   key={order.orderId}
-                  className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-amber-200 transition-all p-5 md:p-6"
+                  className="border border-neutral-200 hover:border-black transition-colors p-6"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-gray-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-neutral-200">
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs md:text-sm font-bold text-gray-900">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-xs sm:text-sm font-bold text-black">
                           #{order.orderId}
                         </span>
-                        <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${status.bg} ${status.color}`}>
+                        <span className={`text-[10px] font-mono px-2.5 py-0.5 font-bold border ${status.bg} ${status.color} ${status.border}`}>
                           {status.label}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 mt-1">Ngày đặt: {formattedDate}</p>
+                      <p className="text-xs font-mono text-neutral-400 mt-1">Ngày đặt: {formattedDate}</p>
                     </div>
 
                     <div className="text-left sm:text-right">
-                      <span className="text-xs text-gray-500 block">Tổng thanh toán:</span>
-                      <span className="text-lg font-bold text-amber-600">
+                      <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-500 block">Tổng thanh toán:</span>
+                      <span className="text-base font-bold font-mono text-black">
                         {order.totalAmount.toLocaleString('vi-VN')} đ
                       </span>
                     </div>
                   </div>
 
                   {/* Items preview */}
-                  <div className="py-3 space-y-2">
+                  <div className="py-4 space-y-2">
                     {order.items &&
                       order.items.slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="flex justify-between text-xs sm:text-sm text-gray-700">
-                          <span className="truncate pr-4">
-                            • {item.name} <span className="text-gray-400">x{item.quantity}</span>
+                        <div key={idx} className="flex justify-between text-xs text-neutral-700">
+                          <span className="truncate pr-4 font-medium">
+                            • {item.name} <span className="text-neutral-400 font-mono">x{item.quantity}</span>
                           </span>
-                          <span className="font-medium flex-shrink-0">
+                          <span className="font-mono font-medium text-black shrink-0">
                             {item.subtotalPrice.toLocaleString('vi-VN')} đ
                           </span>
                         </div>
                       ))}
                     {order.items && order.items.length > 3 && (
-                      <p className="text-xs text-gray-400 italic">
-                        và thêm {order.items.length - 3} sản phẩm khác...
+                      <p className="text-[11px] text-neutral-400 font-mono italic">
+                        + thêm {order.items.length - 3} sản phẩm khác...
                       </p>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
-                    <span className="text-xs text-gray-500 inline-flex items-center gap-1.5">
+                  <div className="pt-4 border-t border-neutral-200 flex items-center justify-between">
+                    <span className="text-xs text-neutral-600 inline-flex items-center gap-2">
                       {order.shipping?.paymentMethod === 'VNPAY' ? (
                         <>
-                          <CreditCard className="w-3.5 h-3.5 text-blue-600" />
-                          <span>Cổng VNPay</span>
+                          <CreditCard className="w-3.5 h-3.5 text-black" />
+                          <span className="text-[11px] font-mono uppercase">VNPay</span>
                         </>
                       ) : (
                         <>
-                          <Banknote className="w-3.5 h-3.5 text-emerald-600" />
-                          <span>Thanh toán COD</span>
+                          <Banknote className="w-3.5 h-3.5 text-black" />
+                          <span className="text-[11px] font-mono uppercase">COD (Tiền mặt)</span>
                         </>
                       )}
                     </span>
                     <Link
                       href={`/order/${order.orderId}`}
-                      className="text-xs md:text-sm font-semibold text-amber-600 hover:text-amber-700 hover:underline flex items-center gap-1"
+                      className="text-xs font-bold uppercase tracking-wider text-black hover:text-neutral-600 transition-colors flex items-center gap-1.5"
                     >
                       <span>Xem chi tiết</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -197,24 +198,24 @@ export default async function AccountOrdersPage({ searchParams }: AccountOrdersP
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 pt-6">
+              <div className="flex items-center justify-center gap-2 pt-8">
                 {currentPage > 1 && (
                   <Link
                     href={`/account/orders?page=${currentPage - 1}`}
-                    className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                    className="px-4 py-2 border border-neutral-200 text-xs font-mono uppercase tracking-wider text-black hover:bg-neutral-100 transition-colors"
                   >
                     ← Trang trước
                   </Link>
                 )}
 
-                <span className="text-sm font-medium text-gray-600 px-3">
-                  Trang {currentPage} / {totalPages}
+                <span className="text-xs font-mono uppercase tracking-wider text-neutral-600 px-4">
+                  {currentPage} / {totalPages}
                 </span>
 
                 {currentPage < totalPages && (
                   <Link
                     href={`/account/orders?page=${currentPage + 1}`}
-                    className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                    className="px-4 py-2 border border-neutral-200 text-xs font-mono uppercase tracking-wider text-black hover:bg-neutral-100 transition-colors"
                   >
                     Trang sau →
                   </Link>

@@ -1,4 +1,4 @@
-package com.petstore.userservice.domain.service;
+package com.petstore.userservice.infra.integration.keycloak;
 
 import java.util.Map;
 

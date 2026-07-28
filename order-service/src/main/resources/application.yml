@@ -46,6 +46,7 @@ spring:
 
 server:
   port: ${SERVER_PORT:8084}
+  max-http-request-header-size: ${SERVER_MAX_HTTP_REQUEST_HEADER_SIZE:64KB}
 
 rest:
     api:
@@ -58,3 +59,11 @@ rest:
 
 api:
   key: ${API_KEY}
+
+app:
+  order:
+    payment-timeout-minutes: ${ORDER_PAYMENT_TIMEOUT_MINUTES:15}
+    timeout:
+      payment-timeout-minutes: ${ORDER_PAYMENT_TIMEOUT_MINUTES:15}
+      max-retry-attempts: ${ORDER_TIMEOUT_MAX_RETRY_ATTEMPTS:3}
+      retry-delay-minutes: ${ORDER_TIMEOUT_RETRY_DELAY_MINUTES:1}

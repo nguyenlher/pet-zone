@@ -1,4 +1,4 @@
-package com.petstore.userservice.domain.service.impl;
+package com.petstore.userservice.infra.integration.keycloak.impl;
 
 import java.util.Collections;
 import java.util.List;
@@ -21,7 +21,7 @@ import com.petstore.userservice.api.dto.request.ForgotPasswordRequest;
 import com.petstore.userservice.api.dto.request.LoginRequest;
 import com.petstore.userservice.api.dto.request.RegisterRequest;
 import com.petstore.userservice.api.dto.request.ResetPasswordRequest;
-import com.petstore.userservice.domain.service.KeycloakAuthService;
+import com.petstore.userservice.infra.integration.keycloak.KeycloakAuthService;
 import com.petstore.userservice.domain.service.UserService;
 import com.petstore.userservice.exception.AuthenticationException;
 import com.petstore.userservice.exception.DuplicateException;

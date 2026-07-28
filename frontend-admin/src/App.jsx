@@ -9,7 +9,6 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import OrdersPage from './pages/OrdersPage';
 import CustomersPage from './pages/CustomersPage';
-import ReportsPage from './pages/ReportsPage';
 import PlaceholderPage from './pages/PlaceholderPage';
 import PetsPage from './pages/PetsPage';
 import ProductsPage from './pages/ProductsPage';
@@ -51,7 +50,7 @@ function Layout() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-neutral-50/60 font-sans">
       <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
 
       {/* Main content area — shift based on sidebar width */}
@@ -60,13 +59,13 @@ function Layout() {
         style={{ marginLeft: sidebarCollapsed ? '64px' : '256px' }}
       >
         <TopBar pageTitle={pageTitle} />
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-6 lg:p-8 max-w-7xl w-full mx-auto overflow-y-auto">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/payments" element={<PlaceholderPage title="Payments" />} />
             <Route path="/customers" element={<CustomersPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/reports" element={<Navigate to="/" replace />} />
             <Route path="/items/pets" element={<PetsPage />} />
             <Route path="/items/products" element={<ProductsPage />} />
             <Route path="/generate-3d" element={<Generate3DPage />} />

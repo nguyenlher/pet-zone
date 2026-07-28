@@ -135,27 +135,27 @@ export const Studio3DClientView: React.FC = () => {
   };
 
   return (
-    <main className="min-h-screen bg-[#FAFAF8] text-[#121316] flex flex-col selection:bg-[#D4F442] selection:text-black">
+    <main className="min-h-screen bg-white text-black flex flex-col selection:bg-black selection:text-white">
       <Navbar />
 
       {/* Header & Breadcrumbs */}
-      <section className="pt-28 sm:pt-36 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <section className="pt-24 sm:pt-28 pb-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-xs text-stone-500 mb-4" aria-label="Breadcrumb">
+        <nav className="flex items-center gap-2 text-xs text-neutral-400 mb-4 uppercase tracking-wider" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-black transition-colors">
             Trang Chủ
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
-          <span className="text-stone-900 font-semibold">3D Studio</span>
+          <span className="text-black font-bold">3D Studio</span>
         </nav>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-stone-900">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-black uppercase">
               3D Studio
             </h1>
-            <p className="mt-2 text-stone-600 text-sm sm:text-base max-w-2xl leading-relaxed">
-              Môi trường 3D tương tác sử dụng đồ họa Unity WebGL. Hãy nhấn nút bên dưới để khởi động studio và bắt đầu trải nghiệm.
+            <p className="mt-2 text-neutral-600 text-xs sm:text-sm max-w-2xl leading-relaxed">
+              Môi trường 3D tương tác sử dụng đồ họa Unity WebGL. Nhấn nút bên dưới để khởi động studio và bắt đầu trải nghiệm trực quan.
             </p>
           </div>
         </div>
@@ -166,20 +166,20 @@ export const Studio3DClientView: React.FC = () => {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            className="mt-6 p-4 rounded-2xl bg-amber-50/90 border border-amber-200/80 flex items-start justify-between gap-3 text-amber-900 text-xs sm:text-sm"
+            className="mt-6 p-4 rounded-none bg-neutral-50 border border-neutral-200 flex items-start justify-between gap-3 text-neutral-800 text-xs"
           >
             <div className="flex items-start gap-2.5">
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <AlertTriangle className="w-4 h-4 text-black shrink-0 mt-0.5" />
               <div>
-                <p className="font-semibold text-amber-950">LƯU Ý TRÊN THIẾT BỊ DI ĐỘNG!</p>
-                <p className="text-amber-800/90 mt-0.5 text-xs leading-relaxed">
-                  Mô hình 3D yêu cầu nhiều tài nguyên. Để có trải nghiệm mượt mà và góc nhìn tốt nhất, hãy sử dụng máy tính hoặc laptop.
+                <p className="font-bold text-black uppercase tracking-wider">Lưu ý thiết bị di động</p>
+                <p className="text-neutral-600 mt-0.5 leading-relaxed">
+                  Trải nghiệm không gian 3D đạt chất lượng đồ họa và góc nhìn tốt nhất trên máy tính hoặc laptop.
                 </p>
               </div>
             </div>
             <button
               onClick={() => setDismissMobileWarning(true)}
-              className="p-1 rounded-lg text-amber-700 hover:bg-amber-100 transition-colors shrink-0"
+              className="p-1 rounded-none text-neutral-500 hover:text-black transition-colors shrink-0"
               aria-label="Đóng thông báo"
             >
               <X className="w-4 h-4" />
@@ -190,41 +190,30 @@ export const Studio3DClientView: React.FC = () => {
 
       {/* Main Studio Viewport Section */}
       <section className="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full pb-16 flex-1">
-        {/* Fullscreen Container Wrapper: holds both toolbar and viewport */}
+        {/* Fullscreen Container Wrapper */}
         <div
           ref={containerRef}
-          className={`relative rounded-3xl overflow-hidden bg-[#0A0D14] border border-stone-800/80 shadow-2xl transition-all duration-300 flex flex-col ${
+          className={`relative rounded-none overflow-hidden bg-black border border-neutral-800 shadow-2xl transition-all duration-300 flex flex-col ${
             isFullscreen
               ? 'w-full h-full rounded-none border-none'
               : 'min-h-[580px] h-[75vh] max-h-[850px]'
           }`}
         >
           {/* Studio Top Control Bar */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-[#111622]/95 backdrop-blur-md border-b border-stone-800/60 z-20 text-white text-xs">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-2.5 bg-neutral-950 border-b border-neutral-800 z-20 text-white text-xs">
             {/* Left: Studio Status */}
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
-                <span className="relative flex h-2 w-2">
-                  <span
-                    className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                      buildStatus === 'available'
-                        ? 'bg-[#D4F442]'
-                        : buildStatus === 'missing'
-                        ? 'bg-amber-400'
-                        : 'bg-stone-500'
-                    }`}
-                  />
-                  <span
-                    className={`relative inline-flex rounded-full h-2 w-2 ${
-                      buildStatus === 'available'
-                        ? 'bg-[#D4F442]'
-                        : buildStatus === 'missing'
-                        ? 'bg-amber-400'
-                        : 'bg-stone-500'
-                    }`}
-                  />
-                </span>
-                <span className="font-mono text-[11px] font-semibold tracking-wide text-stone-300">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`w-2 h-2 ${
+                    buildStatus === 'available'
+                      ? 'bg-white'
+                      : buildStatus === 'missing'
+                      ? 'bg-neutral-500'
+                      : 'bg-neutral-600'
+                  }`}
+                />
+                <span className="font-mono text-[10px] font-bold tracking-widest text-neutral-300 uppercase">
                   {buildStatus === 'available'
                     ? 'UNITY WEBGL ACTIVE'
                     : buildStatus === 'missing'
@@ -232,9 +221,9 @@ export const Studio3DClientView: React.FC = () => {
                     : 'STANDBY MODE'}
                 </span>
               </div>
-              <span className="hidden sm:inline-block text-stone-600">|</span>
-              <span className="hidden sm:inline-block text-stone-400 text-[11px]">
-                Unity WebGL 0.1.0
+              <span className="hidden sm:inline-block text-neutral-700">|</span>
+              <span className="hidden sm:inline-block text-neutral-500 text-[10px] font-mono">
+                WebGL 0.1.0
               </span>
             </div>
 
@@ -242,42 +231,42 @@ export const Studio3DClientView: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setShowControlsModal((prev) => !prev)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800/60 hover:bg-stone-700/80 text-stone-300 hover:text-white transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors cursor-pointer text-[11px] font-bold uppercase tracking-wider"
                 title="Hướng dẫn điều khiển"
               >
                 <HelpCircle className="w-3.5 h-3.5" />
-                <span className="hidden md:inline text-[11px]">Hướng dẫn</span>
+                <span className="hidden md:inline">Hướng dẫn</span>
               </button>
 
               {isStarted && buildStatus === 'available' && (
                 <button
                   onClick={handleReload}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800/60 hover:bg-stone-700/80 text-stone-300 hover:text-white transition-colors cursor-pointer ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors cursor-pointer text-[11px] font-bold uppercase tracking-wider ${
                     isReloading ? 'opacity-50' : ''
                   }`}
                   title="Tải lại phòng 3D"
                   aria-label="Tải lại mô hình"
                 >
                   <RotateCw className={`w-3.5 h-3.5 ${isReloading ? 'animate-spin' : ''}`} />
-                  <span className="hidden md:inline text-[11px]">Tải lại</span>
+                  <span className="hidden md:inline">Tải lại</span>
                 </button>
               )}
 
               <button
                 onClick={toggleFullscreen}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800/60 hover:bg-stone-700/80 text-stone-300 hover:text-white transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-none bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 text-neutral-300 hover:text-white transition-colors cursor-pointer text-[11px] font-bold uppercase tracking-wider"
                 title={isFullscreen ? 'Thoát toàn màn hình' : 'Toàn màn hình'}
                 aria-label={isFullscreen ? 'Thoát toàn màn hình' : 'Mở toàn màn hình'}
               >
                 {isFullscreen ? (
                   <>
-                    <Minimize2 className="w-3.5 h-3.5 text-[#D4F442]" />
-                    <span className="text-[11px] font-medium">Thu nhỏ</span>
+                    <Minimize2 className="w-3.5 h-3.5 text-white" />
+                    <span>Thu nhỏ</span>
                   </>
                 ) : (
                   <>
                     <Maximize2 className="w-3.5 h-3.5" />
-                    <span className="hidden md:inline text-[11px]">Toàn màn hình</span>
+                    <span className="hidden md:inline">Toàn màn hình</span>
                   </>
                 )}
               </button>
@@ -288,36 +277,36 @@ export const Studio3DClientView: React.FC = () => {
           <AnimatePresence>
             {showControlsModal && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
+                exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
-                className="absolute top-12 right-4 sm:right-6 z-30 max-w-sm w-full bg-[#161B26]/95 backdrop-blur-xl border border-stone-700/70 rounded-2xl p-4 shadow-2xl text-white text-xs"
+                className="absolute top-12 right-4 sm:right-6 z-30 max-w-sm w-full bg-neutral-950 border border-neutral-800 rounded-none p-4 shadow-2xl text-white text-xs"
               >
-                <div className="flex items-center justify-between pb-2 border-b border-stone-800">
-                  <span className="font-bold text-stone-200 flex items-center gap-2">
+                <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
+                  <span className="font-bold text-white text-xs uppercase tracking-wider">
                     Hướng Dẫn Điều Khiển 3D
                   </span>
                   <button
                     onClick={() => setShowControlsModal(false)}
-                    className="p-1 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition-colors"
+                    className="p-1 rounded-none text-neutral-400 hover:text-white transition-colors cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="mt-3 space-y-2.5 text-stone-300">
+                <div className="mt-3 space-y-3 text-neutral-300">
                   <div className="flex items-start gap-2.5">
-                    <MousePointerClick className="w-4 h-4 text-[#D4F442] shrink-0 mt-0.5" />
+                    <MousePointerClick className="w-4 h-4 text-white shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-white">Xoay camera 360°</p>
-                      <p className="text-[11px] text-stone-400">Di chuyển chuột xung quanh mô hình</p>
+                      <p className="font-bold text-white text-xs uppercase tracking-wider">Xoay camera 360°</p>
+                      <p className="text-[11px] text-neutral-400">Rê chuột xung quanh mô hình để thay đổi góc nhìn</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <Compass className="w-4 h-4 text-[#D4F442]" />
+                    <Compass className="w-4 h-4 text-white shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-semibold text-white">Di chuyển</p>
-                      <p className="text-[11px] text-stone-400">Sử dụng phím WASD để di chuyển</p>
+                      <p className="font-bold text-white text-xs uppercase tracking-wider">Di chuyển</p>
+                      <p className="text-[11px] text-neutral-400">Sử dụng cụm phím W-A-S-D để di chuyển không gian</p>
                     </div>
                   </div>
                 </div>
@@ -330,70 +319,52 @@ export const Studio3DClientView: React.FC = () => {
             {!isStarted ? (
               /* Initial Launcher Screen */
               <div className="relative w-full h-full flex flex-col items-center justify-center p-6 text-center select-none overflow-hidden">
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-stone-800/40 via-[#0A0D14]/90 to-[#0A0D14]" />
-
-                <div
-                  className="absolute inset-0 opacity-10 pointer-events-none"
-                  style={{
-                    backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
-                    backgroundSize: '40px 40px',
-                  }}
-                />
-
                 <div className="relative z-10 max-w-lg mx-auto flex flex-col items-center">
                   <button
                     onClick={handleStartExperience}
                     disabled={isCheckingBuild}
-                    className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#D4F442] hover:bg-[#c2e434] text-black font-extrabold text-sm sm:text-base transition-all shadow-xl shadow-[#D4F442]/20 hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-2.5 px-8 py-4 bg-white text-black font-bold text-xs uppercase tracking-widest hover:bg-neutral-200 transition-colors rounded-none cursor-pointer disabled:opacity-50"
                   >
                     {isCheckingBuild ? (
                       <RefreshCw className="w-4 h-4 animate-spin text-black" />
                     ) : (
-                      <Play className="w-4 h-4 fill-black text-black group-hover:translate-x-0.5 transition-transform" />
+                      <Play className="w-3.5 h-3.5 fill-black text-black" />
                     )}
                     <span>{isCheckingBuild ? 'Đang Khởi Chạy...' : 'Bắt đầu trải nghiệm'}</span>
                   </button>
 
-                  <p className="text-[11px] text-stone-500 mt-4">
-                    Tối ưu hóa thời gian tải • Unity WebGL Build tự động chạy
+                  <p className="text-[10px] uppercase tracking-wider text-neutral-500 mt-4 font-mono">
+                    Unity WebGL Engine • Tự động kích hoạt
                   </p>
                 </div>
               </div>
             ) : buildStatus === 'missing' ? (
-              /* Maintenance / Hẹn Lần Sau Screen */
+              /* Maintenance Screen */
               <div className="relative w-full h-full flex flex-col items-center justify-center p-6 text-center select-none overflow-y-auto">
-                {/* Background Ambient Radial Glow */}
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/10 via-[#0A0D14]/90 to-[#0A0D14]" />
-
                 <div className="relative z-10 max-w-lg mx-auto flex flex-col items-center py-8">
-
-                  {/* Heading */}
-                  <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-3">
-                    Hệ thống bảo trì!
+                  <h3 className="text-xl sm:text-2xl font-bold text-white uppercase tracking-wider mb-2">
+                    Hệ thống đang bảo trì
                   </h3>
 
-                  {/* Friendly Message */}
-                  <p className="text-stone-300 text-xs sm:text-sm leading-relaxed mb-6 max-w-md">
-                    3D Studio đang được bảo trì để điều chỉnh. Tính năng sẽ sớm mở lại trong thời gian tới. Cảm ơn sự quan tâm và kiên nhẫn của bạn!
+                  <p className="text-neutral-400 text-xs leading-relaxed mb-6 max-w-md">
+                    Không gian 3D Studio đang trong lịch trình cập nhật mô hình mới. Tính năng sẽ mở lại trong thời gian sớm nhất.
                   </p>
 
-                  {/* Primary Action Button */}
                   <div className="flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
                     <Link
                       href="/category/all"
-                      className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full bg-[#D4F442] hover:bg-[#c2e434] text-black font-extrabold text-xs sm:text-sm transition-all shadow-xl shadow-[#D4F442]/20 hover:scale-105 active:scale-95 cursor-pointer"
+                      className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-white text-black font-bold text-xs uppercase tracking-widest hover:bg-neutral-200 transition-colors rounded-none cursor-pointer"
                     >
                       <ShoppingBag className="w-4 h-4 text-black" />
                       <span>Khám Phá Cửa Hàng</span>
                     </Link>
                   </div>
 
-                  {/* Recheck Action */}
-                  <div className="mt-6 flex items-center justify-center text-xs text-stone-400">
+                  <div className="mt-6 flex items-center justify-center text-xs text-neutral-500">
                     <button
                       onClick={handleRecheckBuild}
                       disabled={isCheckingBuild}
-                      className="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 hover:text-white transition-colors cursor-pointer disabled:opacity-50 text-xs font-mono"
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${isCheckingBuild ? 'animate-spin' : ''}`} />
                       <span>{isCheckingBuild ? 'Đang kiểm tra...' : 'Thử lại'}</span>

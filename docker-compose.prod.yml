@@ -100,6 +100,9 @@ services:
       KEYCLOAK_REALM: super-petmark-3d
       KEYCLOAK_CLIENT_ID: user-service
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      CAPTCHA_ENABLED: ${CAPTCHA_ENABLED:-true}
+      CAPTCHA_SECRET_KEY: ${CAPTCHA_SECRET_KEY}
+      CAPTCHA_VERIFY_URL: ${CAPTCHA_VERIFY_URL:-https://challenges.cloudflare.com/turnstile/v0/siteverify}
     depends_on:
       - postgres
       - redis

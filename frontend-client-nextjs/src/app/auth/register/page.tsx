@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Eye, EyeOff, Check, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { authService } from '@/services/authService';
+import { TurnstileCaptcha } from '@/components/ui/TurnstileCaptcha';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,6 +21,9 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreed, setAgreed] = useState(true);
+
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | undefined>(undefined);
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<{ text: string; emailHighlight?: string } | null>(null);
@@ -69,6 +74,11 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!captchaToken) {
+      setErrorMsg({ text: 'Vui lòng hoàn thành xác thực bảo mật (Captcha).' });
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -77,6 +87,7 @@ export default function RegisterPage() {
         password,
         firstName: firstName.trim(),
         lastName: lastName.trim(),
+        captchaToken,
       });
 
       setSubmitting(false);
@@ -93,6 +104,8 @@ export default function RegisterPage() {
       }, 1500);
     } catch (err: unknown) {
       setSubmitting(false);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       const message = err instanceof Error ? err.message : '';
       if (
         message.includes('already in use') ||
@@ -337,10 +350,26 @@ export default function RegisterPage() {
               </label>
             </div>
 
+            {/* Cloudflare Turnstile Captcha */}
+            <div className="pt-2">
+              <TurnstileCaptcha
+                ref={turnstileRef}
+                onSuccess={(token) => {
+                  setCaptchaToken(token);
+                  setErrorMsg(null);
+                }}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => {
+                  setCaptchaToken(null);
+                  setErrorMsg({ text: 'Không thể kết nối dịch vụ xác thực Captcha. Vui lòng tải lại trang.' });
+                }}
+              />
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={submitting || success}
+              disabled={submitting || success || !captchaToken}
               className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-4 text-xs sm:text-sm tracking-widest uppercase transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-4"
             >
               {submitting ? 'ĐANG TẠO TÀI KHOẢN...' : 'TẠO TÀI KHOẢN'}

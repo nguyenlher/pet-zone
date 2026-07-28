@@ -16,8 +16,8 @@ import com.petstore.userservice.domain.model.User;
 import com.petstore.userservice.domain.model.UserShippingInfo;
 import com.petstore.userservice.domain.repository.UserRepository;
 import com.petstore.userservice.domain.repository.UserShippingInfoRepository;
-import com.petstore.userservice.domain.service.KeycloakAuthService;
 import com.petstore.userservice.domain.service.UserService;
+import com.petstore.userservice.infra.integration.keycloak.KeycloakAuthService;
 import com.petstore.userservice.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;

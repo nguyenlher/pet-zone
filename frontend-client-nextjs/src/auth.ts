@@ -69,10 +69,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         username: { label: 'Tên đăng nhập hoặc Email', type: 'text' },
         password: { label: 'Mật khẩu', type: 'password' },
+        captchaToken: { label: 'Captcha Token', type: 'text' },
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
           return null;
+        }
+
+        const captchaEnabled = process.env.CAPTCHA_ENABLED !== 'false';
+        if (captchaEnabled) {
+          const captchaToken = credentials.captchaToken as string;
+          if (!captchaToken) {
+            console.warn('[SignIn] Missing captchaToken in credentials');
+            return null;
+          }
+
+          try {
+            const secretKey = process.env.CAPTCHA_SECRET_KEY || '1x0000000000000000000000000000000AA';
+            const verifyUrl = process.env.CAPTCHA_VERIFY_URL || 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+            const verifyRes = await fetch(verifyUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                secret: secretKey,
+                response: captchaToken,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            if (!verifyData.success) {
+              console.warn('[SignIn] Captcha verification failed:', verifyData);
+              return null;
+            }
+          } catch (err) {
+            console.error('[SignIn] Error validating captcha in NextAuth authorize:', err);
+            return null;
+          }
         }
 
         const issuer = getKeycloakIssuer();

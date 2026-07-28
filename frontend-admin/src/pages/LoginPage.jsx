@@ -1,6 +1,7 @@
 // src/pages/LoginPage.jsx
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Turnstile } from '@marsidev/react-turnstile';
 import { authService } from '../services/authService';
 
 export default function LoginPage() {
@@ -9,15 +10,23 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState(null);
+  const turnstileRef = useRef(null);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!captchaToken) {
+      setError('Vui lòng hoàn thành xác thực bảo mật (Captcha).');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const response = await authService.login(email.trim(), password);
+      const response = await authService.login(email.trim(), password, captchaToken);
 
       if (response.access_token) {
         localStorage.setItem('accessToken', response.access_token);
@@ -44,6 +53,8 @@ export default function LoginPage() {
       }
     } catch (err) {
       console.error('Login error:', err);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       const serverMsg = err.response?.data?.message;
       if (serverMsg) {
         setError(serverMsg);
@@ -140,10 +151,31 @@ export default function LoginPage() {
             </button>
           </div>
 
+          {/* Cloudflare Turnstile Captcha */}
+          <div className="flex justify-center pt-2">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={import.meta.env.VITE_CAPTCHA_SITE_KEY || '1x00000000000000000000AA'}
+              onSuccess={(token) => {
+                setCaptchaToken(token);
+                setError('');
+              }}
+              onExpire={() => setCaptchaToken(null)}
+              onError={() => {
+                setCaptchaToken(null);
+                setError('Không thể kết nối dịch vụ xác thực Captcha. Vui lòng tải lại trang.');
+              }}
+              options={{
+                theme: 'auto',
+                size: 'normal',
+              }}
+            />
+          </div>
+
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !captchaToken}
             className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-4 text-xs sm:text-sm tracking-widest uppercase transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-4"
           >
             {isLoading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP'}

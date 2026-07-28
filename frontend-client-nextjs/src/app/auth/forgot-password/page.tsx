@@ -1,15 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/authService';
+import { TurnstileCaptcha } from '@/components/ui/TurnstileCaptcha';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | undefined>(undefined);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,14 +23,21 @@ export default function ForgotPasswordPage() {
       return;
     }
 
+    if (!captchaToken) {
+      setErrorMsg('Vui lòng hoàn thành xác thực bảo mật (Captcha).');
+      return;
+    }
+
     setLoading(true);
     setErrorMsg(null);
 
     try {
-      await authService.forgotPassword(email.trim());
+      await authService.forgotPassword(email.trim(), captchaToken);
       setSubmitted(true);
     } catch (err: unknown) {
       console.error('[forgot-password] Lỗi gửi yêu cầu:', err);
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
       const msg =
         err instanceof Error
           ? err.message
@@ -100,10 +112,26 @@ export default function ForgotPasswordPage() {
                 </div>
               )}
 
+              {/* Cloudflare Turnstile Captcha */}
+              <div className="pt-2">
+                <TurnstileCaptcha
+                  ref={turnstileRef}
+                  onSuccess={(token) => {
+                    setCaptchaToken(token);
+                    setErrorMsg(null);
+                  }}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => {
+                    setCaptchaToken(null);
+                    setErrorMsg('Không thể kết nối dịch vụ xác thực Captcha. Vui lòng tải lại trang.');
+                  }}
+                />
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || !captchaToken}
                 className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-4 text-xs sm:text-sm tracking-widest uppercase transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-4"
               >
                 {loading ? 'ĐANG GỬI YÊU CẦU...' : 'GỬI LIÊN KẾT ĐẶT LẠI MẬT KHẨU'}

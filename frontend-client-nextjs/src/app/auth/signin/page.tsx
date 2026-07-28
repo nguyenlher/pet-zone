@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useRef, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { TurnstileCaptcha } from '@/components/ui/TurnstileCaptcha';
+import type { TurnstileInstance } from '@marsidev/react-turnstile';
 
 function SignInContent() {
   const searchParams = useSearchParams();
@@ -20,10 +22,18 @@ function SignInContent() {
   const [formError, setFormError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance | undefined>(undefined);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) {
       setFormError('Vui lòng nhập địa chỉ email và mật khẩu.');
+      return;
+    }
+
+    if (!captchaToken) {
+      setFormError('Vui lòng hoàn thành xác thực bảo mật (Captcha).');
       return;
     }
 
@@ -34,12 +44,15 @@ function SignInContent() {
       const result = await signIn('keycloak-credentials', {
         username: username.trim(),
         password,
+        captchaToken,
         redirect: false,
         callbackUrl,
       });
 
       if (result?.error) {
         console.error('[SignIn] NextAuth signin error:', result.error, result);
+        turnstileRef.current?.reset();
+        setCaptchaToken(null);
         setFormError(
           result.error === 'CredentialsSignin' ||
           result.error === 'Configuration' ||
@@ -193,10 +206,26 @@ function SignInContent() {
               </Link>
             </div>
 
+            {/* Cloudflare Turnstile Captcha */}
+            <div className="pt-2">
+              <TurnstileCaptcha
+                ref={turnstileRef}
+                onSuccess={(token) => {
+                  setCaptchaToken(token);
+                  setFormError(null);
+                }}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => {
+                  setCaptchaToken(null);
+                  setFormError('Không thể kết nối dịch vụ xác thực Captcha. Vui lòng tải lại trang.');
+                }}
+              />
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading || isSuccess}
+              disabled={loading || isSuccess || !captchaToken}
               className="w-full bg-black hover:bg-neutral-800 text-white font-bold py-4 text-xs sm:text-sm tracking-widest uppercase transition-colors rounded-none disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer mt-4"
             >
               {loading ? 'ĐANG ĐĂNG NHẬP...' : 'ĐĂNG NHẬP'}

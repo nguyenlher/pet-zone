@@ -46,4 +46,13 @@ public class GlobalExceptionHandler {
                         .success(false)
                         .build());
     }
+
+    @ExceptionHandler(CaptchaValidationException.class)
+    public ResponseEntity<MessageResponse> handleCaptchaValidationError(CaptchaValidationException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(MessageResponse.builder()
+                        .message(ex.getMessage())
+                        .success(false)
+                        .build());
+    }
 }

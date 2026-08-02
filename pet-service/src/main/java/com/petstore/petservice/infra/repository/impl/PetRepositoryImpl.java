@@ -68,4 +68,19 @@ public class PetRepositoryImpl implements PetRepository {
     public void incrementViewCount(UUID id) {
         jpaPetRepository.incrementViewCount(id);
     }
+
+    @Override
+    public int reservePetAtomic(UUID id) {
+        return jpaPetRepository.reservePetAtomic(id);
+    }
+
+    @Override
+    public int restorePetAtomic(UUID id) {
+        return jpaPetRepository.restorePetAtomic(id);
+    }
+
+    @Override
+    public int confirmPetSoldAtomic(UUID id) {
+        return jpaPetRepository.confirmPetSoldAtomic(id);
+    }
 }

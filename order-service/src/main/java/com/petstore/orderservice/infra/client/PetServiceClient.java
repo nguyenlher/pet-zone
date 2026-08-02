@@ -9,8 +9,10 @@ import org.springframework.web.client.RestClient;
 
 import com.petstore.orderservice.api.dto.PetDTO;
 import com.petstore.orderservice.api.dto.ProductDTO;
+import com.petstore.orderservice.api.dto.response.PetReservationResponse;
 import com.petstore.orderservice.api.dto.response.StockReservationResponse;
 import com.petstore.orderservice.exception.InsufficientStockException;
+import com.petstore.orderservice.exception.PetNotAvailableException;
 import com.petstore.orderservice.exception.ProductNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -107,6 +109,74 @@ public class PetServiceClient {
             
         } catch (Exception e) {
             log.error("Failed to restore stock for product: {}", productId, e);
+        }
+    }
+
+    /**
+     * Reserve a pet for an order
+     * @param petId the pet identifier
+     * @throws PetNotAvailableException if pet is not available
+     * @throws RuntimeException if pet service is unavailable
+     */
+    public void reservePet(UUID petId) {
+        log.info("Reserving pet - petId: {}", petId);
+
+        try {
+            PetReservationResponse response = petRestClient.post()
+                    .uri("/private/stock/pets/{petId}/reserve", petId)
+                    .retrieve()
+                    .onStatus(
+                        status -> status.value() == 409, // CONFLICT
+                        (req, res) -> {
+                            throw new PetNotAvailableException("Pet is not available for purchase: " + petId);
+                        }
+                    )
+                    .onStatus(
+                        status -> status.value() == 404, // NOT FOUND
+                        (req, res) -> {
+                            throw new PetNotAvailableException("Pet not found: " + petId);
+                        }
+                    )
+                    .onStatus(
+                        HttpStatusCode::is5xxServerError,
+                        (req, res) -> {
+                            throw new RuntimeException("Pet service unavailable");
+                        }
+                    )
+                    .body(PetReservationResponse.class);
+
+            if (response == null || !response.isSuccess()) {
+                throw new RuntimeException("Failed to reserve pet: " +
+                        (response != null ? response.getMessage() : "Unknown error"));
+            }
+
+            log.info("Successfully reserved pet - petId: {}", petId);
+
+        } catch (PetNotAvailableException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error reserving pet: {}", petId, e);
+            throw new RuntimeException("Failed to reserve pet", e);
+        }
+    }
+
+    /**
+     * Restore pet availability (compensating transaction)
+     * @param petId the pet identifier
+     */
+    public void restorePet(UUID petId) {
+        log.info("Restoring pet - petId: {}", petId);
+
+        try {
+            petRestClient.post()
+                    .uri("/private/stock/pets/{petId}/restore", petId)
+                    .retrieve()
+                    .toBodilessEntity();
+
+            log.info("Successfully restored pet - petId: {}", petId);
+
+        } catch (Exception e) {
+            log.error("Failed to restore pet: {}", petId, e);
         }
     }
 }

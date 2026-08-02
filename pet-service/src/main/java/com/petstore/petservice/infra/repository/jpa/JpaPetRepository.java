@@ -53,4 +53,40 @@ public interface JpaPetRepository extends JpaRepository<PetEntity, UUID> {
     @Modifying
     @Query("UPDATE PetEntity p SET p.viewCount = p.viewCount + 1 WHERE p.id = :id")
     void incrementViewCount(@Param("id") UUID id);
+
+    /**
+     * Atomic operation: Reserve pet by transitioning status from AVAILABLE to RESERVED.
+     *
+     * @param id the pet identifier
+     * @return number of affected rows (0 if pet not available or not found)
+     */
+    @Modifying
+    @Query("UPDATE PetEntity p SET p.status = com.petstore.petservice.domain.model.enums.PetStatus.RESERVED, " +
+           "p.updatedAt = CURRENT_TIMESTAMP " +
+           "WHERE p.id = :id AND p.status = com.petstore.petservice.domain.model.enums.PetStatus.AVAILABLE")
+    int reservePetAtomic(@Param("id") UUID id);
+
+    /**
+     * Atomic operation: Restore pet availability by transitioning status from RESERVED to AVAILABLE.
+     *
+     * @param id the pet identifier
+     * @return number of affected rows (0 if pet not reserved or not found)
+     */
+    @Modifying
+    @Query("UPDATE PetEntity p SET p.status = com.petstore.petservice.domain.model.enums.PetStatus.AVAILABLE, " +
+           "p.updatedAt = CURRENT_TIMESTAMP " +
+           "WHERE p.id = :id AND p.status = com.petstore.petservice.domain.model.enums.PetStatus.RESERVED")
+    int restorePetAtomic(@Param("id") UUID id);
+
+    /**
+     * Atomic operation: Confirm pet sale by transitioning status to SOLD.
+     *
+     * @param id the pet identifier
+     * @return number of affected rows
+     */
+    @Modifying
+    @Query("UPDATE PetEntity p SET p.status = com.petstore.petservice.domain.model.enums.PetStatus.SOLD, " +
+           "p.updatedAt = CURRENT_TIMESTAMP " +
+           "WHERE p.id = :id AND (p.status = com.petstore.petservice.domain.model.enums.PetStatus.RESERVED OR p.status = com.petstore.petservice.domain.model.enums.PetStatus.AVAILABLE)")
+    int confirmPetSoldAtomic(@Param("id") UUID id);
 }

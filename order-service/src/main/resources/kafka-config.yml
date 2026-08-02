@@ -23,7 +23,7 @@ app:
       order:
         created: ${KAFKA_TOPIC_ORDER_CREATED:order.created}
         confirmed: ${KAFKA_TOPIC_ORDER_CONFIRMED:order.confirmed}
-        cancelled: ${KAFKA_TOPIC_ORDER_CANCELLED:${KAFKA_TOPIC_ORDER_CANCELED:order.cancelled}}
+        cancelled: ${KAFKA_TOPIC_ORDER_CANCELLED:order.cancelled}
 
       # CONSUME TOPICS
       inventory:
@@ -33,4 +33,4 @@ app:
       payment:
         succeeded: ${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_SUCCEEDED:payment.succeeded}
         failed: ${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_FAILED:payment.failed}
-        cancelled: ${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_CANCELLED:${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_CANCELED:payment.cancelled}}
+        cancelled: ${KAFKA_TOPIC_PAYMENT_SERVICE_TOPIC_CANCELLED:payment.cancelled}

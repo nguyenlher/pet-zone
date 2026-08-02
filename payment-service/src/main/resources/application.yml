@@ -63,7 +63,7 @@ app:
       payment:
         succeeded: ${KAFKA_TOPIC_PAYMENT_SUCCEEDED:payment.succeeded}
         failed: ${KAFKA_TOPIC_PAYMENT_FAILED:payment.failed}
-        cancelled: ${KAFKA_TOPIC_PAYMENT_CANCELLED:${KAFKA_TOPIC_PAYMENT_CANCELED:payment.cancelled}}
+        cancelled: ${KAFKA_TOPIC_PAYMENT_CANCELLED:payment.cancelled}
 
 logging:
   level:

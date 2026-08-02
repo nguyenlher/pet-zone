@@ -28,6 +28,33 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
+    @ExceptionHandler(PetNotAvailableException.class)
+    public ResponseEntity<MessageResponse> handlePetNotAvailable(PetNotAvailableException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(MessageResponse.builder()
+                        .message(ex.getMessage())
+                        .success(false)
+                        .build());
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<MessageResponse> handleInsufficientStock(InsufficientStockException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(MessageResponse.builder()
+                        .message(ex.getMessage())
+                        .success(false)
+                        .build());
+    }
+
+    @ExceptionHandler(LockAcquisitionException.class)
+    public ResponseEntity<MessageResponse> handleLockAcquisition(LockAcquisitionException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(MessageResponse.builder()
+                        .message(ex.getMessage())
+                        .success(false)
+                        .build());
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();

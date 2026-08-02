@@ -55,7 +55,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, InsufficientStockException.class})
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, InsufficientStockException.class, PetNotAvailableException.class})
     public ResponseEntity<MessageResponse> handleBadRequestExceptions(RuntimeException ex) {
         log.warn("Bad request exception: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)

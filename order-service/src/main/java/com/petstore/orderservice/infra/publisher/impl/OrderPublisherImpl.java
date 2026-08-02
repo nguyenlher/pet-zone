@@ -63,6 +63,16 @@ public class OrderPublisherImpl implements OrderPublisher {
                 .userId(order.getUserId())
                 .status(order.getStatus().name())
                 .confirmedAt(order.getUpdatedAt())
+                .items(order.getItems() != null ? order.getItems().stream()
+                        .map(item -> OrderItemMessage.builder()
+                                .itemType(item.getItemType())
+                                .itemId(item.getItemId())
+                                .itemName(item.getItemName())
+                                .quantity(item.getQuantity())
+                                .unitPrice(item.getUnitPrice())
+                                .subtotalAmount(item.getSubtotalAmount())
+                                .build())
+                        .collect(Collectors.toList()) : null)
                 .build();
 
         kafkaTemplate.send(orderConfirmedTopic, order.getId().toString(), message);

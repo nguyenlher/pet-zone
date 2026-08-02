@@ -14,6 +14,7 @@ import org.springframework.kafka.support.Acknowledgment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.petstore.petservice.api.consumer.OrderEventConsumer;
+import com.petstore.petservice.domain.service.PetReservationService;
 import com.petstore.petservice.domain.service.StockReservationService;
 
 @ExtendWith(MockitoExtension.class)
@@ -21,6 +22,9 @@ class OrderEventConsumerTest {
 
     @Mock
     private StockReservationService stockReservationService;
+
+    @Mock
+    private PetReservationService petReservationService;
 
     @Mock
     private Acknowledgment acknowledgment;
@@ -31,12 +35,12 @@ class OrderEventConsumerTest {
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        orderEventConsumer = new OrderEventConsumer(stockReservationService, objectMapper);
+        orderEventConsumer = new OrderEventConsumer(stockReservationService, petReservationService, objectMapper);
     }
 
     @Test
-    @DisplayName("Should successfully deserialize order-cancelled message from order-service and restore stock for PRODUCT items")
-    void handleOrderCancelled_success_restoresProductStock() {
+    @DisplayName("Should successfully deserialize order-cancelled message and restore stock for PRODUCT and availability for PET")
+    void handleOrderCancelled_success_restoresProductStockAndPetAvailability() {
         UUID orderId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
         UUID petId = UUID.randomUUID();
@@ -74,9 +78,38 @@ class OrderEventConsumerTest {
 
         // Verify stock restore was called for the PRODUCT with quantity 3
         verify(stockReservationService).restoreStock(productId, 3);
-        // Verify stock restore was NOT called for PET
-        verify(stockReservationService, never()).restoreStock(petId, 1);
+        // Verify pet restore was called for the PET
+        verify(petReservationService).restorePet(petId);
         // Verify message was acknowledged
+        verify(acknowledgment).acknowledge();
+    }
+
+    @Test
+    @DisplayName("Should successfully deserialize order-confirmed message and confirm pet sold")
+    void handleOrderConfirmed_success_confirmsPetSold() {
+        UUID orderId = UUID.randomUUID();
+        UUID petId = UUID.randomUUID();
+
+        String payload = """
+        {
+            "orderId": "%s",
+            "userId": "%s",
+            "status": "CONFIRM",
+            "confirmedAt": "2026-09-20T12:00:00",
+            "items": [
+                {
+                    "itemType": "PET",
+                    "itemId": "%s",
+                    "itemName": "Golden Retriever Puppy",
+                    "quantity": 1
+                }
+            ]
+        }
+        """.formatted(orderId, UUID.randomUUID(), petId);
+
+        orderEventConsumer.handleOrderConfirmed(payload, acknowledgment);
+
+        verify(petReservationService).confirmPetSold(petId);
         verify(acknowledgment).acknowledge();
     }
 
@@ -88,6 +121,7 @@ class OrderEventConsumerTest {
         orderEventConsumer.handleOrderCancelled(corruptPayload, acknowledgment);
 
         verify(stockReservationService, never()).restoreStock(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.anyInt());
+        verify(petReservationService, never()).restorePet(org.mockito.ArgumentMatchers.any());
         verify(acknowledgment, never()).acknowledge();
     }
 }

@@ -19,4 +19,7 @@ public interface PetRepository {
     boolean existsById(UUID id);
     void deleteById(UUID id);
     void incrementViewCount(UUID id);
+    int reservePetAtomic(UUID id);
+    int restorePetAtomic(UUID id);
+    int confirmPetSoldAtomic(UUID id);
 }

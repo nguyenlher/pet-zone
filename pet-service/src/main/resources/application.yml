@@ -104,7 +104,8 @@ app:
   kafka:
     topics:
       order:
-        cancelled: ${KAFKA_TOPIC_ORDER_CANCELLED:${KAFKA_TOPIC_ORDER_CANCELED:order.cancelled}}
+        cancelled: ${KAFKA_TOPIC_ORDER_CANCELLED:order.cancelled}
+        confirmed: ${KAFKA_TOPIC_ORDER_CONFIRMED:order.confirmed}
 
 jwt:
   secret: ${JWT_SECRET:bXlTdXBlclNlY3JldEtleUZvckpXVEF1dGhlbnRpY2F0aW9u}

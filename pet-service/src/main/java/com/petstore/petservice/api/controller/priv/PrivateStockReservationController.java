@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.petstore.petservice.domain.service.PetReservationService;
 import com.petstore.petservice.domain.service.StockReservationService;
 import com.petstore.petservice.exception.InsufficientStockException;
 import com.petstore.petservice.exception.LockAcquisitionException;
+import com.petstore.petservice.exception.PetNotAvailableException;
 import com.petstore.petservice.exception.ResourceNotFoundException;
 
 import lombok.AllArgsConstructor;
@@ -29,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PrivateStockReservationController {
     
     private final StockReservationService stockReservationService;
+    private final PetReservationService petReservationService;
     
     /**
      * Reserve stock for a product
@@ -125,6 +128,88 @@ public class PrivateStockReservationController {
                     .build());
         }
     }
+
+    /**
+     * Reserve a pet for an order.
+     * Transitions status from AVAILABLE to RESERVED.
+     */
+    @PostMapping("/pets/{petId}/reserve")
+    public ResponseEntity<PetReservationResponse> reservePet(@PathVariable UUID petId) {
+        log.info("Received pet reservation request - petId: {}", petId);
+
+        try {
+            petReservationService.reservePet(petId);
+
+            return ResponseEntity.ok(
+                PetReservationResponse.builder()
+                    .success(true)
+                    .message("Pet reserved successfully")
+                    .petId(petId)
+                    .build()
+            );
+
+        } catch (PetNotAvailableException e) {
+            log.warn("Pet not available: {}", e.getMessage());
+            return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(PetReservationResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .petId(petId)
+                    .build());
+
+        } catch (LockAcquisitionException e) {
+            log.error("Lock acquisition failed for pet: {}", e.getMessage());
+            return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(PetReservationResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .petId(petId)
+                    .build());
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Pet not found: {}", e.getMessage());
+            return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(PetReservationResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .petId(petId)
+                    .build());
+        }
+    }
+
+    /**
+     * Restore a pet availability (compensating transaction).
+     * Transitions status from RESERVED back to AVAILABLE.
+     */
+    @PostMapping("/pets/{petId}/restore")
+    public ResponseEntity<PetReservationResponse> restorePet(@PathVariable UUID petId) {
+        log.info("Received pet restoration request - petId: {}", petId);
+
+        try {
+            petReservationService.restorePet(petId);
+
+            return ResponseEntity.ok(
+                PetReservationResponse.builder()
+                    .success(true)
+                    .message("Pet restored successfully")
+                    .petId(petId)
+                    .build()
+            );
+
+        } catch (Exception e) {
+            log.error("Failed to restore pet: {}", e.getMessage(), e);
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(PetReservationResponse.builder()
+                    .success(false)
+                    .message("Failed to restore pet: " + e.getMessage())
+                    .petId(petId)
+                    .build());
+        }
+    }
     
     /**
      * Response DTO for stock reservation/restoration operations
@@ -138,5 +223,18 @@ public class PrivateStockReservationController {
         private String message;
         private UUID productId;
         private Integer quantity;
+    }
+
+    /**
+     * Response DTO for pet reservation/restoration operations
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class PetReservationResponse {
+        private boolean success;
+        private String message;
+        private UUID petId;
     }
 }

@@ -229,4 +229,73 @@ class OrderServiceImplTest {
         verify(orderPersistenceService).saveOrder(any(Order.class));
         verify(orderPublisher).publishOrderCreated(any(Order.class));
     }
+
+    @Test
+    @DisplayName("Should successfully reserve both Product and Pet when creating mixed order")
+    void createOrder_mixedPetAndProduct_reservesBoth() {
+        UUID petId = UUID.randomUUID();
+        when(petServiceClient.getProductById(productAId)).thenReturn(
+                com.petstore.orderservice.api.dto.ProductDTO.builder().id(productAId).name("Collar").price(20.0).build()
+        );
+        when(petServiceClient.getPetById(petId)).thenReturn(
+                com.petstore.orderservice.api.dto.PetDTO.builder().id(petId).name("Shiba Inu").price(800.0).build()
+        );
+
+        List<OrderItem> items = List.of(
+                OrderItem.builder().itemType(ItemType.PRODUCT).itemId(productAId).quantity(1).build(),
+                OrderItem.builder().itemType(ItemType.PET).itemId(petId).quantity(1).build()
+        );
+
+        doNothing().when(petServiceClient).reserveStock(productAId, 1);
+        doNothing().when(petServiceClient).reservePet(petId);
+
+        when(orderPersistenceService.saveOrder(any(Order.class))).thenAnswer(invocation -> {
+            Order orderArg = invocation.getArgument(0);
+            return Order.builder()
+                    .id(UUID.randomUUID())
+                    .userId(orderArg.getUserId())
+                    .items(orderArg.getItems())
+                    .status(orderArg.getStatus())
+                    .build();
+        });
+
+        Order result = orderService.createOrder(userId, items, shippingDetail, null);
+
+        assertThat(result).isNotNull();
+        verify(petServiceClient).reserveStock(productAId, 1);
+        verify(petServiceClient).reservePet(petId);
+        verify(petServiceClient, never()).restoreStock(any(), any());
+        verify(petServiceClient, never()).restorePet(any());
+    }
+
+    @Test
+    @DisplayName("Should rollback reserved Product when subsequent Pet reservation fails")
+    void createOrder_petReservationFails_rollsBackPreviousProduct() {
+        UUID petId = UUID.randomUUID();
+        when(petServiceClient.getProductById(productAId)).thenReturn(
+                com.petstore.orderservice.api.dto.ProductDTO.builder().id(productAId).name("Collar").price(20.0).build()
+        );
+        when(petServiceClient.getPetById(petId)).thenReturn(
+                com.petstore.orderservice.api.dto.PetDTO.builder().id(petId).name("Shiba Inu").price(800.0).build()
+        );
+
+        List<OrderItem> items = List.of(
+                OrderItem.builder().itemType(ItemType.PRODUCT).itemId(productAId).quantity(1).build(),
+                OrderItem.builder().itemType(ItemType.PET).itemId(petId).quantity(1).build()
+        );
+
+        doNothing().when(petServiceClient).reserveStock(productAId, 1);
+        doThrow(new com.petstore.orderservice.exception.PetNotAvailableException("Pet is not available"))
+                .when(petServiceClient).reservePet(petId);
+
+        assertThatThrownBy(() -> orderService.createOrder(userId, items, shippingDetail, null))
+                .isInstanceOf(com.petstore.orderservice.exception.PetNotAvailableException.class)
+                .hasMessageContaining("Pet is not available");
+
+        // Verify product was rolled back
+        verify(petServiceClient).restoreStock(productAId, 1);
+        // Verify pet was not restored because it was never successfully reserved
+        verify(petServiceClient, never()).restorePet(petId);
+    }
 }
+

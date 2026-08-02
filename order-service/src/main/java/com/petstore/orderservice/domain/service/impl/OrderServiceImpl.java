@@ -85,7 +85,7 @@ public class OrderServiceImpl implements OrderService {
         // 4. Enrich and validate items with pricing and metadata BEFORE reserving stock
         List<OrderItem> enrichedItems = enrichOrderItems(items, petDTOMap, productDTOMap);
 
-        // 5. RESERVE STOCK (Non-transactional, with compensating rollback on partial failure)
+        // 5. RESERVE STOCK & PET (Non-transactional, with compensating rollback on partial failure)
         List<OrderItem> successfullyReservedItems = new ArrayList<>();
         try {
             for (OrderItem item : enrichedItems) {
@@ -93,11 +93,15 @@ public class OrderServiceImpl implements OrderService {
                     petServiceClient.reserveStock(item.getItemId(), item.getQuantity());
                     successfullyReservedItems.add(item);
                     log.info("Reserved {} units of product: {}", item.getQuantity(), item.getItemId());
+                } else if (item.getItemType() == ItemType.PET) {
+                    petServiceClient.reservePet(item.getItemId());
+                    successfullyReservedItems.add(item);
+                    log.info("Reserved pet: {}", item.getItemId());
                 }
             }
         } catch (Exception e) {
-            log.error("Failed to reserve stock during order creation, triggering compensating rollback...", e);
-            rollbackStockReservation(successfullyReservedItems);
+            log.error("Failed to reserve items during order creation, triggering compensating rollback...", e);
+            rollbackReservation(successfullyReservedItems);
             throw e;
         }
 
@@ -132,8 +136,8 @@ public class OrderServiceImpl implements OrderService {
         try {
             savedOrder = orderPersistenceService.saveOrder(order);
         } catch (Exception e) {
-            log.error("Failed to persist order in database, triggering compensating rollback for reserved stock...", e);
-            rollbackStockReservation(successfullyReservedItems);
+            log.error("Failed to persist order in database, triggering compensating rollback for reserved items...", e);
+            rollbackReservation(successfullyReservedItems);
             throw e;
         }
 
@@ -237,17 +241,23 @@ public class OrderServiceImpl implements OrderService {
                 .collect(Collectors.toList());
     }
     
-    private void rollbackStockReservation(List<OrderItem> reservedItems) {
+    private void rollbackReservation(List<OrderItem> reservedItems) {
         if (reservedItems == null || reservedItems.isEmpty()) {
             return;
         }
-        log.warn("Rolling back stock reservation for {} items", reservedItems.size());
+        log.warn("Rolling back reservation for {} items", reservedItems.size());
         for (OrderItem item : reservedItems) {
             try {
-                petServiceClient.restoreStock(item.getItemId(), item.getQuantity());
-                log.info("Compensating action: restored {} units of product: {}", item.getQuantity(), item.getItemId());
+                if (item.getItemType() == ItemType.PRODUCT) {
+                    petServiceClient.restoreStock(item.getItemId(), item.getQuantity());
+                    log.info("Compensating action: restored {} units of product: {}", item.getQuantity(), item.getItemId());
+                } else if (item.getItemType() == ItemType.PET) {
+                    petServiceClient.restorePet(item.getItemId());
+                    log.info("Compensating action: restored pet: {}", item.getItemId());
+                }
             } catch (Exception e) {
-                log.error("Failed to rollback stock during compensating action for product: {}", item.getItemId(), e);
+                log.error("Failed to rollback item during compensating action: id={}, type={}",
+                        item.getItemId(), item.getItemType(), e);
             }
         }
     }
@@ -324,6 +334,14 @@ public class OrderServiceImpl implements OrderService {
                 orderRepository.save(order);
                 orderDelayQueueService.cancelPaymentTimeout(orderId);
                 log.info("Updated order {} status to {}", orderId, newStatus);
+
+                if (newStatus == OrderStatus.CONFIRM) {
+                    try {
+                        orderPublisher.publishOrderConfirmed(order);
+                    } catch (Exception e) {
+                        log.error("Failed to publish order confirmed event for order: {}", orderId, e);
+                    }
+                }
             } else {
                 log.error("Order not found for payment update: {}", orderId);
             }
@@ -380,6 +398,15 @@ public class OrderServiceImpl implements OrderService {
         order.setUpdatedAt(LocalDateTime.now());
         Order updatedOrder = orderRepository.save(order);
         log.info("Order status updated successfully - orderId: {}, newStatus: {}", orderId, status);
+
+        if (status == OrderStatus.CONFIRM) {
+            try {
+                orderPublisher.publishOrderConfirmed(updatedOrder);
+            } catch (Exception e) {
+                log.error("Failed to publish order confirmed event for order: {}", orderId, e);
+            }
+        }
+
         return updatedOrder;
     }
 
